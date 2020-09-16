@@ -152,6 +152,14 @@ setMethod('species', 'AcousticEvent', function(x, ...) x@species)
 
 #' @export
 #' @rdname PAMpal.accessors
+#' @aliases species
+#'
+setMethod('species', 'AcousticStudy', function(x, ...) {
+    lapply(events(x), species)
+})
+
+#' @export
+#' @rdname PAMpal.accessors
 #'
 setGeneric('species<-', function(x, value) standardGeneric('species<-'))
 

@@ -5,8 +5,6 @@
 #'
 #' @param x a \linkS4class{AcousticStudy} object, a list of \linkS4class{AcousticEvent}
 #'   objects, or a single \linkS4class{AcousticEvent} object
-#' @param type the type of classification to set, this is just a label within
-#'   the \code{species} slot
 #' @param method the method for assigning species to an event. Currently supports
 #'   \code{pamguard}, which will use the 'eventType' or 'Text_Annotation' column
 #'   to assign species, \code{manual} which will use \code{value} to assign
@@ -23,17 +21,41 @@
 #'   \code{old} and \code{new}. Any events with species id in the \code{old} column
 #'   of the dataframe will get reassigned to the corresponding id in the
 #'   \code{new} column.
+#' @param type the type of classification to set, this is just a label within
+#'   the \code{species} slot
+#'
 #' @return the same object as \code{x}, with species identifications assigned
 #'   as an item named \code{type} in the \code{species} slot
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
+#'
+#' @examples
+#'
+#' # setting up example data
+#' exPps <- new('PAMpalSettings')
+#' exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
+#' exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
+#' exClick <- function(data) {
+#'     standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
+#' }
+#' exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
+#' exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
+#' exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
+#' exData <- processPgDetections(exPps, mode='db')
+#' exData <- setSpecies(exData, method='pamguard')
+#' species(exData)
+#' exData <- setSpecies(exData, method='manual', value = c('sp1', 'sp2'))
+#' species(exData)
+#' exData <- setSpecies(exData, method='reassign',
+#'                      value = data.frame(old='sp1', new='sp3'))
+#' species(exData)
 #'
 #' @importFrom dplyr distinct
 #' @importFrom stringr str_trim str_split
 #' @importFrom RSQLite dbConnect dbDisconnect dbReadTable SQLite
 #' @export
 #'
-setSpecies <- function(x, type='id', method=c('pamguard', 'manual', 'reassign'), value) {
+setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, type='id') {
     if(length(method) > 1) {
         cat('Please select a single assignment method.')
         methodPick <- menu(choices = method)

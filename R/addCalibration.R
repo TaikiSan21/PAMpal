@@ -56,10 +56,9 @@
 #'     standardClickCalcs(data, calibration=calibration, filterfrom_khz = 0)
 #' }
 #' pps <- addFunction(pps, calClick, module = 'ClickDetector')
-#' \dontrun{
 #' # not running this part because interactive menu pops up
-#' pps <- addCalibration(pps, calFile=calFile)
-#' }
+#' if(interactive()) pps <- addCalibration(pps, calFile=calFile)
+#'
 #'
 #' @importFrom utils read.csv menu
 #' @importFrom gam gam s predict.Gam

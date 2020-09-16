@@ -22,6 +22,14 @@ the same \linkS4class{PAMpalSettings} object as pps, with the function
 Adds a new function to the "function" slot in a PAMpalSettings
   object.
 }
+\examples{
+
+# not recommended to create a pps like this, for example only
+pps <- new('PAMpalSettings')
+if(interactive()) pps <- addFunction(pps, standardClickCalcs)
+pps <- addFunction(pps, roccaWhistleCalcs, module='WhistlesMoans')
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

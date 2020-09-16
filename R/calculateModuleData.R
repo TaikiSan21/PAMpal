@@ -21,7 +21,6 @@
 #'
 #' @import dplyr
 #' @importFrom PamBinaries convertPgDate contourToFreq
-#' @export
 #'
 calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(standardClickCalcs))) {
     if(length(binData$data) == 0 ||

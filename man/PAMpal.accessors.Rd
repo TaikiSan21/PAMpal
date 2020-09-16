@@ -20,6 +20,7 @@
 \alias{detectors<-,AcousticEvent-method}
 \alias{species}
 \alias{species,AcousticEvent-method}
+\alias{species,AcousticStudy-method}
 \alias{species<-}
 \alias{species<-,AcousticEvent-method}
 \alias{files}
@@ -108,6 +109,8 @@ detectors(x) <- value
 species(x, ...)
 
 \S4method{species}{AcousticEvent}(x, ...)
+
+\S4method{species}{AcousticStudy}(x, ...)
 
 species(x) <- value
 

@@ -13,6 +13,13 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @examples
+#'
+#' # not recommended to create a pps like this, for example only
+#' pps <- new('PAMpalSettings')
+#' if(interactive()) pps <- addFunction(pps, standardClickCalcs)
+#' pps <- addFunction(pps, roccaWhistleCalcs, module='WhistlesMoans')
+#'
 #' @importFrom utils menu
 #' @export
 #'

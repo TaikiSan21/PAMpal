@@ -17,6 +17,7 @@ test_that('Create and modify PPS', {
     expect_equal(length(exPps@binaries$folder), 1)
     expect_equal(length(exPps@functions), 3)
 
+    # test removal
     exPps <- removeFunction(exPps, 1)
     expect_equal(length(exPps@functions$ClickDetector), 0)
     exPps <- removeDatabase(exPps, 1)

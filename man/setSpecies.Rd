@@ -4,14 +4,11 @@
 \alias{setSpecies}
 \title{Set the Species Classification of an Acoustic Event}
 \usage{
-setSpecies(x, type = "id", method = c("pamguard", "manual", "reassign"), value)
+setSpecies(x, method = c("pamguard", "manual", "reassign"), value, type = "id")
 }
 \arguments{
 \item{x}{a \linkS4class{AcousticStudy} object, a list of \linkS4class{AcousticEvent}
 objects, or a single \linkS4class{AcousticEvent} object}
-
-\item{type}{the type of classification to set, this is just a label within
-the \code{species} slot}
 
 \item{method}{the method for assigning species to an event. Currently supports
 \code{pamguard}, which will use the 'eventType' or 'Text_Annotation' column
@@ -30,6 +27,9 @@ For \code{'reassign'}, \code{value} must be a data frame with columns
 \code{old} and \code{new}. Any events with species id in the \code{old} column
 of the dataframe will get reassigned to the corresponding id in the
 \code{new} column.}
+
+\item{type}{the type of classification to set, this is just a label within
+the \code{species} slot}
 }
 \value{
 the same object as \code{x}, with species identifications assigned
@@ -38,6 +38,28 @@ the same object as \code{x}, with species identifications assigned
 \description{
 Sets the \code{species} slot of an \linkS4class{AcousticEvent}
   object or list of objects
+}
+\examples{
+
+# setting up example data
+exPps <- new('PAMpalSettings')
+exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
+exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
+exClick <- function(data) {
+    standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
+}
+exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
+exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
+exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
+exData <- processPgDetections(exPps, mode='db')
+exData <- setSpecies(exData, method='pamguard')
+species(exData)
+exData <- setSpecies(exData, method='manual', value = c('sp1', 'sp2'))
+species(exData)
+exData <- setSpecies(exData, method='reassign',
+                     value = data.frame(old='sp1', new='sp3'))
+species(exData)
+
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

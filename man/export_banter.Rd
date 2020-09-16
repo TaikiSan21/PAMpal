@@ -47,6 +47,25 @@ a list with three items, \code{events}, \code{detectors}, and
 Formats a list of AcousticEvent objects into the structure
   needed to run a banter model.
 }
+\examples{
+
+# setting up example data
+exPps <- new('PAMpalSettings')
+exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
+exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
+exClick <- function(data) {
+    standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
+}
+exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
+exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
+exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
+exData <- processPgDetections(exPps, mode='db')
+exData <- setSpecies(exData, method='pamguard')
+banterData <- export_banter(exData)
+# drop some variables
+banterLess <- export_banter(exData, dropVars = c('peak', 'duration'))
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

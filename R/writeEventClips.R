@@ -33,8 +33,16 @@ writeEventClips <- function(event, wavFolder=NULL, buffer = 0.1, format=c('pamgu
     if(!dir.exists(wavFolder)) {
         stop('Cannot locate wavFolder.')
     }
+    if(length(format) != 1) {
+        fmtChoice <- menu(choices=c('Pamguard', 'SoundTrap'),
+                          title = 'What is the source of your sound files?')
+        if(fmtChoice == 0) {
+            stop('Currently only works with Pamguard or SoundTrap files')
+        }
+        format <- c('pamguard', 'soundtrap')[fmtChoice]
+    }
     format <- match.arg(format)
-    wavs <- list.files(wavFolder, full.names=TRUE)
+    wavs <- list.files(wavFolder, full.names=TRUE, pattern = '\\.wav$')
     if(format == 'soundtrap') {
         if(is.null(log)) {
             # log <- choose.dir(caption='Select a folder of Soundtrap log files (optional)')
