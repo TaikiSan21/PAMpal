@@ -112,7 +112,7 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                    allIds <- sapply(acev, id)
                    hasId <- allIds %in% value$event
                    if(!all(hasId)) {
-                       warning('No match found for event(s) ',
+                       message('No match found for event(s) ',
                                paste0(allIds[!hasId], collapse=', '),
                                ' (Event names in "value" must match exactly)')
                    }

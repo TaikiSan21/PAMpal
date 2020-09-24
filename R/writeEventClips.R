@@ -42,7 +42,10 @@ writeEventClips <- function(event, wavFolder=NULL, buffer = 0.1, format=c('pamgu
         format <- c('pamguard', 'soundtrap')[fmtChoice]
     }
     format <- match.arg(format)
-    wavs <- list.files(wavFolder, full.names=TRUE, pattern = '\\.wav$')
+    wavs <- list.files(wavFolder, full.names=TRUE, pattern = '\\.wav$', recursive=TRUE)
+    if(length(wavs) == 0) {
+        stop('No wav files found, please check directory.')
+    }
     if(format == 'soundtrap') {
         if(is.null(log)) {
             # log <- choose.dir(caption='Select a folder of Soundtrap log files (optional)')

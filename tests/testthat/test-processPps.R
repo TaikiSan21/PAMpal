@@ -10,7 +10,7 @@ test_that('Test process database', {
     exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
     exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
     exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-    exData <- processPgDetections(exPps, mode='db')
+    exData <- processPgDetections(exPps, mode='db', id='Example')
 
     expect_is(exData, 'AcousticStudy')
     expect_is(exData[1], 'AcousticStudy')
@@ -43,7 +43,7 @@ test_that('Test working with AcousticStudy object', {
     exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
     exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
     exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-    exData <- processPgDetections(exPps, mode='db')
+    exData <- processPgDetections(exPps, mode='db', id='Example')
 
     # check adding gps
     exData <- addGps(exData)
@@ -93,7 +93,7 @@ test_that('Test working with AcousticStudy object', {
     expect_warning(setSpecies(exData, method='manual', value=1:3), 'Length of "value"')
     expect_warning(setSpecies(exData, method='manual', value= data.frame(old=1, new=2),
                               'must contain columns'))
-    expect_warning(setSpecies(exData, method='manual',
+    expect_message(setSpecies(exData, method='manual',
                               value = data.frame(event = 'a', species=1)),
                    'No match found')
     exData <- setSpecies(exData, method = 'manual', value=letters[1:2])
@@ -122,6 +122,17 @@ test_that('Test working with AcousticStudy object', {
     # test filtering
     filterNone <- filter(exData, VARDNE == 'DNE')
     expect_identical(exData, filterNone)
+    exData <- setSpecies(exData, method='manual', value=letters[1:2])
+    spFilter <- filter(exData, species == 'a')
+    expect_equal(length(events(spFilter)), 1)
+    expect_equal(species(spFilter[[1]])$id, 'a')
+    spFilter <- filter(exData, species %in% letters[1:3])
+    expect_identical(spFilter, exData)
+    peakFilter <- filter(exData, peak < 20)
+    expect_true(all(detectors(peakFilter)$click$peak < 20))
+    peakFilter <- filter(exData, peak < 2000)
+    expect_identical(peakFilter, exData)
+
 
 })
 

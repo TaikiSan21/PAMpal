@@ -34,7 +34,7 @@ checkStudy <- function(x) {
         det <- getDetectorData(x)
         if(nrow(det$click) > 0 &&
            'peak' %in% colnames(det$click)) {
-            if(any(det$click$peak == 0)) {
+            if(any(det$click$peak == 0, na.rm=TRUE)) {
                 peak0Msg <- paste0('Some clicks had a peak frequency of 0 Hz,',
                                    ' consider adjusting the filter parameter',
                                    ' or adding a calibration function.')
@@ -44,6 +44,7 @@ checkStudy <- function(x) {
     },
     error = function(e) {
         cat('Please show Taiki this message:\n')
+        message(e)
         print(det$click$peak)
         return(invisible(x))
     })
