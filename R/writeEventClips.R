@@ -6,8 +6,8 @@
 #'   object containing events to make wav clips for
 #' @param wavFolder the folder where the wav files are located
 #' @param buffer amount around each event to also include in the clip, in seconds
-#' @param format either \code{'pamguard'} or \code{'soundtrap'} specifying
-#'   how the original audio files were created. The names of these files must
+#' @param format either \code{'pamguard'}, \code{'soundtrap'}, or \code{'sm3'}
+#'   specifying how the original audio files were created. The names of these files must
 #'   not have been changed, the original formatting is used to parse out the
 #'   start times of the audio files
 #' @param log optional location of SoundTrap XML log files, only relevant for
@@ -18,13 +18,14 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
-#' @importFrom dplyr bind_rows
+#' @importFrom dplyr bind_rows arrange
 #' @importFrom tuneR readWave writeWave MCnames bind
 #' @importFrom xml2 read_xml xml_find_all
 #'
 #' @export
 #'
-writeEventClips <- function(event, wavFolder=NULL, buffer = 0.1, format=c('pamguard', 'soundtrap'), log=NULL) {
+writeEventClips <- function(event, wavFolder=NULL, buffer = 0.1,
+                            format=c('pamguard', 'soundtrap', 'sm3'), log=NULL) {
     if(is.null(wavFolder)) {
         # wavFolder <- choose.dir(caption='Select a folder containing your wav files.')
         wavFolder <- tk_choose.dir(caption = 'Select a folder containing your wav files.',
@@ -34,12 +35,12 @@ writeEventClips <- function(event, wavFolder=NULL, buffer = 0.1, format=c('pamgu
         stop('Cannot locate wavFolder.')
     }
     if(length(format) != 1) {
-        fmtChoice <- menu(choices=c('Pamguard', 'SoundTrap'),
+        fmtChoice <- menu(choices=c('Pamguard', 'SoundTrap', 'SM3'),
                           title = 'What is the source of your sound files?')
         if(fmtChoice == 0) {
-            stop('Currently only works with Pamguard or SoundTrap files')
+            stop('Currently only works with Pamguard, SoundTrap, or SM3 files')
         }
-        format <- c('pamguard', 'soundtrap')[fmtChoice]
+        format <- c('pamguard', 'soundtrap', 'sm3')[fmtChoice]
     }
     format <- match.arg(format)
     wavs <- list.files(wavFolder, full.names=TRUE, pattern = '\\.wav$', recursive=TRUE)
@@ -60,6 +61,9 @@ writeEventClips <- function(event, wavFolder=NULL, buffer = 0.1, format=c('pamgu
     }
     wavMap <- bind_rows(lapply(wavs, function(x) {
         rng <- getWavDate(x, format)
+        if(any(is.na(rng))) {
+            return(NULL)
+        }
         list(start=rng[1], end=rng[2], file=x, length=as.numeric(difftime(rng[2], rng[1], units='secs')))
     }))
     wavMap <- arrange(wavMap, .data$start)
@@ -158,26 +162,39 @@ checkIn <- function(time, map) {
 }
 
 # wav file name to c(start, end) in posix time
-getWavDate <- function(wav, format=c('pamguard', 'soundtrap')) {
+getWavDate <- function(wav, tryFirst=NULL) {
     header <- readWave(wav, header = TRUE)
     len <- header$samples / header$sample.rate
-    # browser()
+    format <- c(tryFirst, c('pamguard', 'soundtrap', 'sm3'))
+    for(f in format) {
+        switch(
+            f,
+            'pamguard' = {
+                date <- gsub('.*([0-9]{8}_[0-9]{6}_[0-9]{3})\\.wav$', '\\1', wav)
+                posix <- as.POSIXct(substr(date, 1, 15), tz = 'UTC', format = '%Y%m%d_%H%M%S')
+                if(is.na(posix)) next
+                millis <- as.numeric(substr(date, 17, 19)) / 1e3
+                if(!is.na(posix)) break
+            },
+            'soundtrap' = {
+                date <- gsub('.*\\.([0-9]{12})\\.wav$', '\\1', wav)
+                posix <- as.POSIXct(date, format = '%y%m%d%H%M%S', tz='UTC')
+                millis <- 0
+                if(!is.na(posix)) break
+            },
+            'sm3' = {
+                date <- gsub('.*\\_([0-9]{8}_[0-9]{6})\\.wav$', '\\1', wav)
+                posix <- as.POSIXct(date, format = '%Y%m%d_%H%M%S', tz='UTC')
+                millis <- 0
+                if(!is.na(posix)) break
+            }
+        )
+    }
 
-    switch(
-        format,
-        'pamguard' = {
-            date <- gsub('.*([0-9]{8}_[0-9]{6}_[0-9]{3})\\.wav$', '\\1', wav)
-            posix <- as.POSIXct(substr(date, 1, 15), tz = 'UTC', format = '%Y%m%d_%H%M%S')
-            millis <- as.numeric(substr(date, 17, 19)) / 1e3
-        },
-        'soundtrap' = {
-            date <- gsub('.*\\.([0-9]{12})\\.wav$', '\\1', wav)
-            posix <- as.POSIXct(date, format = '%y%m%d%H%M%S', tz='UTC')
-            millis <- 0
-        }
-    )
     if(is.na(posix)) {
-        stop('Could not convert the name of the wav file to time properly.')
+        warning('Could not convert the name of the wav file ',
+                wav, ' to time properly.', call. = FALSE)
+        return(c(NA, NA))
     }
     c(0, len) + posix + millis
 }

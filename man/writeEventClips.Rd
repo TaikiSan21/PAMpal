@@ -8,7 +8,7 @@ writeEventClips(
   event,
   wavFolder = NULL,
   buffer = 0.1,
-  format = c("pamguard", "soundtrap"),
+  format = c("pamguard", "soundtrap", "sm3"),
   log = NULL
 )
 }
@@ -20,8 +20,8 @@ object containing events to make wav clips for}
 
 \item{buffer}{amount around each event to also include in the clip, in seconds}
 
-\item{format}{either \code{'pamguard'} or \code{'soundtrap'} specifying
-how the original audio files were created. The names of these files must
+\item{format}{either \code{'pamguard'}, \code{'soundtrap'}, or \code{'sm3'}
+specifying how the original audio files were created. The names of these files must
 not have been changed, the original formatting is used to parse out the
 start times of the audio files}
 
