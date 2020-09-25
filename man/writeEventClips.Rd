@@ -5,7 +5,7 @@
 \title{Create Wav Clips of Events}
 \usage{
 writeEventClips(
-  event,
+  x,
   wavFolder = NULL,
   buffer = 0.1,
   format = c("pamguard", "soundtrap", "sm3"),
@@ -13,8 +13,7 @@ writeEventClips(
 )
 }
 \arguments{
-\item{event}{\linkS4class{AcousticEvent} or \linkS4class{AcousticStudy}
-object containing events to make wav clips for}
+\item{x}{\linkS4class{AcousticStudy} object containing events to make wav clips for}
 
 \item{wavFolder}{the folder where the wav files are located}
 

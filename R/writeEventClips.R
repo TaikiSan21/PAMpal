@@ -2,8 +2,7 @@
 #'
 #' @description Creates an audio clip containing sounds from an event
 #'
-#' @param event \linkS4class{AcousticEvent} or \linkS4class{AcousticStudy}
-#'   object containing events to make wav clips for
+#' @param x \linkS4class{AcousticStudy} object containing events to make wav clips for
 #' @param wavFolder the folder where the wav files are located
 #' @param buffer amount around each event to also include in the clip, in seconds
 #' @param format either \code{'pamguard'}, \code{'soundtrap'}, or \code{'sm3'}
@@ -18,139 +17,116 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
-#' @importFrom dplyr bind_rows arrange
+#' @importFrom dplyr bind_rows arrange group_by summarise ungroup
 #' @importFrom tuneR readWave writeWave MCnames bind
 #' @importFrom xml2 read_xml xml_find_all
 #'
 #' @export
 #'
-writeEventClips <- function(event, wavFolder=NULL, buffer = 0.1,
+writeEventClips <- function(x, wavFolder=NULL, buffer = 0.1,
                             format=c('pamguard', 'soundtrap', 'sm3'), log=NULL) {
-    if(is.null(wavFolder)) {
-        # wavFolder <- choose.dir(caption='Select a folder containing your wav files.')
-        wavFolder <- tk_choose.dir(caption = 'Select a folder containing your wav files.',
-                                   default = getwd())
-    }
-    if(!dir.exists(wavFolder)) {
-        stop('Cannot locate wavFolder.')
-    }
-    if(length(format) != 1) {
-        fmtChoice <- menu(choices=c('Pamguard', 'SoundTrap', 'SM3'),
-                          title = 'What is the source of your sound files?')
-        if(fmtChoice == 0) {
-            stop('Currently only works with Pamguard, SoundTrap, or SM3 files')
-        }
-        format <- c('pamguard', 'soundtrap', 'sm3')[fmtChoice]
-    }
-    format <- match.arg(format)
-    wavs <- list.files(wavFolder, full.names=TRUE, pattern = '\\.wav$', recursive=TRUE)
-    if(length(wavs) == 0) {
-        stop('No wav files found, please check directory.')
-    }
-    if(format == 'soundtrap') {
-        if(is.null(log)) {
-            # log <- choose.dir(caption='Select a folder of Soundtrap log files (optional)')
-            log <- tk_choose.dir(caption = 'Select a folder of SoundTrap log files (optional)',
-                                 default = getwd())
-        }
-        if(dir.exists(log)) {
-            stLog <- getSoundtrapLog(log)
-        } else {
-            stLog <- data.frame(micros=0, sample=1, file=basename(wavs))
-        }
-    }
-    wavMap <- bind_rows(lapply(wavs, function(x) {
-        rng <- getWavDate(x, format)
-        if(any(is.na(rng))) {
-            return(NULL)
-        }
-        list(start=rng[1], end=rng[2], file=x, length=as.numeric(difftime(rng[2], rng[1], units='secs')))
-    }))
-    wavMap <- arrange(wavMap, .data$start)
-    wavMap$wavGroup <- 1
-    wavMap$timeDiff <- 0
-    if(nrow(wavMap) > 1) {
-        wg <- 1
-        for(i in 2:nrow(wavMap)) {
-            wavMap$timeDiff[i] <- as.numeric(difftime(wavMap$start[i], wavMap$end[i-1], units='secs'))
-            if(wavMap$timeDiff[i] < 0) {
-                wavMap$end[i-1] <- wavMap$start[i]
-            }
-            if(wavMap$end[i-1] != wavMap$start[i]) {
-                wg <- wg + 1
-            }
-            wavMap$wavGroup[i] <- wg
-        }
-    }
-    # browser()
-    if(is.AcousticEvent(event)) {
-        event <- list(event)
-    }
-    if(is.AcousticStudy(event)) {
-        event <- events(event)
-    }
-    allFiles <- vector('character', length = length(event))
-    cat('Writing wav files...\n')
-    pb <- txtProgressBar(min=0, max=length(event), style = 3)
-    for(i in seq_along(event)) {
-        # browser()
-        evRange <- getEventTime(event[[i]]) + buffer * c(-1, 1)
-        # for start and end check if in range. if we buffered, try undoing that first.
-        # so like if buffer put us before first file, start and beginning of first file instead.
-        startIx <- checkIn(evRange[1], wavMap)
-        if(is.na(startIx)) {
-            startIx <- checkIn(evRange[1] + buffer, wavMap)
-            if(is.na(startIx)) {
-                warning('Could not find matching wav files for event', event[[i]]@id)
-                allFiles[[i]] <- NA
-                next
-            }
-            evRange[1] <- wavMap$start[startIx]
-        }
-        endIx <- checkIn(evRange[2], wavMap)
-        if(is.na(endIx)) {
-            endIx <- checkIn(evRange[2] - buffer, wavMap)
-            if(is.na(endIx)) {
-                warning('Could not find matching wav files for event', event[[i]]@id)
-                allFiles[[i]] <- NA
-                next
-            }
-            evRange[2] <- wavMap$end[endIx]
-        }
-        if(wavMap$wavGroup[startIx] != wavMap$wavGroup[endIx]) {
-            warning('Event', event[[i]]@id, 'spanned two non-consecutive wav files, could not create clip.')
-            allFiles[[i]] <- NA_character_
-            setTxtProgressBar(pb, value=i)
-            next
-        }
-        startTime <- as.numeric(difftime(evRange[1], wavMap$start[startIx], units='secs'))
-        endTime <- as.numeric(difftime(evRange[2], wavMap$start[endIx], units='secs'))
-        wavResult <- vector('list', length = endIx)
-        for(w in startIx:endIx) {
-            readStart <- 0
-            readEnd <- Inf
-            if(w == startIx) {
-                readStart <- startTime
-            }
-            if(w == endIx) {
-                readEnd <- endTime
-            }
-            wavResult[[w]] <- readWave(wavMap$file[w], from = readStart, to = readEnd, units = 'seconds', toWaveMC = TRUE)
-        }
 
-        wavResult <- wavResult[!sapply(wavResult, is.null)]
-        wavResult <- do.call(bind, wavResult)[, 1:min(2, ncol(wavResult))]
-        colnames(wavResult) <- MCnames$name[1:min(2, ncol(wavResult))]
-        fileName <- paste0('Event_', event[[i]]@id, '.wav')
-        fileName <- paste0(gsub('\\.wav$', '', fileName), '.wav')
-        writeWave(wavResult, fileName, extensible = FALSE)
-        allFiles[[i]] <- fileName
-        setTxtProgressBar(pb, value=i)
+    evDbs <- sapply(events(x), function(e) files(e)$db)
+    dbMap <- vector('list', length = length(files(x)$db))
+    names(dbMap) <- files(x)$db
+    for(d in files(x)$db) {
+        thisDb <- x[which(evDbs == d)]
+        # do as if one thing
+        # mapping happens once
+        cat('Select a wav folder for database ', basename(d), '\n')
+        wavMap <- mapWavFolder(wavFolder, format = format, log=log)
+        wavMap$wavGroup <- 1
+        wavMap$timeDiff <- 0
+        if(nrow(wavMap) > 1) {
+            wg <- 1
+            for(i in 2:nrow(wavMap)) {
+                wavMap$timeDiff[i] <- as.numeric(difftime(wavMap$start[i], wavMap$end[i-1], units='secs'))
+                if(wavMap$timeDiff[i] < 0) {
+                    wavMap$end[i-1] <- wavMap$start[i]
+                }
+                if(wavMap$end[i-1] != wavMap$start[i]) {
+                    wg <- wg + 1
+                }
+                wavMap$wavGroup[i] <- wg
+            }
+        }
+        dbMap[[d]] <- wavMap
     }
-    isNa <- is.na(allFiles)
-    cat('\n', paste0('Wrote ', sum(!isNa), ' wav file(s).'))
-    names(allFiles) <- sapply(event, function(x) x@id)
-    allFiles
+
+    # browser()
+    # if(is.AcousticEvent(event)) {
+    #     event <- list(event)
+    # }
+    # if(is.AcousticStudy(event)) {
+    #     event <- events(event)
+    # }
+    for(d in files(x)$db) {
+        event <- events(x)[which(evDbs == d)]
+        wavMap <- dbMap[[d]]
+        allFiles <- vector('character', length = length(event))
+        cat('Writing wav files for database ', d, ' ...\n', sep='')
+        pb <- txtProgressBar(min=0, max=length(event), style = 3)
+        for(i in seq_along(event)) {
+            # browser()
+            evRange <- getEventTime(event[[i]]) + buffer * c(-1, 1)
+            # for start and end check if in range. if we buffered, try undoing that first.
+            # so like if buffer put us before first file, start and beginning of first file instead.
+            startIx <- checkIn(evRange[1], wavMap)
+            if(is.na(startIx)) {
+                startIx <- checkIn(evRange[1] + buffer, wavMap)
+                if(is.na(startIx)) {
+                    warning('Could not find matching wav files for event', event[[i]]@id)
+                    allFiles[[i]] <- NA
+                    next
+                }
+                evRange[1] <- wavMap$start[startIx]
+            }
+            endIx <- checkIn(evRange[2], wavMap)
+            if(is.na(endIx)) {
+                endIx <- checkIn(evRange[2] - buffer, wavMap)
+                if(is.na(endIx)) {
+                    warning('Could not find matching wav files for event', event[[i]]@id)
+                    allFiles[[i]] <- NA
+                    next
+                }
+                evRange[2] <- wavMap$end[endIx]
+            }
+            if(wavMap$wavGroup[startIx] != wavMap$wavGroup[endIx]) {
+                warning('Event', event[[i]]@id, 'spanned two non-consecutive wav files, could not create clip.')
+                allFiles[[i]] <- NA_character_
+                setTxtProgressBar(pb, value=i)
+                next
+            }
+            startTime <- as.numeric(difftime(evRange[1], wavMap$start[startIx], units='secs'))
+            endTime <- as.numeric(difftime(evRange[2], wavMap$start[endIx], units='secs'))
+            wavResult <- vector('list', length = endIx)
+            for(w in startIx:endIx) {
+                readStart <- 0
+                readEnd <- Inf
+                if(w == startIx) {
+                    readStart <- startTime
+                }
+                if(w == endIx) {
+                    readEnd <- endTime
+                }
+                wavResult[[w]] <- readWave(wavMap$file[w], from = readStart, to = readEnd, units = 'seconds', toWaveMC = TRUE)
+            }
+
+            wavResult <- wavResult[!sapply(wavResult, is.null)]
+            wavResult <- do.call(bind, wavResult)[, 1:min(2, ncol(wavResult))]
+            colnames(wavResult) <- MCnames$name[1:min(2, ncol(wavResult))]
+            fileName <- paste0('Event_', event[[i]]@id, '.wav')
+            fileName <- paste0(gsub('\\.wav$', '', fileName), '.wav')
+            writeWave(wavResult, fileName, extensible = FALSE)
+            allFiles[[i]] <- fileName
+            setTxtProgressBar(pb, value=i)
+        }
+        isNa <- is.na(allFiles)
+        cat('\n', paste0('Wrote ', sum(!isNa), ' wav file(s).'))
+        names(allFiles) <- sapply(event, function(x) x@id)
+        allFiles
+    }
+    invisible(allFiles)
 }
 
 checkIn <- function(time, map) {
@@ -214,4 +190,57 @@ getSoundtrapLog <- function(x) {
         data.frame(micros=0, sample=1, file = gsub('\\.log\\.xml$', '', basename(x)), stringsAsFactors = FALSE)
     })
     bind_rows(missing)
+}
+
+mapWavFolder <- function(wavFolder=NULL, format=c('pamguard', 'soundtrap', 'sm3'), log=NULL) {
+    if(is.null(wavFolder)) {
+        wavFolder <- tk_choose.dir(caption = 'Select a folder containing your wav files.',
+                                   default = getwd())
+    }
+    if(!dir.exists(wavFolder)) {
+        stop('Cannot locate wavFolder.')
+    }
+    if(length(format) != 1) {
+        fmtChoice <- menu(choices=c('Pamguard', 'SoundTrap', 'SM3'),
+                          title = 'What is the source of your sound files?')
+        if(fmtChoice == 0) {
+            stop('Currently only works with Pamguard, SoundTrap, or SM3 files')
+        }
+        format <- c('pamguard', 'soundtrap', 'sm3')[fmtChoice]
+    }
+    format <- match.arg(format)
+    wavs <- list.files(wavFolder, full.names=TRUE, pattern = '\\.wav$', recursive=TRUE)
+    if(length(wavs) == 0) {
+        stop('No wav files found, please check directory.')
+    }
+    if(format == 'soundtrap') {
+        if(is.null(log)) {
+            # log <- choose.dir(caption='Select a folder of Soundtrap log files (optional)')
+            log <- tk_choose.dir(caption = 'Select a folder of SoundTrap log files (optional)',
+                                 default = getwd())
+        }
+        if(dir.exists(log)) {
+            stLog <- getSoundtrapLog(log)
+            stLog <- group_by(stLog, file) %>%
+                summarise(gap = sum(micros)/1e6) %>%
+                ungroup()
+        } else {
+            stLog <- data.frame(gap=0, sample=1, file=basename(wavs))
+        }
+    }
+    wavMap <- bind_rows(lapply(wavs, function(x) {
+        rng <- getWavDate(x, format)
+        if(any(is.na(rng))) {
+            return(NULL)
+        }
+        if(format == 'soundtrap') {
+            hasLog <- which(gsub('\\.wav$', '', basename(x)) == stLog$file)
+            if(length(hasLog) == 1) {
+                rng[2] <- rng[2] + stLog$gap[hasLog]
+            }
+        }
+        list(start=rng[1], end=rng[2], file=x, length=as.numeric(difftime(rng[2], rng[1], units='secs')))
+    }))
+    wavMap <- arrange(wavMap, .data$start)
+    wavMap
 }
