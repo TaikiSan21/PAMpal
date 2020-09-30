@@ -12,6 +12,7 @@
   buffer = c(0, 0, 0),
   FUN = c(mean, median, sd),
   fileName = NULL,
+  progress = TRUE,
   ...
 )
 
@@ -22,6 +23,7 @@
   buffer = c(0, 0, 0),
   FUN = c(mean, median, sd),
   fileName = NULL,
+  progress = TRUE,
   ...
 )
 }
@@ -46,6 +48,8 @@ and then deleted. This can be much faster, but means that the data will need to 
 downloaded again in the future. If \code{fileName} is provided, then the function
 will attempt to download a single nc file covering the entire range of your data.
 If your data spans a large amount of time and space this can be problematic.}
+
+\item{progress}{logical flag to show progress bar}
 
 \item{\dots}{other parameters to pass to \link[PAMmisc]{ncToData}}
 }

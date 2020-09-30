@@ -4,23 +4,23 @@
 \alias{addBinaries}
 \title{Add Binaries to a PAMpalSettings Object}
 \usage{
-addBinaries(pps, binFolder = NULL)
+addBinaries(pps, folder = NULL)
 }
 \arguments{
 \item{pps}{a \linkS4class{PAMpalSettings} object to add a database to}
 
-\item{binFolder}{a folder of binaries to add}
+\item{folder}{a folder of binaries to add}
 }
 \value{
 the same \linkS4class{PAMpalSettings} object as pps, with the binary
-  files contained in \code{binFolder} added to the "binaries" slot. Only
+  files contained in \code{folder} added to the "binaries" slot. Only
   binary files for Click Detector and WhistlesMoans modules will be added,
   since these are the only types PAMpal currently knows how to process
   (last updated v 0.7.0)
 }
 \description{
-Adds a new function to the "function" slot in a PAMpalSettings
-  object.
+Adds more binary files to the "binaries" slot of a
+  PAMpalSettings object
 }
 \examples{
 

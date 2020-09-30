@@ -1,3 +1,7 @@
+## PAMpal 0.9.3
+
+* `addRecordings` function added to deal with keeping track of wav recordings in a study
+
 ## PAMr 0.9.2
 
 * Lots of prep for CRAN submission

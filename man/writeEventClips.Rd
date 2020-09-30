@@ -4,28 +4,14 @@
 \alias{writeEventClips}
 \title{Create Wav Clips of Events}
 \usage{
-writeEventClips(
-  x,
-  wavFolder = NULL,
-  buffer = 0.1,
-  format = c("pamguard", "soundtrap", "sm3"),
-  log = NULL
-)
+writeEventClips(x, buffer = 0.1, outDir = ".")
 }
 \arguments{
 \item{x}{\linkS4class{AcousticStudy} object containing events to make wav clips for}
 
-\item{wavFolder}{the folder where the wav files are located}
-
 \item{buffer}{amount around each event to also include in the clip, in seconds}
 
-\item{format}{either \code{'pamguard'}, \code{'soundtrap'}, or \code{'sm3'}
-specifying how the original audio files were created. The names of these files must
-not have been changed, the original formatting is used to parse out the
-start times of the audio files}
-
-\item{log}{optional location of SoundTrap XML log files, only relevant for
-\code{format='soundtrap'}}
+\item{outDir}{directory to write clips to, defaults to current directory}
 }
 \value{
 A vector of file names for the wav clips that were successfully

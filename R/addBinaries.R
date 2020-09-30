@@ -1,13 +1,13 @@
 #' @title Add Binaries to a PAMpalSettings Object
 #'
-#' @description Adds a new function to the "function" slot in a PAMpalSettings
-#'   object.
+#' @description Adds more binary files to the "binaries" slot of a
+#'   PAMpalSettings object
 #'
 #' @param pps a \linkS4class{PAMpalSettings} object to add a database to
-#' @param binFolder a folder of binaries to add
+#' @param folder a folder of binaries to add
 #'
 #' @return the same \linkS4class{PAMpalSettings} object as pps, with the binary
-#'   files contained in \code{binFolder} added to the "binaries" slot. Only
+#'   files contained in \code{folder} added to the "binaries" slot. Only
 #'   binary files for Click Detector and WhistlesMoans modules will be added,
 #'   since these are the only types PAMpal currently knows how to process
 #'   (last updated v 0.7.0)
@@ -25,44 +25,44 @@
 #' @importFrom tcltk tk_choose.dir
 #' @export
 #'
-addBinaries <- function(pps, binFolder=NULL) {
+addBinaries <- function(pps, folder=NULL) {
     binList <- NULL
-    if(is.PAMpalSettings(binFolder)) {
-        binList <- binFolder@binaries$list
-        binFolder <- binFolder@binaries$folder
+    if(is.PAMpalSettings(folder)) {
+        binList <- folder@binaries$list
+        folder <- folder@binaries$folder
         exists <- file.exists(binList)
         if(any(!exists)) {
             binList <- binList[exists]
             cat(sum(!exists), 'binary files did not exist.\n')
         }
     }
-    if(is.null(binFolder)) {
+    if(is.null(folder)) {
         cat('Please select the folder where the binaries are stored.\n')
         # if(!rstudioapi::isAvailable('1.1.287')) {
         #     binFolder <- choose.dir(caption = 'Choose Binary Folder:')
         # } else {
         #     binFolder <- rstudioapi::selectDirectory(caption = 'Choose Binary Folder:', path = getwd())
         # }
-        binFolder <- tk_choose.dir(caption = 'Choose Binary Folder:',default = getwd())
+        folder <- tk_choose.dir(caption = 'Choose Binary Folder:',default = getwd())
     }
     # Case when cancelled, dont error
-    if(is.null(binFolder) || is.na(binFolder)) {
+    if(is.null(folder) || is.na(folder)) {
         cat('No folder chosen')
         return(pps)
     }
-    if(!dir.exists(binFolder)) {
-        cat(paste0('Binary folder ', binFolder, ' does not exist'))
+    if(!dir.exists(folder)) {
+        cat(paste0('Binary folder ', folder, ' does not exist'))
         return(pps)
     }
-    pps@binaries$folder <- unique(c(pps@binaries$folder, binFolder))
+    pps@binaries$folder <- unique(c(pps@binaries$folder, folder))
     if(is.null(binList) ||
        length(binList) == 0) {
         cat('Getting list of all binary files in folder. This may take a while...\n')
         # only have functions for Clicks & Whistles right now, filter out so we dont get garbage
         # warning overflow later
-        binList <- list.files(binFolder, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans).*pgdf$')
+        binList <- list.files(folder, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans).*pgdf$')
     }
-    cat('Adding', length(binList), 'binary files from', length(binFolder), 'folders\n')
+    cat('Adding', length(binList), 'binary files from', length(folder), 'folders\n')
     pps@binaries$list <- unique(c(pps@binaries$list, binList))
     pps
 }

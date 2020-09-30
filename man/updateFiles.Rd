@@ -4,7 +4,7 @@
 \alias{updateFiles}
 \title{Update Location of Binary and Databases Files}
 \usage{
-updateFiles(x, bin = NULL, db = NULL, quiet = FALSE)
+updateFiles(x, bin = NULL, db = NULL, recording = NULL, verbose = FALSE)
 }
 \arguments{
 \item{x}{an \linkS4class{AcousticStudy} or \linkS4class{AcousticEvent}
@@ -16,7 +16,10 @@ object}
 \item{db}{folder containing updated database file locations. If
 \code{NULL} (default), user will be prompted to select a folder}
 
-\item{quiet}{logical flag to print messages about success of replacement}
+\item{recording}{folder containing updated recording file locations. If
+\code{NULL} (default), user will be prompted to select a folder}
+
+\item{verbose}{logical flag to print messages about success of replacement}
 }
 \value{
 the same \linkS4class{AcousticStudy} and

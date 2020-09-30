@@ -18,6 +18,7 @@
 #'   downloaded again in the future. If \code{fileName} is provided, then the function
 #'   will attempt to download a single nc file covering the entire range of your data.
 #'   If your data spans a large amount of time and space this can be problematic.
+#' @param progress logical flag to show progress bar
 #' @param \dots other parameters to pass to \link[PAMmisc]{ncToData}
 #'
 #' @return original data object with environmental data added to the \code{ancillary} slot
@@ -32,7 +33,8 @@
 #'
 setMethod('matchEnvData',
           'AcousticEvent',
-          function(data, nc=NULL, var=NULL, buffer=c(0,0,0), FUN = c(mean, median, sd), fileName = NULL, ...) {
+          function(data, nc=NULL, var=NULL, buffer=c(0,0,0), FUN = c(mean, median, sd),
+                   fileName = NULL, progress=TRUE, ...) {
               if(is.list(FUN) &&
                  is.null(names(FUN))) {
                   names(FUN) <- as.character(substitute(FUN))[-1]
@@ -45,7 +47,8 @@ setMethod('matchEnvData',
               if(is.null(eventStart)) {
                   return(data)
               }
-              envData <- matchEnvData(eventStart, nc=nc, var=var, buffer=buffer, FUN=FUN, fileName=fileName, ...)
+              envData <- matchEnvData(eventStart, nc=nc, var=var, buffer=buffer, FUN=FUN,
+                                      fileName=fileName, progress=progress, ...)
               addEnvToEvent(data, envData)
           }
 )
@@ -55,7 +58,8 @@ setMethod('matchEnvData',
 #'
 setMethod('matchEnvData',
           'AcousticStudy',
-          function(data, nc=NULL, var=NULL, buffer=c(0,0,0), FUN = c(mean, median, sd), fileName = NULL, ...) {
+          function(data, nc=NULL, var=NULL, buffer=c(0,0,0), FUN = c(mean, median, sd),
+                   fileName = NULL, progress=TRUE, ...) {
               eventStart <- do.call(rbind, lapply(events(data), function(x) {
                   getEventStart(x)
               }))
@@ -70,7 +74,8 @@ setMethod('matchEnvData',
                   FUN <- list(FUN)
                   names(FUN) <- tmpName
               }
-              envData <- matchEnvData(eventStart, nc=nc, var=var, buffer=buffer, FUN=FUN, fileName=fileName, ...)
+              envData <- matchEnvData(eventStart, nc=nc, var=var, buffer=buffer, FUN=FUN,
+                                      fileName=fileName, progress=progress, ...)
               for(e in seq_along(events(data))) {
                   events(data)[[e]] <- addEnvToEvent(events(data)[[e]], envData)
               }

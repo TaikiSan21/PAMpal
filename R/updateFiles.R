@@ -13,7 +13,9 @@
 #'   \code{NULL} (default), user will be prompted to select a folder
 #' @param db folder containing updated database file locations. If
 #'   \code{NULL} (default), user will be prompted to select a folder
-#' @param quiet logical flag to print messages about success of replacement
+#' @param recording folder containing updated recording file locations. If
+#'   \code{NULL} (default), user will be prompted to select a folder
+#' @param verbose logical flag to print messages about success of replacement
 #'
 #' @return the same \linkS4class{AcousticStudy} and
 #'   \linkS4class{AcousticEvent} object as \code{x} with
@@ -23,7 +25,7 @@
 #'
 #' @export
 #'
-updateFiles <- function(x, bin=NULL, db=NULL, quiet=FALSE) {
+updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=FALSE) {
     dbExists <- file.exists(files(x)$db)
     if(any(!dbExists)) {
         if(is.null(db)) {
@@ -36,9 +38,13 @@ updateFiles <- function(x, bin=NULL, db=NULL, quiet=FALSE) {
             # }
             db <- tk_choose.dir(caption = 'Choose Database Folder:', default = getwd())
         }
-        newDbs <- list.files(db, full.names=TRUE, pattern='sqlite')
+        if(is.na(db)) {
+            newDbs <- character(0)
+        } else {
+            newDbs <- list.files(db, full.names=TRUE, pattern='sqlite')
+        }
         updatedDbs <- fileMatcher(files(x)$db, newDbs)
-        if(!quiet) {
+        if(verbose) {
             if(length(newDbs) == 0) {
                 cat('No database files found in this folder.\n')
             }
@@ -61,12 +67,16 @@ updateFiles <- function(x, bin=NULL, db=NULL, quiet=FALSE) {
             # }
             bin <- tk_choose.dir(caption = 'Choose Binary Folder:', default = getwd())
         }
-        newBins <- list.files(bin, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans).*pgdf$')
+        if(is.na(bin)) {
+            newBins <- character(0)
+        } else {
+            newBins <- list.files(bin, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans).*pgdf$')
+        }
 
         updatedBins <- fileMatcher(files(x)$binaries, newBins)
-        if(!quiet) {
+        if(verbose) {
             if(length(newBins) == 0) {
-                cat('No binaray files found in this folder.\n')
+                cat('No binary files found in this folder.\n')
             }
             cat(paste0('Updated the locations of ',
                        sum(!binExists) - sum(!file.exists(updatedBins)),
@@ -75,9 +85,36 @@ updateFiles <- function(x, bin=NULL, db=NULL, quiet=FALSE) {
         }
         files(x)$binaries <- updatedBins
     }
+    if(!is.null(files(x)$recordings$file) &&
+       any(!file.exists(files(x)$recordings$file))) {
+        fileExists <- file.exists(files(x)$recordings$file)
+        if(is.null(recording)) {
+            cat('Found missing recording files, please select a new folder',
+                'where they can be found.\n')
+            recording <- tk_choose.dir(caption='Choose Recording Folder:', default=getwd())
+        }
+        if(is.na(recording)) {
+            newRecs <- character(0)
+        } else{
+            newRecs <- list.files(recording, recursive=TRUE, full.names=TRUE, pattern='wav$')
+        }
+        updatedRecs <- fileMatcher(files(x)$recordings, newRecs)
+        if(verbose) {
+            if(length(newRecs) == 0) {
+                cat('No recording files found in this folder.\n')
+            }
+            cat(paste0('Updated the locations of ',
+                       sum(!fileExists) - sum(!file.exists(updatedRecs)),
+                       ' out of ', sum(!fileExists),
+                       ' missing recording files.'), '\n')
+
+        }
+        files(x)$recordings$file <- updatedRecs
+    }
     if(is.AcousticStudy(x)) {
         for(e in seq_along(events(x))) {
-            events(x)[[e]] <- updateFiles(events(x)[[e]], bin=bin, db=db, quiet=TRUE)
+            if(is.na(bin) && is.na(db)) next
+            events(x)[[e]] <- updateFiles(events(x)[[e]], bin=bin, db=db, recording=recording, verbose=verbose)
         }
     }
     x
@@ -88,7 +125,30 @@ fileMatcher <- function(old, new) {
     if(length(new) == 0) {
         return(old)
     }
-    hasReplacement <- sapply(old, function(x) any(grepl(basename(x), basename(new))))
-    isReplacement <- sapply(new, function(x) any(grepl(basename(x), basename(old))))
-    c(old[!hasReplacement], new[isReplacement])
+    if(is.data.frame(old)) {
+        # hasReplacement <- sapply(old$file, function(x) any(grepl(basename(x), basename(new))))
+        # repIx <- sapply(old$file, function(x) {
+        #     rix <- which(grepl(x, basename(new)))
+        #     if(length(rix) == 0) {
+        #         return(0)
+        #     }
+        #     rix[1]
+        # })
+        # old$file[repIx > 0] <- new[repIx[repIx >0]]
+        # return(old)
+        old$file <- fileMatcher(old$file, new)
+        return(old)
+    }
+    repIx <- sapply(old, function(x) {
+        rix <- which(grepl(x, basename(new)))
+        if(length(rix) == 0) {
+            return(0)
+        }
+        rix[1]
+    })
+    old[repIx > 0] <- new[repIx[repIx > 0]]
+    old
+    # hasReplacement <- sapply(old, function(x) any(grepl(basename(x), basename(new))))
+    # isReplacement <- sapply(new, function(x) any(grepl(basename(x), basename(old))))
+    # c(old[!hasReplacement], new[isReplacement])
 }
