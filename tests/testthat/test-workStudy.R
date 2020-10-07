@@ -119,14 +119,8 @@ test_that('Test checkStudy test cases', {
 test_that('Test getBinaryData', {
     data(exStudy)
     binFolder <- system.file('extdata', 'Binaries', package='PAMpal')
-    print(binFolder)
-    print(dir.exists(binFolder))
-    print(list.files(binFolder, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans).*pgdf$'))
-
-    exStudy <- updateFiles(exStudy, bin=binFolder, db=NA, verbose=TRUE)
+    exStudy <- updateFiles(exStudy, bin=binFolder, db=NA, verbose=FALSE)
     bin <- getBinaryData(exStudy, UID = 8000003)
-    print(str(bin))
-    print(bin)
     expect_equal(names(bin), '8000003')
     expect_true(all(c('wave', 'sr', 'minFreq') %in% names(bin[[1]])))
     expect_null(getBinaryData(exStudy, UID = 1))
@@ -148,11 +142,11 @@ test_that('Test updateFiles', {
     # corrupting filepaths
     recs <- system.file('extdata', 'Recordings', package='PAMpal')
     exStudy <- addRecordings(exStudy, folder =recs, log=FALSE, progress=FALSE)
-    files(exStudy)$db <- basename(files(exStudy)$db)
-    files(exStudy)$binaries <- basename(files(exStudy)$binaries)
-    files(exStudy)$recordings$file <- basename(files(exStudy)$recordings$file)
-    files(exStudy[[1]])$db <- basename(files(exStudy[[1]])$db)
-    files(exStudy[[1]])$binaries <- basename(files(exStudy[[1]])$binaries)
+    files(exStudy)$db <- substr(files(exStudy)$db, start=5, stop=10e3)
+    files(exStudy)$binaries <- substr(files(exStudy)$binaries, start=5, stop=10e3)
+    files(exStudy)$recordings$file <- substr(files(exStudy)$recordings$file, start=5, stop=10e3)
+    files(exStudy[[1]])$db <- substr(files(exStudy[[1]])$db, start=5, stop=10e3)
+    files(exStudy[[1]])$binaries <- substr(files(exStudy[[1]])$binaries, start=5, stop=10e3)
     db <- system.file('extdata', package='PAMpal')
     bin <- system.file('extdata', 'Binaries', package='PAMpal')
     expect_true(!any(file.exists(files(exStudy)$db,

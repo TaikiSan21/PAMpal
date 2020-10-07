@@ -156,7 +156,7 @@ fileMatcher <- function(old, new) {
         return(old)
     }
     repIx <- sapply(old, function(x) {
-        rix <- which(grepl(x, basename(new)))
+        rix <- which(grepl(basename(x), basename(new)))
         if(length(rix) == 0) {
             return(0)
         }
