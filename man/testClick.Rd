@@ -16,7 +16,7 @@ A list with two items:
 Southwest Fisheries Science Center / NMFS / NOAA
 }
 \usage{
-testClick
+data(testClick)
 }
 \description{
 An example delphinid click waveform. This is a two-channel recording

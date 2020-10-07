@@ -268,9 +268,9 @@ AcousticStudy <- function(id=NULL,
                           ancillary=list()) {
     if(is.null(id)) {
         id <- Sys.Date()
-        cat("No ID supplied for this AcousticStudy object, will use today's",
+        message("No ID supplied for this AcousticStudy object, will use today's",
             ' date. Please assign a better name with id(study) <- "NAME"',
-            '\nIn the future it is recommended to set the "id" argument.', sep='')
+            '\nIn the future it is recommended to set the "id" argument.')
     }
     id <- as.character(id)
     fileTemp <- list(db=NA_character_, binaries=NA_character_, visual=NA_character_, enviro=NA_character_)

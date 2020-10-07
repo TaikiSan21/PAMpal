@@ -25,6 +25,17 @@ the same \linkS4class{PAMpalSettings} object as pps, with the function
 Remove a function from the "function" slot in a PAMpalSettings
   object.
 }
+\examples{
+
+exPps <- new('PAMpalSettings')
+exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
+exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
+removeFunction(exPps, 1)
+removeFunction(exPps, 1:2)
+# normally best to use interactively instead of specifying index
+if(interactive()) removeFunction(exPps)
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

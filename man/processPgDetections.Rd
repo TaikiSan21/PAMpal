@@ -10,6 +10,8 @@ processPgDetections(
   id = NULL,
   grouping = NULL,
   format = "\%Y-\%m-\%d \%H:\%M:\%OS",
+  progress = TRUE,
+  verbose = TRUE,
   ...
 )
 }
@@ -52,6 +54,10 @@ not supplied (recommended to supply your own informative id)}
 in \code{grouping} if it is a csv. Times are assumed to be UTC. See
 ?strptime for details.}
 
+\item{progress}{logical flog to show progress bars}
+
+\item{verbose}{logical flag to show messages}
+
 \item{\dots}{additional arguments to pass onto to different methods}
 }
 \value{
@@ -67,6 +73,28 @@ Loads and processes acoustic detection data that has been
   tables (\code{mode = 'db'}) or by the grouping specified by start/end
   times in the supplied \code{grouping} (\code{mode = 'time'}). Will apply
   all processing functions in \code{pps} to the appropriate modules
+}
+\examples{
+
+exPps <- new('PAMpalSettings')
+exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
+exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
+exClick <- function(data) {
+    standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
+}
+exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
+exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
+exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
+# process events labelled within the Pamguard database
+exStudyDb <- processPgDetections(exPps, mode='db', id='Example')
+# can also give an AcousticStudy as input and it will use same functions and data
+reprocess <- processPgDetections(exStudyDb, mode='db', id='Reprocess')
+# process events with manually set start/end times
+grp <- data.frame(start = as.POSIXct('2018-03-20 15:25:10', tz='UTC'),
+                  end = as.POSIXct('2018-03-20 15:25:11', tz='UTC'),
+                  id = 'GroupExample')
+exStudyTime <- processPgDetections(exPps, mode='time', grouping=grp, id='Time')
+
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

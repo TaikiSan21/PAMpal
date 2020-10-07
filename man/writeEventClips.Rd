@@ -20,6 +20,16 @@ A vector of file names for the wav clips that were successfully
 \description{
 Creates an audio clip containing sounds from an event
 }
+\examples{
+
+data(exStudy)
+recs <- system.file('extdata', 'Recordings', package='PAMpal')
+exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
+tdir <- tempdir()
+wavs <- writeEventClips(exStudy, outDir=tdir)
+file.remove(wavs)
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

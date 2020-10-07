@@ -55,22 +55,13 @@ Calculates the ICI for each individual detector and across all detectors.
 \examples{
 
 # setting up example data
-exPps <- new('PAMpalSettings')
-exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
-exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
-exClick <- function(data) {
-    standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
-}
-exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
-exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
-exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-exData <- processPgDetections(exPps, mode='db')
-exData <- calculateICI(exData)
+data(exStudy)
+exStudy <- calculateICI(exStudy)
 # each event has its ICI data stored separately, these are 0
 # because there is only a single click in this event
-ancillary(exData[[1]])$ici
+ancillary(exStudy[[1]])$ici
 # also saves it in measures that will get exported for modeling
-ancillary(exData[[1]])$measures
+ancillary(exStudy[[1]])$measures
 
 }
 \author{

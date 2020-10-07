@@ -1,7 +1,7 @@
 #' @title Extract and Combine Detector Data
 #'
 #' @description Extracts just the detector data from all of \code{x}, and will
-#'   combine all detections from each call type (currently whistles, clicks,
+#'   combine all detections from each call type (currently whistle, click,
 #'   and cepstrum) into a single data frame.
 #'
 #' @param x data to extract detector data from, either an \code{AcousticStudy},
@@ -17,9 +17,19 @@
 #'   call type will be combined into a single large data frame
 #'
 #' @return A list of data frames containing all detection data from \code{x},
-#'   named by call type
+#'   named by call type ('click', 'whistle', or 'cepstrum').
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
+#'
+#' @examples
+#'
+#' data(exStudy)
+#' dets <- getDetectorData(exStudy)
+#' names(dets)
+#' str(dets$click)
+#' # works on single events as well
+#' oneDets <- getDetectorData(exStudy[[1]])
+#' str(oneDets$click)
 #'
 #' @importFrom PAMmisc squishList
 #' @export
@@ -49,7 +59,7 @@ getDetectorData <- function(x) {
         if(is.null(species(x)$id)) {
             dets[[d]]$species <- NA_character_
         } else {
-            dets[[d]]$species <- species(x)$id
+            dets[[d]]$species <- species(x)$id[1]
         }
     }
     names(dets) <- callTypes

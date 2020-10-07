@@ -5,6 +5,7 @@
 #'
 #' @param pps a \linkS4class{PAMpalSettings} object to add a database to
 #' @param db a database to add
+#' @param verbose logical flag to show messages
 #'
 #' @return the same \linkS4class{PAMpalSettings} object as pps, with the database
 #'   \code{db} added to the "db" slot
@@ -22,7 +23,7 @@
 #' @importFrom tcltk tk_choose.files
 #' @export
 #'
-addDatabase <- function(pps, db=NULL) {
+addDatabase <- function(pps, db=NULL, verbose=TRUE) {
     if(is.PAMpalSettings(db)) {
         db <- db@db
     }
@@ -48,13 +49,15 @@ addDatabase <- function(pps, db=NULL) {
                 paste0(db[!isSqlite], collapse = ', '))
         db <- db[isSqlite]
     }
-    cat('Adding', length(db), 'databases:\n  ')
-    if(length(db) > 6) {
-        dbMsg <- paste0(c(basename(db[1:6]),paste0('... (', length(db)-6, ' more not shown)')), collapse = '\n  ')
-    } else {
-        dbMsg <- paste0(basename(db), collapse=', ')
+    if(verbose) {
+        cat('Adding', length(db), 'databases:\n  ')
+        if(length(db) > 6) {
+            dbMsg <- paste0(c(basename(db[1:6]),paste0('... (', length(db)-6, ' more not shown)')), collapse = '\n  ')
+        } else {
+            dbMsg <- paste0(basename(db), collapse=', ')
+        }
+        cat
     }
-    cat(dbMsg, '\n')
     pps@db <- unique(c(pps@db, db))
     pps
 }

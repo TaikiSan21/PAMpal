@@ -4,7 +4,13 @@
 \alias{export_banter}
 \title{Export a List of AcousticEvent Ojbects for Banter Model}
 \usage{
-export_banter(x, dropVars = NULL, dropSpecies = NULL, training = TRUE)
+export_banter(
+  x,
+  dropVars = NULL,
+  dropSpecies = NULL,
+  training = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{x}{a \linkS4class{AcousticStudy} object or
@@ -21,6 +27,8 @@ for testing). If TRUE or greater than 0, must contain species ID.
 NOTE: if value is not 0, 1, \code{TRUE}, or \code{FALSE}, output
 will be further split into \code{training} and \code{test} items
 within the list output}
+
+\item{verbose}{logical flag to show summary and informational messages}
 }
 \value{
 a list with three items, \code{events}, \code{detectors}, and
@@ -50,20 +58,11 @@ Formats a list of AcousticEvent objects into the structure
 \examples{
 
 # setting up example data
-exPps <- new('PAMpalSettings')
-exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
-exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
-exClick <- function(data) {
-    standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
-}
-exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
-exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
-exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-exData <- processPgDetections(exPps, mode='db')
-exData <- setSpecies(exData, method='pamguard')
-banterData <- export_banter(exData)
+data(exStudy)
+exStudy <- setSpecies(exStudy, method='pamguard')
+banterData <- export_banter(exStudy)
 # drop some variables
-banterLess <- export_banter(exData, dropVars = c('peak', 'duration'))
+banterLess <- export_banter(exStudy, dropVars = c('peak', 'duration'))
 
 }
 \author{

@@ -23,10 +23,31 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @examples
+#'
+#' data(exStudy)
+#' # files in exStudy will have paths local to package creator's computer
+#' files(exStudy)$db
+#' file.exists(files(exStudy)$db)
+#' files(exStudy)$binaries
+#' file.exists(files(exStudy)$binaries)
+#' # folder with example DB
+#' db <- system.file('extdata', package='PAMpal')
+#' # folder with example binaries
+#' bin <- system.file('extdata', 'Binaries', package='PAMpal')
+#' exStudy <- updateFiles(exStudy, db=db, bin=bin)
+#' files(exStudy)$db
+#' file.exists(files(exStudy)$db)
+#' files(exStudy)$binaries
+#' file.exists(files(exStudy)$binaries)
+#'
 #' @export
 #'
-updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=FALSE) {
+updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
     dbExists <- file.exists(files(x)$db)
+    if(all(dbExists)) {
+        db <- NA
+    }
     if(any(!dbExists)) {
         if(is.null(db)) {
             cat('Found missing databases, please select a new folder',
@@ -56,6 +77,9 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=FALSE) {
         files(x)$db <- updatedDbs
     }
     binExists <- file.exists(files(x)$binaries)
+    if(all(binExists)) {
+        bin <- NA
+    }
     if(any(!binExists)) {
         if(is.null(bin)) {
             cat('Found missing binary files, please select a new folder',
@@ -98,7 +122,7 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=FALSE) {
         } else{
             newRecs <- list.files(recording, recursive=TRUE, full.names=TRUE, pattern='wav$')
         }
-        updatedRecs <- fileMatcher(files(x)$recordings, newRecs)
+        updatedRecs <- fileMatcher(files(x)$recordings$file, newRecs)
         if(verbose) {
             if(length(newRecs) == 0) {
                 cat('No recording files found in this folder.\n')
@@ -111,10 +135,12 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=FALSE) {
         }
         files(x)$recordings$file <- updatedRecs
     }
+
     if(is.AcousticStudy(x)) {
         for(e in seq_along(events(x))) {
             if(is.na(bin) && is.na(db)) next
-            events(x)[[e]] <- updateFiles(events(x)[[e]], bin=bin, db=db, recording=recording, verbose=verbose)
+            # be quiet for every event, study level should give best summary
+            events(x)[[e]] <- updateFiles(events(x)[[e]], bin=bin, db=db, recording=recording, verbose=FALSE)
         }
     }
     x
@@ -126,16 +152,6 @@ fileMatcher <- function(old, new) {
         return(old)
     }
     if(is.data.frame(old)) {
-        # hasReplacement <- sapply(old$file, function(x) any(grepl(basename(x), basename(new))))
-        # repIx <- sapply(old$file, function(x) {
-        #     rix <- which(grepl(x, basename(new)))
-        #     if(length(rix) == 0) {
-        #         return(0)
-        #     }
-        #     rix[1]
-        # })
-        # old$file[repIx > 0] <- new[repIx[repIx >0]]
-        # return(old)
         old$file <- fileMatcher(old$file, new)
         return(old)
     }
@@ -148,7 +164,4 @@ fileMatcher <- function(old, new) {
     })
     old[repIx > 0] <- new[repIx[repIx > 0]]
     old
-    # hasReplacement <- sapply(old, function(x) any(grepl(basename(x), basename(new))))
-    # isReplacement <- sapply(new, function(x) any(grepl(basename(x), basename(old))))
-    # c(old[!hasReplacement], new[isReplacement])
 }

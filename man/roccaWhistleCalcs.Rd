@@ -20,6 +20,12 @@ Calculate a set of measurements from a whistle contour. All
   calculations following ROCCA method from Julie and Michael Oswald, as
   implemented in Pamguard.
 }
+\examples{
+
+data(testWhistle)
+roccaWhistleCalcs(testWhistle)
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

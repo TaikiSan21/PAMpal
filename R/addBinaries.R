@@ -5,6 +5,7 @@
 #'
 #' @param pps a \linkS4class{PAMpalSettings} object to add a database to
 #' @param folder a folder of binaries to add
+#' @param verbose logical flag to show messages
 #'
 #' @return the same \linkS4class{PAMpalSettings} object as pps, with the binary
 #'   files contained in \code{folder} added to the "binaries" slot. Only
@@ -25,7 +26,7 @@
 #' @importFrom tcltk tk_choose.dir
 #' @export
 #'
-addBinaries <- function(pps, folder=NULL) {
+addBinaries <- function(pps, folder=NULL, verbose=TRUE) {
     binList <- NULL
     if(is.PAMpalSettings(folder)) {
         binList <- folder@binaries$list
@@ -33,7 +34,9 @@ addBinaries <- function(pps, folder=NULL) {
         exists <- file.exists(binList)
         if(any(!exists)) {
             binList <- binList[exists]
-            cat(sum(!exists), 'binary files did not exist.\n')
+            if(verbose) {
+                cat(sum(!exists), 'binary files did not exist.\n')
+            }
         }
     }
     if(is.null(folder)) {
@@ -47,22 +50,26 @@ addBinaries <- function(pps, folder=NULL) {
     }
     # Case when cancelled, dont error
     if(is.null(folder) || is.na(folder)) {
-        cat('No folder chosen')
+        message('No folder chosen')
         return(pps)
     }
     if(!dir.exists(folder)) {
-        cat(paste0('Binary folder ', folder, ' does not exist'))
+        warning(paste0('Binary folder ', folder, ' does not exist'))
         return(pps)
     }
     pps@binaries$folder <- unique(c(pps@binaries$folder, folder))
     if(is.null(binList) ||
        length(binList) == 0) {
-        cat('Getting list of all binary files in folder. This may take a while...\n')
+        if(verbose) {
+            cat('Getting list of all binary files in folder. This may take a while...\n')
+        }
         # only have functions for Clicks & Whistles right now, filter out so we dont get garbage
         # warning overflow later
         binList <- list.files(folder, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans).*pgdf$')
     }
-    cat('Adding', length(binList), 'binary files from', length(folder), 'folders\n')
+    if(verbose) {
+        cat('Adding', length(binList), 'binary files from', length(folder), 'folders\n')
+    }
     pps@binaries$list <- unique(c(pps@binaries$list, binList))
     pps
 }

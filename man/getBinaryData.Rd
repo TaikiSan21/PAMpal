@@ -13,7 +13,8 @@ objects, or a single \linkS4class{AcousticEvent} object}
 \item{UID}{the UID(s) of the individual detections to fetch the binary
 data for}
 
-\item{quiet}{logical flag to quiet some warnings, used internally}
+\item{quiet}{logical flag to quiet some warnings, used internally and should generally
+not be changed from default \code{FALSE}}
 
 \item{\dots}{additional arguments to pass to
 \code{\link[PamBinaries]{loadPamguardBinaryFile}}}
@@ -24,6 +25,14 @@ a list of \code{PamBinary} objects for each \code{UID}
 \description{
 Fetches matching binary data from a single or multiple
   detections in an \linkS4class{AcousticEvent} object
+}
+\examples{
+
+data(exStudy)
+binData <- getBinaryData(exStudy, UID = 8000003)
+# works with multiple UIDs, if UIDs arent present they will be ignored
+binData <- getBinaryData(exStudy, UID = c(8000003, 529000024, 1))
+
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

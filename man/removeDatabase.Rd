@@ -22,6 +22,14 @@ the same \linkS4class{PAMpalSettings} object as pps, with the database(s)
 Remove a database from the "db" slot in a PAMpalSettings
   object.
 }
+\examples{
+
+exPps <- new('PAMpalSettings')
+exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
+removeDatabase(exPps, 1)
+if(interactive()) removeDatabase(exPps)
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

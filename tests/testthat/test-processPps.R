@@ -10,7 +10,7 @@ test_that('Test process database', {
     exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
     exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
     exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-    exData <- processPgDetections(exPps, mode='db', id='Example')
+    exData <- processPgDetections(exPps, mode='db', id='Example', progress=FALSE)
 
     expect_is(exData, 'AcousticStudy')
     expect_is(exData[1], 'AcousticStudy')
@@ -32,8 +32,7 @@ test_that('Test process database', {
     ))
 })
 
-test_that('Test working with AcousticStudy object', {
-    # build basic study object
+test_that('Test process time', {
     exPps <- new('PAMpalSettings')
     exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
     exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
@@ -43,111 +42,17 @@ test_that('Test working with AcousticStudy object', {
     exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
     exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
     exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-    exData <- processPgDetections(exPps, mode='db', id='Example')
-
-    # check adding gps
-    exData <- addGps(exData)
-    expect_equal(nrow(gps(exData)), 200)
-    expect_true(!any(
-        is.na(gps(exData)[['Latitude']])
-    ))
-    expect_true(all(c('UTC', 'Latitude', 'Longitude') %in% colnames(exData[[1]][[1]])))
-    expect_true(!any(
-        is.na(exData[[1]][[1]][['Latitude']])
-    ))
-    expect_true(!any(
-        is.na(exData[[1]][[1]][['Longitude']])
-    ))
-    expect_true(all(c('UTC', 'Latitude', 'Longitude') %in% colnames(exData[[1]][[2]])))
-    expect_true(!any(
-        is.na(exData[[1]][[2]][['Latitude']])
-    ))
-    expect_true(!any(
-        is.na(exData[[1]][[2]][['Longitude']])
-    ))
-    expect_true(all(c('UTC', 'Latitude', 'Longitude') %in% colnames(exData[[1]][[3]])))
-    expect_true(!any(
-        is.na(exData[[1]][[3]][['Latitude']])
-    ))
-    expect_true(!any(
-        is.na(exData[[1]][[3]][['Longitude']])
-    ))
-
-    # check ici
-    exData <- calculateICI(exData)
-    expect_true(all(c('Click_Detector_1', 'All') %in% names(ancillary(exData[[1]])$ici)))
-    expect_true(!any(
-        is.na(ancillary(exData[[1]])$ici[[1]]$ici)
-    ))
-    expect_true(!any(
-        is.na(ancillary(exData[[1]])$ici[[2]]$ici)
-    ))
-    expect_true(all(c('Click_Detector_1_ici', 'All_ici') %in% names(ancillary(exData[[1]])$measures)))
-
-    # check setSpecies
-    exData <- setSpecies(exData, method='pamguard')
-    expect_equal(species(exData[[1]])$id, 'Test')
-    expect_equal(species(exData[[2]])$id, 'Test')
-    # check manual edge cases
-    expect_warning(setSpecies(exData, method='manual'), 'Manual mode requires')
-    expect_warning(setSpecies(exData, method='manual', value=1:3), 'Length of "value"')
-    expect_warning(setSpecies(exData, method='manual', value= data.frame(old=1, new=2),
-                              'must contain columns'))
-    expect_message(setSpecies(exData, method='manual',
-                              value = data.frame(event = 'a', species=1)),
-                   'No match found')
-    exData <- setSpecies(exData, method = 'manual', value=letters[1:2])
-    expect_equal(species(exData[[1]])$id, 'a')
-    expect_equal(species(exData[[2]])$id, 'b')
-    exData <- setSpecies(exData, method='manual',
-                         value = data.frame(event='Example.OE1', species = 'c'))
-    expect_equal(species(exData[[1]])$id, 'c')
-    # check reassign edge cases
-    expect_warning(setSpecies(exData, method='reassign'), 'mode requires a "value"')
-    expect_warning(setSpecies(exData, method='reassign', value=data.frame(x=1, y=2)),
-                   'must have columns')
-    exData <- setSpecies(exData, method='reassign',
-                         value= data.frame(old='c', new='b'))
-    expect_equal(species(exData[[1]])$id, 'b')
-    # test banter export
-    banterData <- export_banter(exData)
-    expect_equal(nrow(banterData$events), 2)
-    expect_equal(length(banterData$detectors), 3)
-    expect_error(export_banter(exData, dropSpecies = 'b'))
-    lessData <- export_banter(exData, dropVars = c('peak'))
-    expect_true(!any(
-        sapply(lessData$detectors, function(x) 'peak' %in% colnames(x))
-    ))
-
-    # test filtering
-    filterNone <- filter(exData, VARDNE == 'DNE')
-    expect_identical(exData, filterNone)
-    exData <- setSpecies(exData, method='manual', value=letters[1:2])
-    spFilter <- filter(exData, species == 'a')
-    expect_equal(length(events(spFilter)), 1)
-    expect_equal(species(spFilter[[1]])$id, 'a')
-    spFilter <- filter(exData, species %in% letters[1:3])
-    expect_identical(spFilter, exData)
-    peakFilter <- filter(exData, peak < 20)
-    expect_true(all(detectors(peakFilter)$click$peak < 20))
-    peakFilter <- filter(exData, peak < 2000)
-    expect_identical(peakFilter, exData)
-
-
-})
-
-test_that('Test checkStudy test cases', {
-    # create example data
-    exPps <- new('PAMpalSettings')
-    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
-    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
-    exClick <- function(data) {
-        standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
-    }
-    exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
-    exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
-    exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-    exData <- processPgDetections(exPps, mode='db')
-    exData$Example.OE1$Click_Detector_1$peak <- 0
-    expect_warning(checkStudy(exData), 'Some clicks had a peak frequency of 0')
+    grp <- data.frame(start = as.POSIXct('2018-03-20 15:25:10', tz='UTC'),
+                      end = as.POSIXct('2018-03-20 15:25:11', tz='UTC'),
+                      id = 'TimeExample')
+    exTime <- processPgDetections(exPps, mode='time', grouping=grp, id='Time', progress=FALSE)
+    dets <- getDetectorData(exTime)
+    times <- do.call(rbind, lapply(dets, function(x) {
+        x[, c('UTC', 'UID')]
+    }))
+    expect_true(all(times$UTC <= grp$end))
+    expect_true(all(times$UTC >= grp$start))
+    expect_equal(length(events(exTime)), 1)
+    expect_equal(id(exTime[[1]]), grp$id)
+    expect_equal(id(exTime), 'Time')
 })

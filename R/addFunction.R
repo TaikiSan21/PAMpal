@@ -7,6 +7,7 @@
 #' @param fun function to add OR another \linkS4class{PAMpalSettings} object.
 #'   In this case all functions from the second object will be added to \code{pps}
 #' @param module PamGuard module output this function should act on
+#' @param verbose logical flag to show messages
 #'
 #' @return the same \linkS4class{PAMpalSettings} object as pps, with the function
 #'   \code{fun} added to the "functions" slot
@@ -23,12 +24,14 @@
 #' @importFrom utils menu
 #' @export
 #'
-addFunction <- function(pps, fun, module=NULL) {
+addFunction <- function(pps, fun, module=NULL, verbose = TRUE) {
     modsAllowed <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum')
     if(is.PAMpalSettings(fun)) {
         for(m in modsAllowed) {
             newFuns <- fun@functions[[m]]
-            cat('Adding', length(newFuns), 'functions to module type', m, '\n')
+            if(verbose) {
+                cat('Adding', length(newFuns), 'functions to module type', m, '\n')
+            }
             pps@functions[m] <- list(c(pps@functions[[m]], newFuns))
         }
         return(pps)
@@ -41,7 +44,9 @@ addFunction <- function(pps, fun, module=NULL) {
         if(chooseMod==0) stop('You must set a module type for this function.')
         module <- modsAllowed[chooseMod]
     }
-    cat('Adding function "', fname, '":\n', sep = '')
+    if(verbose) {
+        cat('Adding function "', fname, '":\n', sep = '')
+    }
     oldnames <- names(pps@functions[[module]])
     fun <- functionParser(fun)
     # function checker
@@ -49,7 +54,7 @@ addFunction <- function(pps, fun, module=NULL) {
         pps@functions[module] <- list(c(pps@functions[[module]], fun))
         names(pps@functions[[module]]) <- c(oldnames, fname)
     } else {
-        cat('Unable to add function ', fname, ', it did not create the expected output.')
+        warning('Unable to add function ', fname, ', it did not create the expected output.')
     }
     pps
 }
@@ -105,24 +110,64 @@ clickChecker <- function(fun) {
         good <<- FALSE
     })
     if(!exists('testThisClick')) {
-        cat('Click function did not run succesfully.')
+        message('Click function did not run succesfully.')
         return(FALSE)
     }
     if(is.null(testThisClick)) {
-        cat('Click function returned nothing.')
+        message('Click function returned nothing.')
         return(FALSE)
     }
     if(nrow(testThisClick) != 2) {
-        cat('Click functions should return 1 row for each channel.')
+        message('Click functions should return 1 row for each channel.')
         good <- FALSE
     }
     good
 }
 
 whistleChecker <- function(fun) {
-    TRUE
+    good <- TRUE
+    tryCatch({
+        testThisWhistle <- fun(data=PAMpal::testWhistle)
+    },
+    error = function(e) {
+        print(e)
+        good <<- FALSE
+    })
+    if(!exists('testThisWhistle')) {
+        message('Whistle function did not run successfully.')
+        return(FALSE)
+    }
+    if(is.null(testThisWhistle)) {
+        message('Whistle function returned nothing.')
+        return(FALSE)
+    }
+    if(nrow(data.frame(testThisWhistle)) != 1) {
+        message('Whistle functions should return a single row for each contour.')
+        return(FALSE)
+    }
+    good
 }
 
 cepstrumChecker <- function(fun) {
-    TRUE
+    good <- TRUE
+    tryCatch({
+        testThisCeps <- fun(data=PAMpal::testCeps)
+    },
+    error = function(e) {
+        print(e)
+        good <<- FALSE
+    })
+    if(!exists('testThisCeps')) {
+        message('Cepstrum function did not run successfully.')
+        return(FALSE)
+    }
+    if(is.null(testThisCeps)) {
+        message('Cepstrum function returned nothing.')
+        return(FALSE)
+    }
+    if(nrow(data.frame(testThisCeps)) != 1) {
+        message('Cepstrum function should return a single row for each detection.')
+        return(FALSE)
+    }
+    good
 }

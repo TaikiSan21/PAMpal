@@ -7,7 +7,8 @@
 #'   objects, or a single \linkS4class{AcousticEvent} object
 #' @param UID the UID(s) of the individual detections to fetch the binary
 #'   data for
-#' @param quiet logical flag to quiet some warnings, used internally
+#' @param quiet logical flag to quiet some warnings, used internally and should generally
+#'   not be changed from default \code{FALSE}
 #' @param \dots additional arguments to pass to
 #'   \code{\link[PamBinaries]{loadPamguardBinaryFile}}
 #'
@@ -15,17 +16,19 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @examples
+#'
+#' data(exStudy)
+#' binData <- getBinaryData(exStudy, UID = 8000003)
+#' # works with multiple UIDs, if UIDs arent present they will be ignored
+#' binData <- getBinaryData(exStudy, UID = c(8000003, 529000024, 1))
+#'
 #' @importFrom dplyr bind_rows
 #' @importFrom PamBinaries loadPamguardBinaryFile
 #' @export
 #'
 getBinaryData <- function(x, UID, quiet=FALSE, ...) {
     if(is.AcousticStudy(x)) {
-        # only look in events that have our UIDs
-        # hasUID <- whereUID(x, UID)
-        # hasUID <- unique(unlist(hasUID))
-        # hasUID <- hasUID[!is.na(hasUID)]
-        # x <-events(x)[hasUID]
         x <- events(x)
     }
     if(is.list(x)) {
@@ -42,7 +45,17 @@ getBinaryData <- function(x, UID, quiet=FALSE, ...) {
             getBinaryData(y, UID, quiet=TRUE, ...)
         })
         names(result) <- NULL
-        return(unlist(result, recursive=FALSE))
+        result <- unlist(result, recursive = FALSE)
+        # if any repeated UIDs in separate events only keep the first one
+        if(length(result) > length(unique(names(result)))) {
+            drop <- NULL
+            for(i in unique(names(result))) {
+                whichId <- which(names(result) == i)
+                drop <- c(drop, whichId[-1])
+            }
+            result <- result[-drop]
+        }
+        return(result)
     }
     if(!is.AcousticEvent(x)) {
         warning('This is not an AcousticEvent object.')
@@ -108,7 +121,7 @@ getBinaryData <- function(x, UID, quiet=FALSE, ...) {
             return(NULL)
         }
         data <- loadPamguardBinaryFile(fullBin, skipLarge = FALSE, convertDate = TRUE,
-                               keepUIDs = bins[['UID']][bins$BinaryFile == bin], ...)$data
+                                       keepUIDs = bins[['UID']][bins$BinaryFile == bin], ...)$data
         # just for useful stuff later in other functions and if theres two you see what we chose
         ##### I DONT KNOW IF THIS IS A GOOD IDEAAAAA
         if('sr' %in% names(bins)) {

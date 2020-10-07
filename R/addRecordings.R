@@ -15,6 +15,10 @@
 #'
 #' @examples
 #'
+#' data(exStudy)
+#' recs <- system.file('extdata', 'Recordings', package='PAMpal')
+#' exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
+#' files(exStudy)$recordings
 #'
 #' @importFrom tcltk tk_choose.dir
 #' @export
@@ -85,7 +89,12 @@ addRecordings <- function(x, folder=NULL, log=NULL, progress=TRUE) {
 
     # allFiles <- unique(sapply(dbMap, function(d) d$file))
     allFiles <- bind_rows(dbMap, .id = 'db')
-    files(x)$recordings <- bind_rows(files(x)$recordings, allFiles)
+    # combine with old then re-check for consecutive files within each db
+    allFiles <- bind_rows(files(x)$recordings, allFiles)
+    allFiles <- bind_rows(lapply(split(allFiles, allFiles$db), function(x) {
+        checkConsecutive(x)
+    }))
+    files(x)$recordings <- allFiles
     # for(e in seq_along(events(x))) {
     #     thisFiles <- dbMap[[files(x[[e]])$db]]
     #     if(is.null(thisFiles) ||
@@ -118,6 +127,10 @@ mapWavFolder <- function(wavFolder=NULL, log=NULL, progress=TRUE) {
         return(FALSE)
     }
     wavMap <- wavsToRanges(wavs, log, progress)
+    if(is.null(wavMap) ||
+       nrow(wavMap) == 0) {
+        return(FALSE)
+    }
     wavMap <- checkConsecutive(wavMap)
     wavMap <- arrange(wavMap, .data$start)
     wavMap
@@ -239,11 +252,17 @@ checkConsecutive <- function(wavMap) {
             wavMap$timeDiff[i] <- as.numeric(difftime(wavMap$start[i], wavMap$end[i-1], units='secs'))
             # if theres a tiny negative time difference because ST files are weird
             # then just make them equal because they should be
-            if(wavMap$timeDiff[i] < 0 &&
-               wavMap$timeDiff[i] > -.05) {
-                wavMap$end[i-1] <- wavMap$start[i]
-            }
-            if(wavMap$end[i-1] != wavMap$start[i]) {
+            # if(wavMap$timeDiff[i] < 0 &&
+            #    wavMap$timeDiff[i] > -.05) {
+            #     # wavMap$end[i-1] <- wavMap$start[i]
+            #     wavMap$timeDiff[i] <- 0
+            # }
+            # if(wavMap$timeDiff[i] != 0) {
+            # # if(wavMap$end[i-1] != wavMap$start[i]) {
+            #     fg <- fg + 1
+            # }
+            if(wavMap$timeDiff[i] > .02 ||
+               wavMap$timeDiff[i] < -.05) {
                 fg <- fg + 1
             }
             wavMap$fileGroup[i] <- fg

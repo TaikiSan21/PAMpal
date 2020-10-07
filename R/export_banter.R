@@ -14,6 +14,7 @@
 #'   NOTE: if value is not 0, 1, \code{TRUE}, or \code{FALSE}, output
 #'   will be further split into \code{training} and \code{test} items
 #'   within the list output
+#' @param verbose logical flag to show summary and informational messages
 #'
 #' @return a list with three items, \code{events}, \code{detectors}, and
 #'   \code{na}. If value of \code{training} is not 0, 1, \code{TRUE}, or
@@ -40,20 +41,11 @@
 #' @examples
 #'
 #' # setting up example data
-#' exPps <- new('PAMpalSettings')
-#' exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
-#' exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
-#' exClick <- function(data) {
-#'     standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
-#' }
-#' exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
-#' exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
-#' exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-#' exData <- processPgDetections(exPps, mode='db')
-#' exData <- setSpecies(exData, method='pamguard')
-#' banterData <- export_banter(exData)
+#' data(exStudy)
+#' exStudy <- setSpecies(exStudy, method='pamguard')
+#' banterData <- export_banter(exStudy)
 #' # drop some variables
-#' banterLess <- export_banter(exData, dropVars = c('peak', 'duration'))
+#' banterLess <- export_banter(exStudy, dropVars = c('peak', 'duration'))
 #'
 #' @importFrom PAMmisc squishList
 #' @importFrom dplyr distinct n group_by n_distinct summarise rename left_join bind_rows filter
@@ -61,7 +53,7 @@
 #' @importFrom purrr map reduce transpose
 #' @export
 #'
-export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE) {
+export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, verbose=TRUE) {
     if(is.list(x)) {
         whichStudy <- sapply(x, is.AcousticStudy) # two cases if its a list
         whichEvent <- sapply(x, is.AcousticEvent)
@@ -96,7 +88,7 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE) {
         warning(sum(noDets), ' events have 0 detections, they will be removed.\n', call. = FALSE)
         x <- x[!noDets]
     }
-    sp <- sapply(x, function(e) species(e)$id)
+    sp <- sapply(x, function(e) species(e)$id[1])
     sp[is.null(sp)] <- NA_character_
     spNa <- sapply(sp, is.na)
     if(training && any(spNa)) {
@@ -171,8 +163,10 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE) {
             ancillary(e)$measures[allMeasures]
         }))
         events <- cbind(events, measureData)
+        if(verbose) {
         cat('Found ', length(allMeasures), ' event level measures that were present',
             ' in all events, adding these to your event data.\n', sep='')
+        }
     }
 
     for(e in seq_along(x)) {
@@ -227,29 +221,31 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE) {
     # result <- list(events=events, detectors=dets, na=detNA)
     result <- bntSplit(list(events=events, detectors=dets), training)
     # first two cases return $events and $detectors
-    if(training == 0) {
-        cat('\nCreated data for ', nrow(result$events), ' events with ',
-        sum(sapply(result$detectors, nrow)), ' total detections.', sep='')
-    } else if(training==1) {
-        cat('\nCreated data for ', nrow(result$events), ' events with ',
-            sum(sapply(result$detectors, nrow)), ' total detections', sep='')
-        cat(' and ', length(unique(sp)),
-            ' unique species: ', paste0(unique(sp), collapse =', '), '.',
-            '\nRe-run with dropSpecies argument if any of these are not desired.', sep='')
-        print(kable(bntSummaryTable(result)))
-    } else if(training > 0) { # train-test split case has $train$events and $test$events
-        cat('\nCreated training data for ', nrow(result$train$events), ' events with ',
-            sum(sapply(result$train$detectors, nrow)), ' total detections', sep='')
-        cat(' and ', length(unique(sp)),
-            ' unique species: ', paste0(unique(sp), collapse =', '), '.', sep='')
+    if(verbose) {
+        if(training == 0) {
+            cat('\nCreated data for ', nrow(result$events), ' events with ',
+                sum(sapply(result$detectors, nrow)), ' total detections.', sep='')
+        } else if(training==1) {
+            cat('\nCreated data for ', nrow(result$events), ' events with ',
+                sum(sapply(result$detectors, nrow)), ' total detections', sep='')
+            cat(' and ', length(unique(sp)),
+                ' unique species: ', paste0(unique(sp), collapse =', '), '.',
+                '\nRe-run with dropSpecies argument if any of these are not desired.', sep='')
+            print(kable(bntSummaryTable(result)))
+        } else if(training > 0) { # train-test split case has $train$events and $test$events
+            cat('\nCreated training data for ', nrow(result$train$events), ' events with ',
+                sum(sapply(result$train$detectors, nrow)), ' total detections', sep='')
+            cat(' and ', length(unique(sp)),
+                ' unique species: ', paste0(unique(sp), collapse =', '), '.', sep='')
 
-        print(kable(bntSummaryTable(result$train)))
-        cat('\nCreated test data for ', nrow(result$test$events), ' events with ',
-            sum(sapply(result$test$detectors, nrow)), ' total detections', sep='')
-        print(kable(bntSummaryTable(result$test)))
-        cat('\nRe-run with dropSpecies argument if any of these are not desired.', sep='')
+            print(kable(bntSummaryTable(result$train)))
+            cat('\nCreated test data for ', nrow(result$test$events), ' events with ',
+                sum(sapply(result$test$detectors, nrow)), ' total detections', sep='')
+            print(kable(bntSummaryTable(result$test)))
+            cat('\nRe-run with dropSpecies argument if any of these are not desired.', sep='')
+        }
+        cat('\n')
     }
-    cat('\n')
     # list(events=events, detectors=dets, na=detNA)
     result$na <- detNA
     result

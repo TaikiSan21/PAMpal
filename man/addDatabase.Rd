@@ -4,12 +4,14 @@
 \alias{addDatabase}
 \title{Add a Database to a PAMpalSettings Object}
 \usage{
-addDatabase(pps, db = NULL)
+addDatabase(pps, db = NULL, verbose = TRUE)
 }
 \arguments{
 \item{pps}{a \linkS4class{PAMpalSettings} object to add a database to}
 
 \item{db}{a database to add}
+
+\item{verbose}{logical flag to show messages}
 }
 \value{
 the same \linkS4class{PAMpalSettings} object as pps, with the database

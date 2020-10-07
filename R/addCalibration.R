@@ -52,13 +52,13 @@
 #'
 #' pps <- new('PAMpalSettings')
 #' calFile <- system.file('extdata', 'calibration.csv', package='PAMpal')
+#' pps <- addCalibration(pps, calFile, all = TRUE, units=3)
 #' calClick <- function(data, calibration=NULL) {
 #'     standardClickCalcs(data, calibration=calibration, filterfrom_khz = 0)
 #' }
 #' pps <- addFunction(pps, calClick, module = 'ClickDetector')
-#' # not running this part because interactive menu pops up
-#' if(interactive()) pps <- addCalibration(pps, calFile=calFile)
-#'
+#' pps <- applyCalibration(pps, all=TRUE)
+#' pps
 #'
 #' @importFrom utils read.csv menu
 #' @importFrom gam gam s predict.Gam
@@ -237,7 +237,7 @@ plot.calibration <- function(x, ...) {
 applyCalibration <- function(pps, module = 'ClickDetector', all=FALSE) {
     calList <- pps@calibration[[module]]
     if(length(calList) == 0) {
-        cat('No calibration functions found in PPS.\n')
+        message('No calibration functions found in PPS.\n')
         return(pps)
     }
     if(length(calList) == 1) {
@@ -257,7 +257,7 @@ applyCalibration <- function(pps, module = 'ClickDetector', all=FALSE) {
     argList <- lapply(pps@functions[[module]], formals)
     hasCal <- sapply(argList, function(x) 'calibration' %in% names(x))
     if(length(hasCal) == 0) {
-        cat('Could not find any functions with "calibration" as an input.\n')
+        message('Could not find any functions with "calibration" as an input.\n')
         return(pps)
     }
     hasCal <- which(hasCal)

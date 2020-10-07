@@ -63,6 +63,17 @@ original data object with environmental data added to the \code{ancillary} slot
 Extracts all variables from a netcdf file matching Longitude,
   Latitude, and UTC coordinates in given dataframe
 }
+\examples{
+
+data(exStudy)
+nc <- system.file('extdata', 'sst.nc', package='PAMmisc')
+# suppressing warnings because nc coordinates dont align with this data,
+# function warns of possible coordinate mismatch
+exStudy <- suppressWarnings(matchEnvData(exStudy, nc=nc, progress=FALSE))
+str(ancillary(exStudy[[1]])$environmental)
+ancillary(exStudy[[1]])$measures
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

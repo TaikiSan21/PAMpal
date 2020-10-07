@@ -12,11 +12,11 @@ getDetectorData(x)
 }
 \value{
 A list of data frames containing all detection data from \code{x},
-  named by call type
+  named by call type ('click', 'whistle', or 'cepstrum').
 }
 \description{
 Extracts just the detector data from all of \code{x}, and will
-  combine all detections from each call type (currently whistles, clicks,
+  combine all detections from each call type (currently whistle, click,
   and cepstrum) into a single data frame.
 }
 \details{
@@ -28,6 +28,17 @@ The purpose of this function is to extract your data out of
   have its associated event id, the name of the detector, and the species id
   attached to it (species will be \code{NA} if not set). All detections from each
   call type will be combined into a single large data frame
+}
+\examples{
+
+data(exStudy)
+dets <- getDetectorData(exStudy)
+names(dets)
+str(dets$click)
+# works on single events as well
+oneDets <- getDetectorData(exStudy[[1]])
+str(oneDets$click)
+
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

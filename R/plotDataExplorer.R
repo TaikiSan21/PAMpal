@@ -6,24 +6,30 @@
 #'
 #' @param x data to plot, can be an \code{AcousticStudy}, \code{AcousticEvent},
 #'   data.frame or a list of \code{AcousticEvent} objects
+#' @param callType the specific type of call to plot. If \code{NULL} (default),
+#'   will prompt user to choose which type if more than one is present.
 #' @param maxCategories maximum number of categories to color and facet by. Only
 #'   character and factor data with a number of unique values less than or equal
 #'   to this number will be shown as options for selecting colors and facets. Not
 #'   recommended to increase this value much beyond 20, trying to plot a large number
 #'   of colors will cause R to be sad.
-#' @param callType the specific type of call to plot. If \code{NULL} (default),
-#'   will prompt user to choose which type if more than one is present.
 #'
 #' @return nothing, just plots
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @examples
+#'
+#' data(exStudy)
+#'
+#' if(interactive()) plotDataExplorer(exStudy)
+#' if(interactive()) plotDataExplorer(exStudy, callType='click')
+#'
 #' @importFrom manipulate manipulate
 #' @importFrom ggplot2 ggplot geom_density aes_string facet_wrap
 #' @export
 #'
-plotDataExplorer <- function(x, maxCategories=15, callType=NULL) {
-    globalVariables(c('dataPicker', 'colPicker', 'fCheck'))
+plotDataExplorer <- function(x, callType=NULL, maxCategories=15) {
     x <- getDetectorData(x)
     if(is.list(x)) {
         if(length(x) == 1) {

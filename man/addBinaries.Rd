@@ -4,12 +4,14 @@
 \alias{addBinaries}
 \title{Add Binaries to a PAMpalSettings Object}
 \usage{
-addBinaries(pps, folder = NULL)
+addBinaries(pps, folder = NULL, verbose = TRUE)
 }
 \arguments{
 \item{pps}{a \linkS4class{PAMpalSettings} object to add a database to}
 
 \item{folder}{a folder of binaries to add}
+
+\item{verbose}{logical flag to show messages}
 }
 \value{
 the same \linkS4class{PAMpalSettings} object as pps, with the binary

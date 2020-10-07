@@ -25,6 +25,10 @@ Adds recordings to an AcousticStudy object. Each
 }
 \examples{
 
+data(exStudy)
+recs <- system.file('extdata', 'Recordings', package='PAMpal')
+exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
+files(exStudy)$recordings
 
 }
 \author{

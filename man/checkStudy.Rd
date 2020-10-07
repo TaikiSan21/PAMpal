@@ -18,21 +18,11 @@ Checks for any possible issues in an \linkS4class{AcousticStudy}
 }
 \examples{
 
-# setting up example data
-exPps <- new('PAMpalSettings')
-exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
-exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
-exClick <- function(data) {
-    standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
-}
-exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
-exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
-exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-exData <- processPgDetections(exPps, mode='db')
+data(exStudy)
 
 # currently only checks if any peak frequencies are 0, so well force this
-exData[[1]][[1]]$peak <- 0
-checkStudy(exData)
+exStudy[[1]][[1]]$peak <- 0
+checkStudy(exStudy)
 
 }
 \author{

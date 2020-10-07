@@ -19,6 +19,12 @@ Calculate a set of measurements from a cepstrum contour. This
   is currently used to measure the inter-pulse interval of the burst pulse
   type calls, please refer to JASA PAPER DOOOD for details.
 }
+\examples{
+
+data(testCeps)
+standardCepstrumCalcs(testCeps)
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

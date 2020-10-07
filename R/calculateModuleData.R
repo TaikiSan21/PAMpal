@@ -138,7 +138,7 @@ doClickCalcs <- function(clickData, clickFuns) {
                     clickFuns[[f]](oneClick)
                 }, error = function(e) {
                     # browser()
-                    cat('Error in function ', names(clickFuns)[f],
+                    message('Error in function ', names(clickFuns)[f],
                         ': ', as.character(e$call[1]), '-', e$message,
                         '. UID: ', oneClick$UID, sep='')
                 }
@@ -178,7 +178,7 @@ doWhistleCalcs <- function(whistleData, whistleFuns) {
                     whistleFuns[[f]](oneWhistle)
                 }, error = function(e) {
                     # browser()
-                    cat('Error in function ', names(whistleFuns)[f],
+                    message('Error in function ', names(whistleFuns)[f],
                         ': ', as.character(e$call[1]), '-', e$message,
                         '. UID: ', oneWhistle$UID, sep='')
                 }
@@ -213,7 +213,7 @@ doCepstrumCalcs <- function(cepstrumData, cepstrumFuns) {
                     cepstrumFuns[[f]](oneCeps)
                 }, error = function(e) {
                     # browser()
-                    cat('Error in function ', names(cepstrumFuns)[f],
+                    message('Error in function ', names(cepstrumFuns)[f],
                         ': ', as.character(e$call[1]), '-', e$message,
                         '. UID: ', oneCeps$UID, sep='')
                 }

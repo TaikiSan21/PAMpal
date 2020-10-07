@@ -12,9 +12,21 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @examples
+#'
+#' data(testCeps)
+#' standardCepstrumCalcs(testCeps)
+#'
 #' @export
 #'
 standardCepstrumCalcs <- function(data) {
+    neededVals <- c('quefrency', 'time', 'sr')
+    missingVals <- neededVals[!(neededVals %in% names(data))]
+    if(length(missingVals) > 0) {
+        warning('Values for', paste(missingVals, collapse=', '), 'are missing.',
+             'These are required for Cepstrum Calculations, please fix.')
+        return(NULL)
+    }
     nSlices <- length(data$quefrency)
     result <- list(ici = median(data$quefrency/data$sr))
     result$duration <- max(data$time) - min(data$time)

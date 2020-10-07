@@ -48,6 +48,12 @@ A data frame with one row for each channel of click waveform.
 Calculate a set of "standard" measurements for odontocete clicks.
   Most of calculations following approach of Baumann-Pickering / Soldevilla
 }
+\examples{
+
+data(testClick)
+standardClickCalcs(testClick)
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

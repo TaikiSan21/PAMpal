@@ -28,21 +28,12 @@ Apply dplyr-like filtering to the detecitons of an
 \examples{
 
 # create example data
-exPps <- new('PAMpalSettings')
-exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
-exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
-exClick <- function(data) {
-    standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
-}
-exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
-exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
-exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-exData <- processPgDetections(exPps, mode='db')
-exData <- setSpecies(exData, method='manual', value=letters[1:2])
-filterData <- filter(exData, peak < 20)
+data(exStudy)
+exStudy <- setSpecies(exStudy, method='manual', value=letters[1:2])
+filterData <- filter(exStudy, peak < 20)
 getDetectorData(filterData)$click
 
-filterData <- filter(exData, species == 'a')
+filterData <- filter(exStudy, species == 'a')
 species(filterData[[1]])
 
 }

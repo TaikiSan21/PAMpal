@@ -4,7 +4,7 @@
 \alias{updateFiles}
 \title{Update Location of Binary and Databases Files}
 \usage{
-updateFiles(x, bin = NULL, db = NULL, recording = NULL, verbose = FALSE)
+updateFiles(x, bin = NULL, db = NULL, recording = NULL, verbose = TRUE)
 }
 \arguments{
 \item{x}{an \linkS4class{AcousticStudy} or \linkS4class{AcousticEvent}
@@ -33,6 +33,25 @@ Updates the stored locations of binary and database files in
   computers, or if original data was on an external hard drive. If any
   missing files are not able to be located, they will be kept in the files
   slot so that this function can be run again
+}
+\examples{
+
+data(exStudy)
+# files in exStudy will have paths local to package creator's computer
+files(exStudy)$db
+file.exists(files(exStudy)$db)
+files(exStudy)$binaries
+file.exists(files(exStudy)$binaries)
+# folder with example DB
+db <- system.file('extdata', package='PAMpal')
+# folder with example binaries
+bin <- system.file('extdata', 'Binaries', package='PAMpal')
+exStudy <- updateFiles(exStudy, db=db, bin=bin)
+files(exStudy)$db
+file.exists(files(exStudy)$db)
+files(exStudy)$binaries
+file.exists(files(exStudy)$binaries)
+
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

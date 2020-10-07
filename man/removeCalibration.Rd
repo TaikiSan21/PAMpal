@@ -4,7 +4,7 @@
 \alias{removeCalibration}
 \title{Remove a Calibration Function from a PAMpalSettings Object}
 \usage{
-removeCalibration(pps, index = NULL, module = "ClickDetector")
+removeCalibration(pps, index = NULL, module = "ClickDetector", verbose = TRUE)
 }
 \arguments{
 \item{pps}{a \linkS4class{PAMpalSettings} object to remove a calibration from}
@@ -15,6 +15,8 @@ multiple calibration functions at once.}
 
 \item{module}{the module of the calibration function to remove, currently
 not needed}
+
+\item{verbose}{logical flag to show messages}
 }
 \value{
 the same \linkS4class{PAMpalSettings} object as pps, with the calibration
@@ -25,6 +27,17 @@ Remove a calibration function from the "calibration"
   slot of a PAMpalSettings object
 }
 \examples{
+
+pps <- new('PAMpalSettings')
+calFile <- system.file('extdata', 'calibration.csv', package='PAMpal')
+pps <- addCalibration(pps, calFile, all = TRUE, units=3)
+calClick <- function(data, calibration=NULL) {
+    standardClickCalcs(data, calibration=calibration, filterfrom_khz = 0)
+}
+pps <- addFunction(pps, calClick, module = 'ClickDetector')
+pps <- applyCalibration(pps, all=TRUE)
+pps
+removeCalibration(pps, index=1)
 
 }
 \author{

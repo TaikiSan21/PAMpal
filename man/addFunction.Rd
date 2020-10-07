@@ -4,7 +4,7 @@
 \alias{addFunction}
 \title{Add a Function to a PAMpalSettings Object}
 \usage{
-addFunction(pps, fun, module = NULL)
+addFunction(pps, fun, module = NULL, verbose = TRUE)
 }
 \arguments{
 \item{pps}{a \linkS4class{PAMpalSettings} object to add a function to}
@@ -13,6 +13,8 @@ addFunction(pps, fun, module = NULL)
 In this case all functions from the second object will be added to \code{pps}}
 
 \item{module}{PamGuard module output this function should act on}
+
+\item{verbose}{logical flag to show messages}
 }
 \value{
 the same \linkS4class{PAMpalSettings} object as pps, with the function

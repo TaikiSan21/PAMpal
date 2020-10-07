@@ -40,6 +40,14 @@ The \code{plotSpectrogram} function uses the function
   \code{\link[PAMmisc]{wignerTransform}} to plot the Wigner-Ville transform,
   see this function for options.
 }
+\examples{
+
+data(exStudy)
+plotWaveform(exStudy, 8000003)
+plotSpectrogram(exStudy, 8000003)
+plotWigner(exStudy, 8000003)
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

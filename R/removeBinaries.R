@@ -15,6 +15,13 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @examples
+#'
+#' exPps <- new('PAMpalSettings')
+#' exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
+#' removeBinaries(exPps,index = 1)
+#' if(interactive()) removeBinaries(exPps)
+#'
 #' @importFrom utils menu
 #' @export
 #'

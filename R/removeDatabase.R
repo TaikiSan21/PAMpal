@@ -14,6 +14,13 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @examples
+#'
+#' exPps <- new('PAMpalSettings')
+#' exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
+#' removeDatabase(exPps, 1)
+#' if(interactive()) removeDatabase(exPps)
+#'
 #' @importFrom utils menu
 #' @export
 #'

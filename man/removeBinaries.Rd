@@ -23,6 +23,14 @@ the same \linkS4class{PAMpalSettings} object as pps, with the binary
 Remove a binary folder and associated files from the "binaries"
   slot in a PAMpalSettings object.
 }
+\examples{
+
+exPps <- new('PAMpalSettings')
+exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
+removeBinaries(exPps,index = 1)
+if(interactive()) removeBinaries(exPps)
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

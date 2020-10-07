@@ -1,3 +1,7 @@
+## PAMpal 0.9.4
+
+* Big update to documentation and testing for CRAN prep
+
 ## PAMpal 0.9.3
 
 * `addRecordings` function added to deal with keeping track of wav recordings in a study

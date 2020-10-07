@@ -29,6 +29,11 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @examples
+#'
+#' data(testClick)
+#' standardClickCalcs(testClick)
+#'
 #' @importFrom seewave bwfilter TKEO spec
 #' @importFrom dplyr bind_rows
 #' @importFrom PAMmisc peakTrough
@@ -50,6 +55,16 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
     }
     if(!is.matrix(data$wave)) {
         data$wave <- matrix(data$wave, ncol=1)
+    }
+    neededVals <- c('wave')
+    if(sr_hz == 'auto') {
+        neededVals <- c(neededVals, 'sr')
+    }
+    missingVals <- neededVals[!(neededVals %in% names(data))]
+    if(length(missingVals) > 0) {
+        warning('Values for ', paste(missingVals, collapse=', '), ' are missing.',
+                'These are required for Click Calculations, please fix.')
+        return(NULL)
     }
     for(chan in 1:ncol(data$wave)) {
         # We store results in 'thisDf', note channels start at 1 not 0

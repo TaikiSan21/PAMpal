@@ -9,6 +9,8 @@
 #'   multiple calibration functions at once.
 #' @param module the module of the calibration function to remove, currently
 #'   not needed
+#' @param verbose logical flag to show messages
+#'
 #' @return the same \linkS4class{PAMpalSettings} object as pps, with the calibration
 #'   function removed from the "calibration" slot
 #'
@@ -16,10 +18,21 @@
 #'
 #' @examples
 #'
+#' pps <- new('PAMpalSettings')
+#' calFile <- system.file('extdata', 'calibration.csv', package='PAMpal')
+#' pps <- addCalibration(pps, calFile, all = TRUE, units=3)
+#' calClick <- function(data, calibration=NULL) {
+#'     standardClickCalcs(data, calibration=calibration, filterfrom_khz = 0)
+#' }
+#' pps <- addFunction(pps, calClick, module = 'ClickDetector')
+#' pps <- applyCalibration(pps, all=TRUE)
+#' pps
+#' removeCalibration(pps, index=1)
+#'
 #' @importFrom utils menu
 #' @export
 #'
-removeCalibration <- function(pps, index=NULL, module='ClickDetector') {
+removeCalibration <- function(pps, index=NULL, module='ClickDetector', verbose=TRUE) {
     # if(is.null(module)) {
     #     modList <- names(pps@calibration)
     #     modix <- menu(choices = modList, title = 'Choose a module:')
@@ -27,7 +40,9 @@ removeCalibration <- function(pps, index=NULL, module='ClickDetector') {
     # }
     calList <- names(pps@calibration[[module]])
     if(length(calList) == 0) {
-        cat('No calibration functions to remove.')
+        if(verbose) {
+            cat('No calibration functions to remove.')
+        }
         return(pps)
     }
     if(is.null(index)) {
@@ -54,11 +69,13 @@ removeCalibration <- function(pps, index=NULL, module='ClickDetector') {
         whichCal <- which(names(thisArgs) == 'calibration')
         thisArgs[whichCal] <- list(NULL)
         formals(pps@functions[[module]][[i]]) <- thisArgs
-        cat('removed calibration from function', names(argList[i]), '\n')
+        if(verbose) {
+            cat('removed calibration from function', names(argList[i]), '\n')
+        }
     }
     # recursively remove if vector
     if(length(index) > 1) {
-        return(removeCalibration(pps, index[-1]-1, module))
+        return(removeCalibration(pps, index[-1]-1, module, verbose))
     }
     pps
 }

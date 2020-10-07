@@ -68,13 +68,13 @@ When adding a calibration, you will be asked what units your calibration
 
 pps <- new('PAMpalSettings')
 calFile <- system.file('extdata', 'calibration.csv', package='PAMpal')
+pps <- addCalibration(pps, calFile, all = TRUE, units=3)
 calClick <- function(data, calibration=NULL) {
     standardClickCalcs(data, calibration=calibration, filterfrom_khz = 0)
 }
 pps <- addFunction(pps, calClick, module = 'ClickDetector')
-# not running this part because interactive menu pops up
-if(interactive()) pps <- addCalibration(pps, calFile=calFile)
-
+pps <- applyCalibration(pps, all=TRUE)
+pps
 
 }
 \author{

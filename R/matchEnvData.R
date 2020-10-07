@@ -26,6 +26,16 @@
 #'   and the mean of each downloaded variable will be stored in \code{ancillary(data)$measures}
 #'   so that it can be exported for modeling
 #'
+#' @examples
+#'
+#' data(exStudy)
+#' nc <- system.file('extdata', 'sst.nc', package='PAMmisc')
+#' # suppressing warnings because nc coordinates dont align with this data,
+#' # function warns of possible coordinate mismatch
+#' exStudy <- suppressWarnings(matchEnvData(exStudy, nc=nc, progress=FALSE))
+#' str(ancillary(exStudy[[1]])$environmental)
+#' ancillary(exStudy[[1]])$measures
+#'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #' @rdname matchEnvData
 #' @importMethodsFrom PAMmisc matchEnvData

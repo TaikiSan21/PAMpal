@@ -23,6 +23,13 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @examples
+#'
+#' data(exStudy)
+#' plotWaveform(exStudy, 8000003)
+#' plotSpectrogram(exStudy, 8000003)
+#' plotWigner(exStudy, 8000003)
+#'
 #' @importFrom signal specgram
 #' @importFrom PAMmisc wignerTransform
 #' @importFrom graphics plot title
@@ -30,6 +37,12 @@
 #'
 plotWaveform <- function(x, UID) {
     data <- getBinaryData(x, UID)
+    if(is.null(data) ||
+       length(data) == 0) {
+        warning('No data found for provided UID(s).')
+        return(NULL)
+    }
+    data <- unique(data)
     for(i in seq_along(data)) {
         if(!('wave' %in% names(data[[i]]))) {
             warning('No waveform data found for UID ', names(data)[i])
@@ -48,6 +61,12 @@ plotWaveform <- function(x, UID) {
 #'
 plotSpectrogram <- function(x, UID, sr=NULL, ...) {
     data <- getBinaryData(x, UID)
+    if(is.null(data) ||
+       length(data) == 0) {
+        warning('No data found for provided UID(s).')
+        return(NULL)
+    }
+    data <- unique(data)
     for(i in seq_along(data)) {
         if(!('wave' %in% names(data[[i]]))) {
             warning('No waveform data found for UID ', names(data)[i])
@@ -75,6 +94,12 @@ plotSpectrogram <- function(x, UID, sr=NULL, ...) {
 #'
 plotWigner <- function(x, UID, sr=NULL, ...) {
     data <- getBinaryData(x, UID)
+    if(is.null(data) ||
+       length(data) == 0) {
+        warning('No data found for provided UID(s).')
+        return(NULL)
+    }
+    data <- unique(data)
     for(i in seq_along(data)) {
         if(!('wave' %in% names(data[[i]]))) {
             warning('No waveform data found for UID ', names(data)[i])

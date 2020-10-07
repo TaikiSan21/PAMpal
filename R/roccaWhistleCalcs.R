@@ -13,6 +13,11 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @examples
+#'
+#' data(testWhistle)
+#' roccaWhistleCalcs(testWhistle)
+#'
 #' @importFrom stats sd
 #' @export
 #'
@@ -26,8 +31,9 @@ roccaWhistleCalcs <- function(data) {
     neededVals <- c('freq', 'time')
     missingVals <- neededVals[!(neededVals %in% names(data))]
     if(length(missingVals) > 0) {
-        stop('Values for', paste(missingVals, collapse=', '), 'are missing.',
+        warning('Values for ', paste(missingVals, collapse=', '),  'are missing.',
              'These are required for Rocca Whistle Calculations, please fix.')
+        return(NULL)
     }
     contour <- data.frame(freq = data$freq, time = data$time)
     nSlices <- nrow(contour)

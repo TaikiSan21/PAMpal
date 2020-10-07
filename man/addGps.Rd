@@ -61,18 +61,9 @@ Latitude and Longitude coordinates will be matched to the data
 }
 \examples{
 
-exPps <- new('PAMpalSettings')
-exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
-exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
-exClick <- function(data) {
-    standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
-}
-exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
-exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
-exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-exData <- processPgDetections(exPps, mode='db')
-exData <- addGps(exData)
-head(gps(exData))
+data(exStudy)
+exStudy <- addGps(exStudy)
+head(gps(exStudy))
 
 }
 \author{
