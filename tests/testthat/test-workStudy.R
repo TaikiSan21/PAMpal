@@ -119,6 +119,10 @@ test_that('Test checkStudy test cases', {
 test_that('Test getBinaryData', {
     data(exStudy)
     binFolder <- system.file('extdata', 'Binaries', package='PAMpal')
+    print(binFolder)
+    print(dir.exists(binFolder))
+    print(list.files(binFolder, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans).*pgdf$'))
+
     exStudy <- updateFiles(exStudy, bin=binFolder, db=NA, verbose=TRUE)
     bin <- getBinaryData(exStudy, UID = 8000003)
     print(str(bin))
