@@ -2,14 +2,14 @@ context('PAMpalSettings object creation and manipulation')
 
 test_that('Create and modify PPS', {
     exPps <- new('PAMpalSettings')
-    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
-    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
+    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'), verbose=FALSE)
+    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'), verbose=FALSE)
     exClick <- function(data) {
         standardClickCalcs(data, filterfrom_khz = 0)
     }
-    exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
-    exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
-    exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
+    exPps <- addFunction(exPps, exClick, module = 'ClickDetector', verbose=FALSE)
+    exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans', verbose=FALSE)
+    exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum', verbose=FALSE)
 
     expect_is(exPps, 'PAMpalSettings')
     expect_equal(length(exPps@db), 1)
@@ -35,7 +35,7 @@ test_that('Create and modify PPS', {
     calClick <- function(data, calibration=NULL) {
         standardClickCalcs(data, calibration=calibration, filterfrom_khz = 0)
     }
-    exPps <- addFunction(exPps, calClick, module = 'ClickDetector')
+    exPps <- addFunction(exPps, calClick, module = 'ClickDetector', verbose=FALSE)
     exPps <- applyCalibration(exPps, all=TRUE)
     expect_equal(formals(exPps@functions$ClickDetector[[1]])$calibration,
                  calFile)

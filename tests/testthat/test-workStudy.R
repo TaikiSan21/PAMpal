@@ -3,15 +3,15 @@ context('Test working with AcousticStudy object')
 test_that('Test working with AcousticStudy object', {
     # build basic study object
     exPps <- new('PAMpalSettings')
-    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
-    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
+    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'), verbose=FALSE)
+    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'), verbose=FALSE)
     exClick <- function(data) {
         standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
     }
-    exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
-    exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
-    exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-    exData <- processPgDetections(exPps, mode='db', id='Example')
+    exPps <- addFunction(exPps, exClick, module = 'ClickDetector', verbose=FALSE)
+    exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans', verbose=FALSE)
+    exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum', verbose=FALSE)
+    exData <- processPgDetections(exPps, mode='db', id='Example', progress = FALSE, verbose = FALSE)
 
     # check adding gps
     exData <- addGps(exData)
@@ -78,11 +78,11 @@ test_that('Test working with AcousticStudy object', {
                          value= data.frame(old='c', new='b'))
     expect_equal(species(exData[[1]])$id, 'b')
     # test banter export
-    banterData <- export_banter(exData)
+    banterData <- export_banter(exData, verbose=FALSE)
     expect_equal(nrow(banterData$events), 2)
     expect_equal(length(banterData$detectors), 3)
-    expect_error(export_banter(exData, dropSpecies = 'b'))
-    lessData <- export_banter(exData, dropVars = c('peak'))
+    expect_error(export_banter(exData, dropSpecies = 'b', verbose=FALSE))
+    lessData <- export_banter(exData, dropVars = c('peak', verbose=FALSE))
     expect_true(!any(
         sapply(lessData$detectors, function(x) 'peak' %in% colnames(x))
     ))
@@ -111,22 +111,15 @@ test_that('Test working with AcousticStudy object', {
 
 test_that('Test checkStudy test cases', {
     # create example data
-    exPps <- new('PAMpalSettings')
-    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
-    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
-    exClick <- function(data) {
-        standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
-    }
-    exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
-    exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
-    exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
-    exData <- processPgDetections(exPps, mode='db')
-    exData$Example.OE1$Click_Detector_1$peak <- 0
-    expect_warning(checkStudy(exData), 'Some clicks had a peak frequency of 0')
+    data(exStudy)
+    exStudy$Example.OE1$Click_Detector_1$peak <- 0
+    expect_warning(checkStudy(exStudy), 'Some clicks had a peak frequency of 0')
 })
 
 test_that('Test getBinaryData', {
     data(exStudy)
+    binFolder <- system.file('extdata', 'Binaries', package='PAMpal')
+    exStudy <- updateFiles(exStudy, bin=binFolder, db=NA, verbose=FALSE)
     bin <- getBinaryData(exStudy, UID = 8000003)
     expect_equal(names(bin), '8000003')
     expect_true(all(c('wave', 'sr', 'minFreq') %in% names(bin[[1]])))
