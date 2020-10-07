@@ -2,14 +2,14 @@ context('Test processing data with a PPS')
 
 test_that('Test process database', {
     exPps <- new('PAMpalSettings')
-    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
-    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
+    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'), verbose=FALSE)
+    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'), verbose=FALSE)
     exClick <- function(data) {
         standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
     }
-    exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
-    exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
-    exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
+    exPps <- addFunction(exPps, exClick, module = 'ClickDetector', verbose=FALSE)
+    exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans', verbose=FALSE)
+    exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum', verbose=FALSE)
     exData <- processPgDetections(exPps, mode='db', id='Example', progress=FALSE)
 
     expect_is(exData, 'AcousticStudy')
@@ -34,14 +34,14 @@ test_that('Test process database', {
 
 test_that('Test process time', {
     exPps <- new('PAMpalSettings')
-    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'))
-    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'))
+    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'), verbose=FALSE)
+    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'), verbose=FALSE)
     exClick <- function(data) {
         standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
     }
-    exPps <- addFunction(exPps, exClick, module = 'ClickDetector')
-    exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans')
-    exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum')
+    exPps <- addFunction(exPps, exClick, module = 'ClickDetector', verbose=FALSE)
+    exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans', verbose=FALSE)
+    exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum', verbose=FALSE)
     grp <- data.frame(start = as.POSIXct('2018-03-20 15:25:10', tz='UTC'),
                       end = as.POSIXct('2018-03-20 15:25:11', tz='UTC'),
                       id = 'TimeExample')

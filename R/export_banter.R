@@ -93,7 +93,7 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
     spNa <- sapply(sp, is.na)
     if(training && any(spNa)) {
         warning('Events ', paste(names(x)[which(spNa)], collapse=', '),
-             ' do not have a species ID. Data can only be used for prediction, not model training.', call. = FALSE)
+                ' do not have a species ID. Data can only be used for prediction, not model training.', call. = FALSE)
         training <- FALSE
     }
 
@@ -164,8 +164,8 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
         }))
         events <- cbind(events, measureData)
         if(verbose) {
-        cat('Found ', length(allMeasures), ' event level measures that were present',
-            ' in all events, adding these to your event data.\n', sep='')
+            cat('Found ', length(allMeasures), ' event level measures that were present',
+                ' in all events, adding these to your event data.\n', sep='')
         }
     }
 
@@ -215,7 +215,7 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
     dets <- lapply(dets, distinct)
     if(nrow(detNA) > 0) {
         warning('Removing ', nrow(detNA), ' NA values, to see affected UID(s) and ',
-        'BinaryFile(s) check the "na" item in list output.', call. = FALSE)
+                'BinaryFile(s) check the "na" item in list output.', call. = FALSE)
     }
     # From here train/test split and report
     # result <- list(events=events, detectors=dets, na=detNA)

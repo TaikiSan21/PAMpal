@@ -116,7 +116,7 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                                paste0(allIds[!hasId], collapse=', '),
                                ' (Event names in "value" must match exactly)')
                    }
-                   cat('Assigning species ids to ', sum(hasId), ' events.\n', sep='')
+                   # cat('Assigning species ids to ', sum(hasId), ' events.\n', sep='')
                    for(i in which(hasId)) {
                        species(acev[[i]])[[type]] <- value[value$event == id(acev[[i]]), 'species']
                    }
@@ -189,7 +189,7 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                    species(acev[[i]])[[type]] <- as.character(newSpec)
                }
                if(length(unchanged) > 0) {
-                   cat(length(unchanged), ' species (', paste0(unchanged, collapse=', '), ') ',
+                   message(length(unchanged), ' species (', paste0(unchanged, collapse=', '), ') ',
                        'were not in reassignment dataframe, they have not been changed.', sep='')
                }
            },
