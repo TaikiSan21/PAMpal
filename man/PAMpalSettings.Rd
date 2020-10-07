@@ -4,7 +4,7 @@
 \alias{PAMpalSettings}
 \title{Constructor for PAMpalSettings Object}
 \usage{
-PAMpalSettings(db = NULL, binaries = NULL, calibration = NULL)
+PAMpalSettings(db = NULL, binaries = NULL, calibration = NULL, verbose = TRUE)
 }
 \arguments{
 \item{db}{the full path to a PamGuard database file}
@@ -16,6 +16,8 @@ binary file.}
 \item{calibration}{a named list of calibration functions to apply while
 applying functions from the "functions" slot. Should named by the
 PamGuard module, same as the "functions"}
+
+\item{verbose}{logical flag to show messages}
 }
 \value{
 A PAMpalSettings object
@@ -23,6 +25,16 @@ A PAMpalSettings object
 \description{
 Create a PAMpalSettings object. Any values that are not supplied
   will be asked for interactively.
+}
+\examples{
+
+# can be run with no arguments with popup menu selections
+if(interactive()) pps <- PAMpalSettings()
+db <- system.file('extdata', 'Example.sqlite3', package='PAMpal')
+bin <- system.file('extdata', 'Binaries', package='PAMpal')
+# or data folders can be supplied ahead of time
+if(interactive()) pps <- PAMpalSettings(db=db, binaries=bin)
+
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

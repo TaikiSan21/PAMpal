@@ -119,8 +119,10 @@ test_that('Test checkStudy test cases', {
 test_that('Test getBinaryData', {
     data(exStudy)
     binFolder <- system.file('extdata', 'Binaries', package='PAMpal')
-    exStudy <- updateFiles(exStudy, bin=binFolder, db=NA, verbose=FALSE)
+    exStudy <- updateFiles(exStudy, bin=binFolder, db=NA, verbose=TRUE)
     bin <- getBinaryData(exStudy, UID = 8000003)
+    print(str(bin))
+    print(bin)
     expect_equal(names(bin), '8000003')
     expect_true(all(c('wave', 'sr', 'minFreq') %in% names(bin[[1]])))
     expect_null(getBinaryData(exStudy, UID = 1))

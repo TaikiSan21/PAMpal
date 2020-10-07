@@ -3,7 +3,11 @@ Type: Package
 Title: Load and Process Passive Acoustic Data
 Version: 0.9.4
 Authors@R: c(
-  TS = person("Taiki", "Sakai", email = "taiki.sakai@noaa.gov", role = c("aut", "cre")))
+  TS = person("Taiki", "Sakai", email = "taiki.sakai@noaa.gov", role = c("aut", "cre")),
+  JB = person("Jay", "Barlow", role = c("ctb")),
+  EG = person("Emily", "Griffiths", role = c("ctb")),
+  SB = person("Simone", "Baumann-Pickering", role = c("ctb")),
+  JO = person("Julie", "Oswald", role = c("ctb")))
 Maintainer: Taiki Sakai <taiki.sakai@noaa.gov>
 Description: A package for the general loading and handling of passive acoustic data.
     This package contains tools for loading in data from Pamguard, applying various
