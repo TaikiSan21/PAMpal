@@ -13,7 +13,7 @@ object}
 \item{bin}{folder containing updated binary file locations. If
 \code{NULL} (default), user will be prompted to select a folder}
 
-\item{db}{folder containing updated database file locations. If
+\item{db}{single file or folder containing updated database file locations. If
 \code{NULL} (default), user will be prompted to select a folder}
 
 \item{recording}{folder containing updated recording file locations. If

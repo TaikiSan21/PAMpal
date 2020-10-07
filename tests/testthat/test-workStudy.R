@@ -147,7 +147,7 @@ test_that('Test updateFiles', {
     files(exStudy)$recordings$file <- substr(files(exStudy)$recordings$file, start=5, stop=10e3)
     files(exStudy[[1]])$db <- substr(files(exStudy[[1]])$db, start=5, stop=10e3)
     files(exStudy[[1]])$binaries <- substr(files(exStudy[[1]])$binaries, start=5, stop=10e3)
-    db <- system.file('extdata', package='PAMpal')
+    db <- system.file('extdata', 'Example.sqlite3', package='PAMpal')
     bin <- system.file('extdata', 'Binaries', package='PAMpal')
     expect_true(!any(file.exists(files(exStudy)$db,
                                  files(exStudy)$binaries,

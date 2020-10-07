@@ -62,6 +62,9 @@ Latitude and Longitude coordinates will be matched to the data
 \examples{
 
 data(exStudy)
+# need to update database file to local directory
+db <- system.file('extdata', 'Example.sqlite3', package='PAMpal')
+exStudy <- updateFiles(exStudy, db=db, bin=NA, verbose=FALSE)
 exStudy <- addGps(exStudy)
 head(gps(exStudy))
 

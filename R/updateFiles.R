@@ -11,7 +11,7 @@
 #'   object
 #' @param bin folder containing updated binary file locations. If
 #'   \code{NULL} (default), user will be prompted to select a folder
-#' @param db folder containing updated database file locations. If
+#' @param db single file or folder containing updated database file locations. If
 #'   \code{NULL} (default), user will be prompted to select a folder
 #' @param recording folder containing updated recording file locations. If
 #'   \code{NULL} (default), user will be prompted to select a folder
@@ -44,26 +44,13 @@
 #' @export
 #'
 updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
+    # do databases
     dbExists <- file.exists(files(x)$db)
     if(all(dbExists)) {
         db <- NA
     }
     if(any(!dbExists)) {
-        if(is.null(db)) {
-            cat('Found missing databases, please select a new folder',
-                'where they can be found.\n')
-            # if(!isAvailable('1.1.287')) {
-            #     db <- choose.dir(caption = 'Choose Database Folder:')
-            # } else {
-            #     db <- selectDirectory(caption = 'Choose Database Folder:', path = getwd())
-            # }
-            db <- tk_choose.dir(caption = 'Choose Database Folder:', default = getwd())
-        }
-        if(is.na(db)) {
-            newDbs <- character(0)
-        } else {
-            newDbs <- list.files(db, full.names=TRUE, pattern='sqlite')
-        }
+        newDbs <- fileLister(db, label = 'database', pattern='sqlite')
         updatedDbs <- fileMatcher(files(x)$db, newDbs)
         if(verbose) {
             if(length(newDbs) == 0) {
@@ -76,27 +63,13 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
         }
         files(x)$db <- updatedDbs
     }
+    # do binaries
     binExists <- file.exists(files(x)$binaries)
     if(all(binExists)) {
         bin <- NA
     }
     if(any(!binExists)) {
-        if(is.null(bin)) {
-            cat('Found missing binary files, please select a new folder',
-                'where they can be found.\n')
-            # if(!isAvailable('1.1.287')) {
-            #     bin <- choose.dir(caption = 'Choose Binary Folder:')
-            # } else {
-            #     bin <- selectDirectory(caption = 'Choose Binary Folder:', path = getwd())
-            # }
-            bin <- tk_choose.dir(caption = 'Choose Binary Folder:', default = getwd())
-        }
-        if(is.na(bin)) {
-            newBins <- character(0)
-        } else {
-            newBins <- list.files(bin, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans).*pgdf$')
-        }
-
+        newBins <- fileLister(bin, label = 'binary', pattern = '(Clicks|WhistlesMoans).*pgdf$')
         updatedBins <- fileMatcher(files(x)$binaries, newBins)
         if(verbose) {
             if(length(newBins) == 0) {
@@ -109,19 +82,11 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
         }
         files(x)$binaries <- updatedBins
     }
+    # do recordings
     if(!is.null(files(x)$recordings$file) &&
        any(!file.exists(files(x)$recordings$file))) {
         fileExists <- file.exists(files(x)$recordings$file)
-        if(is.null(recording)) {
-            cat('Found missing recording files, please select a new folder',
-                'where they can be found.\n')
-            recording <- tk_choose.dir(caption='Choose Recording Folder:', default=getwd())
-        }
-        if(is.na(recording)) {
-            newRecs <- character(0)
-        } else{
-            newRecs <- list.files(recording, recursive=TRUE, full.names=TRUE, pattern='wav$')
-        }
+        newRecs <- fileLister(recording, label='recording', pattern='wav$')
         updatedRecs <- fileMatcher(files(x)$recordings$file, newRecs)
         if(verbose) {
             if(length(newRecs) == 0) {
@@ -164,4 +129,32 @@ fileMatcher <- function(old, new) {
     })
     old[repIx > 0] <- new[repIx[repIx > 0]]
     old
+}
+
+fileLister <- function(x, label, pattern) {
+    if(is.null(x)) {
+        downLab <- tolower(label)
+        upLab <- paste0(toupper(substr(downLab, 1, 1)),
+                        substr(downLab, 2, 100))
+        cat('Found missing ', downLab, ' files, please select a new folder',
+            'where they can be found.\n', sep='')
+        # if(!isAvailable('1.1.287')) {
+        #     bin <- choose.dir(caption = 'Choose Binary Folder:')
+        # } else {
+        #     bin <- selectDirectory(caption = 'Choose Binary Folder:', path = getwd())
+        # }
+        x <- tk_choose.dir(caption = paste0('Choose ', upLab, ' Folder:'), default = getwd())
+    }
+    if(is.na(x)) {
+        return(character(0))
+    }
+    if(dir.exists(x)) {
+        return(list.files(x, full.names=TRUE, recursive=TRUE, pattern=pattern))
+    }
+    DNE <- !file.exists(x)
+    if(!any(DNE)) {
+        return(x)
+    }
+    warning('Files ', paste0(x[DNE], collapse = ', '), ' could not be located.', call.=FALSE)
+    x[!DNE]
 }
