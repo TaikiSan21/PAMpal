@@ -107,6 +107,7 @@ processPgDetections <- function(pps, mode = c('db', 'time'), id=NULL, grouping=N
                                                       progress=progress)
     )
     checkStudy(result)
+    result
 }
 
 # ---- separate methods ----

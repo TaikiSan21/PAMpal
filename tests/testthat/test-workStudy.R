@@ -112,6 +112,10 @@ test_that('Test working with AcousticStudy object', {
 test_that('Test checkStudy test cases', {
     # create example data
     data(exStudy)
+    expect_warning(checkStudy(exStudy, maxLength = 1),
+                   'Found 2 events longer than 1 seconds')
+    expect_warning(checkStudy(exStudy, maxSep = .1),
+                   'Found 2 events with detections more than 0.1')
     exStudy$Example.OE1$Click_Detector_1$peak <- 0
     expect_warning(checkStudy(exStudy), 'Some clicks had a peak frequency of 0')
 })

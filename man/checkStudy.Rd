@@ -4,10 +4,18 @@
 \alias{checkStudy}
 \title{Check an AcousticStudy Object for Issues}
 \usage{
-checkStudy(x)
+checkStudy(x, maxLength = Inf, maxSep = 60 * 60 * 2)
 }
 \arguments{
 \item{x}{an \linkS4class{AcousticStudy} object}
+
+\item{maxLength}{events with length greater than this value in seconds
+will trigger a warning}
+
+\item{maxSep}{events containing consecutive detections greater than
+\code{maxSep} seconds apart will trigger a warning. This is used to
+check for situations where detections were possibly added to the
+incorrect event.}
 }
 \value{
 invisibly returns \code{x} after printing possible issues
@@ -20,10 +28,10 @@ Checks for any possible issues in an \linkS4class{AcousticStudy}
 
 data(exStudy)
 
-# currently only checks if any peak frequencies are 0, so well force this
+# checks if any peak frequencies are 0, so we'll force this
 exStudy[[1]][[1]]$peak <- 0
 checkStudy(exStudy)
-
+checkStudy(exStudy, maxLength = 1, maxSep = 1)
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

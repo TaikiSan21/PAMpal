@@ -9,10 +9,10 @@ Authors@R: c(
   SB = person("Simone", "Baumann-Pickering", role = c("ctb")),
   JO = person("Julie", "Oswald", role = c("ctb")))
 Maintainer: Taiki Sakai <taiki.sakai@noaa.gov>
-Description: A package for the general loading and handling of passive acoustic data.
-    This package contains tools for loading in data from Pamguard, applying various
-    processing functions to this data, and for exporting data for reports or external
-    modeling tools.
+Description: A package for loading and processing passive acoustic data.
+    This package contains tools for loading in data from 'Pamguard' 
+    (<https://www.pamguard.org/>), applying various processing functions 
+    to this data, and for exporting data for reports or external modeling tools.
 License: GNU General Public License
 Encoding: UTF-8
 LazyData: true

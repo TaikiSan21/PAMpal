@@ -47,15 +47,11 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
     # do databases
     dbExists <- file.exists(files(x)$db)
     if(all(dbExists)) {
-        db <- NA
-    }
-    if(any(!dbExists)) {
-        newDbs <- fileLister(db, label = 'database', pattern='sqlite')
-        updatedDbs <- fileMatcher(files(x)$db, newDbs)
+        db <- character(0)
+    } else {
+        db <- fileLister(db, label = 'database', pattern='sqlite', verbose=verbose)
+        updatedDbs <- fileMatcher(files(x)$db, db)
         if(verbose) {
-            if(length(newDbs) == 0) {
-                cat('No database files found in this folder.\n')
-            }
             cat(paste0('Updated the locations of ',
                        sum(!dbExists)-sum(!file.exists(updatedDbs)),
                        ' out of ', sum(!dbExists),
@@ -66,15 +62,11 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
     # do binaries
     binExists <- file.exists(files(x)$binaries)
     if(all(binExists)) {
-        bin <- NA
-    }
-    if(any(!binExists)) {
-        newBins <- fileLister(bin, label = 'binary', pattern = '(Clicks|WhistlesMoans).*pgdf$')
-        updatedBins <- fileMatcher(files(x)$binaries, newBins)
+        bin <- character(0)
+    } else {
+        bin <- fileLister(bin, label = 'binary', pattern = '(Clicks|WhistlesMoans).*pgdf$', verbose=verbose)
+        updatedBins <- fileMatcher(files(x)$binaries, bin)
         if(verbose) {
-            if(length(newBins) == 0) {
-                cat('No binary files found in this folder.\n')
-            }
             cat(paste0('Updated the locations of ',
                        sum(!binExists) - sum(!file.exists(updatedBins)),
                        ' out of ', sum(!binExists),
@@ -86,12 +78,9 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
     if(!is.null(files(x)$recordings$file) &&
        any(!file.exists(files(x)$recordings$file))) {
         fileExists <- file.exists(files(x)$recordings$file)
-        newRecs <- fileLister(recording, label='recording', pattern='wav$')
-        updatedRecs <- fileMatcher(files(x)$recordings$file, newRecs)
+        recording <- fileLister(recording, label='recording', pattern='wav$', verbose=verbose)
+        updatedRecs <- fileMatcher(files(x)$recordings$file, recording)
         if(verbose) {
-            if(length(newRecs) == 0) {
-                cat('No recording files found in this folder.\n')
-            }
             cat(paste0('Updated the locations of ',
                        sum(!fileExists) - sum(!file.exists(updatedRecs)),
                        ' out of ', sum(!fileExists),
@@ -100,10 +89,14 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
         }
         files(x)$recordings$file <- updatedRecs
     }
-
+    # from here is adjusting events, they dont carry recording info so we can stop here
+    # if thats all we changed
+    if((length(bin) == 0) &&
+       (length(db) == 0)) {
+        return(x)
+    }
     if(is.AcousticStudy(x)) {
         for(e in seq_along(events(x))) {
-            if(is.na(bin) && is.na(db)) next
             # be quiet for every event, study level should give best summary
             events(x)[[e]] <- updateFiles(events(x)[[e]], bin=bin, db=db, recording=recording, verbose=FALSE)
         }
@@ -131,7 +124,7 @@ fileMatcher <- function(old, new) {
     old
 }
 
-fileLister <- function(x, label, pattern) {
+fileLister <- function(x, label, pattern, verbose=TRUE) {
     if(is.null(x)) {
         downLab <- tolower(label)
         upLab <- paste0(toupper(substr(downLab, 1, 1)),
@@ -145,11 +138,18 @@ fileLister <- function(x, label, pattern) {
         # }
         x <- tk_choose.dir(caption = paste0('Choose ', upLab, ' Folder:'), default = getwd())
     }
-    if(is.na(x)) {
+    x <- x[!is.na(x)]
+    if(length(x) == 0) {
         return(character(0))
     }
-    if(dir.exists(x)) {
-        return(list.files(x, full.names=TRUE, recursive=TRUE, pattern=pattern))
+    if(length(x) == 1 &&
+       dir.exists(x)) {
+        files <- list.files(x, full.names=TRUE, recursive=TRUE, pattern=pattern)
+        if(verbose &&
+           length(files) == 0) {
+            cat('No ', downLab, ' files found in this folder.\n', sep='')
+        }
+        return(files)
     }
     DNE <- !file.exists(x)
     if(!any(DNE)) {
