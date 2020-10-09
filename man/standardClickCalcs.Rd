@@ -38,15 +38,16 @@ removing a lot of the noise around the click. Following approach of
 JB/EG/MS.}
 }
 \value{
-A data frame with one row for each channel of click waveform.
-  Calculates approximate noise level and click duration from the
+A data frame with one row for each channel of click waveform
+}
+\description{
+Calculate a set of "standard" measurements for odontocete clicks
+}
+\details{
+Calculations mostly follow the approach outlined Calculates approximate noise level and click duration from the
   TK energy (Soldevilla JASA17), up to 3 highest peak frequencies and
   the 'troughs' between them (see \code{\link[PAMmisc]{peakTrough}}), and the 3
   and 10dB bandwidth levels and 'Q' value (see \code{\link[seewave]{Q}}).
-}
-\description{
-Calculate a set of "standard" measurements for odontocete clicks.
-  Most of calculations following approach of Baumann-Pickering / Soldevilla
 }
 \examples{
 

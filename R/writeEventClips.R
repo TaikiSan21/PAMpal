@@ -1,13 +1,14 @@
 #' @title Create Wav Clips of Events
 #'
-#' @description Creates an audio clip containing sounds from an event
+#' @description Creates audio clips containing sounds from events
 #'
 #' @param x \linkS4class{AcousticStudy} object containing events to make wav clips for
 #' @param buffer amount around each event to also include in the clip, in seconds
 #' @param outDir directory to write clips to, defaults to current directory
 #'
 #' @return A vector of file names for the wav clips that were successfully
-#'   created, any that were not able to be written will be \code{NA}
+#'   created, any that were not able to be written will be \code{NA}. Note
+#'   that currently this can only write clips with up to 2 channels.
 #'
 #' @examples
 #'

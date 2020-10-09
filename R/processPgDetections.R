@@ -2,9 +2,9 @@
 #'
 #' @description Loads and processes acoustic detection data that has been
 #'   run through Pamguard. Uses the binary files and database(s) contained
-#'   in \code{pps}, and will either group your data into events by the
-#'   grouping present in the 'OfflineEvents' or 'Detection Group Localiser'
-#'   tables (\code{mode = 'db'}) or by the grouping specified by start/end
+#'   in \code{pps}, and will group your data into events by the
+#'   grouping present in the 'OfflineEvents' and 'Detection Group Localiser'
+#'   tables (\code{mode = 'db'}) or by the grouping specified by start and end
 #'   times in the supplied \code{grouping} (\code{mode = 'time'}). Will apply
 #'   all processing functions in \code{pps} to the appropriate modules
 #'
@@ -240,7 +240,9 @@ processPgDetectionsTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%
         cat('Processing binary files... \n')
         pb <- txtProgressBar(min=0, max=length(binList), style=3)
     }
-
+    modList <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum')
+    modWarn <- c(FALSE, FALSE, FALSE)
+    names(modWarn) <- modList
     binData <- lapply(binList, function(bin) {
         # should i do here - read in head/foot only, then check those
         # times against grouplist, if none can skip, if one we know
@@ -279,6 +281,13 @@ processPgDetectionsTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%
         }
         if(length(thisBin$data) == 0) {
             return(NULL)
+        }
+        modType <- getModuleType(thisBin)
+        if(length(binFuns[[modType]]) == 0) {
+            if(isFALSE(modWarn[[modType]])) {
+                modWarn[[modType]] <<- TRUE
+                warning('No functions for processing Module Type: ', modType, call.=FALSE)
+            }
         }
         srPossible <- unique(unlist(grouping$sr[evPossible]))
         if(length(srPossible) == 1) {
@@ -388,6 +397,9 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
         pb <- txtProgressBar(min=0, max=nBin, style=3)
     }
     binNo <- 1
+    modList <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum')
+    modWarn <- c(FALSE, FALSE, FALSE)
+    names(modWarn) <- modList
     allAcEv <- lapply(allDb, function(db) {
         tryCatch({
             binList <- pps@binaries$list
@@ -423,6 +435,13 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                         warning('Could not find the matching binary file for ', x$BinaryFile[1],
                                 ' in database ', basename(db), call.=FALSE)
                         return(NULL)
+                    }
+                    modType <- getModuleType(thisBin)
+                    if(length(binFuns[[modType]]) == 0) {
+                        if(isFALSE(modWarn[[modType]])) {
+                            modWarn[[modType]] <<- TRUE
+                            warning('No functions for processing Module Type: ', modType, call.=FALSE)
+                        }
                     }
                     binData <- calculateModuleData(thisBin, binFuns)
                     if(!is.null(binData)) {
@@ -637,7 +656,7 @@ getMatchingBinaryData <- function(dbData, binList, dbName) {
                 thisBin$data[[i]]$sr <- matchSr$sampleRate[i]
             }
         } else {
-            warning(paste0('UID(s) ', paste0(setdiff(matchSr$UID, names(thisBin$data)), collapse=', '),
+            warning(paste0('UID(s) ', printN(setdiff(matchSr$UID, names(thisBin$data)), n=6, collapse=', '),
                            ' are in database ', dbName, ' but not in binary file ', binFile), call.=FALSE)
             for(i in names(thisBin$data)) {
                 thisBin$data[[i]]$sr <- matchSr$sampleRate[matchSr$UID==i]
@@ -658,7 +677,7 @@ getMatchingBinaryData <- function(dbData, binList, dbName) {
                         thisBin$data[[i]]$sr <- matchSr$sampleRate[i]
                     }
                 } else {
-                    warning(paste0('UID(s) ', paste0(setdiff(matchSr$UID, names(thisBin$data)), collapse=', '),
+                    warning(paste0('UID(s) ', printN(setdiff(matchSr$UID, names(thisBin$data)), n=6, collapse=', '),
                                    ' are in database ', dbName, ' but not in binary file ', binFile), call.=FALSE)
                     for(i in names(thisBin$data)) {
                         thisBin$data[[i]]$sr <- matchSr$sampleRate[matchSr$UID==i]
@@ -748,4 +767,22 @@ readSa <- function(db) {
 nBins <- function(db) {
     evData <- getDbData(db)
     length(unique(evData$BinaryFile))
+}
+
+getModuleType <- function(x) {
+    moduleType <- x$fileInfo$fileHeader$moduleType
+    moduleType <- gsub(' ', '', moduleType)
+    if(moduleType == 'SoundTrapClickDetector') {
+        return('ClickDetector')
+    }
+    if(moduleType == 'ClickDetector' &&
+       x$fileInfo$fileHeader$streamName == 'Trigger Background') {
+        return('ClickDetectorTriggerBackground')
+    }
+    # For now, cepstrum-ing like dis
+    if(moduleType == 'WhistlesMoans' &&
+       grepl('cepstrum',  x$fileInfo$fileHeader$moduleName, ignore.case = TRUE)) {
+        return('Cepstrum')
+    }
+    moduleType
 }

@@ -58,11 +58,12 @@ setMethod('show', 'PAMpalSettings', function(object) {
     cat('PAMpalSettings object with:\n')
     cat(nDb, 'database(s)')
     if(nDb > 0) {
-        showDb <- basename(object@db)
-        if(nDb > 6) {
-            showDb <- c(showDb[1:6], paste0('... (', nDb-6, ' more not shown)'))
-        }
-        cat(':\n ', paste(showDb, collapse='\n  '))
+        # showDb <- basename(object@db)
+        # if(nDb > 6) {
+        #     showDb <- c(showDb[1:6], paste0('... (', nDb-6, ' more not shown)'))
+        # }
+        # cat(':\n ', paste(showDb, collapse='\n  '))
+        cat(':\n ', printN(basename(object@db), n=6, collapse='\n  '))
     }
     cat('\n', nBinDir, ' binary folder(s) ', sep = '')
     if(nBinDir > 0) {

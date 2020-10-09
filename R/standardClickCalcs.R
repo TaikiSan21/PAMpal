@@ -1,7 +1,11 @@
 #' @title Calculate a Set of Measurements for Clicks
 #'
-#' @description Calculate a set of "standard" measurements for odontocete clicks.
-#'   Most of calculations following approach of Baumann-Pickering / Soldevilla
+#' @description Calculate a set of "standard" measurements for odontocete clicks
+#'
+#' @details Calculations mostly follow the approach outlined Calculates approximate noise level and click duration from the
+#'   TK energy (Soldevilla JASA17), up to 3 highest peak frequencies and
+#'   the 'troughs' between them (see \code{\link[PAMmisc]{peakTrough}}), and the 3
+#'   and 10dB bandwidth levels and 'Q' value (see \code{\link[seewave]{Q}}).
 #'
 #' @param data a list that must have 'wave' containing the wave form as a
 #'   matrix with a separate column for each channel, and 'sr' the
@@ -21,11 +25,7 @@
 #'   removing a lot of the noise around the click. Following approach of
 #'   JB/EG/MS.
 #'
-#' @return A data frame with one row for each channel of click waveform.
-#'   Calculates approximate noise level and click duration from the
-#'   TK energy (Soldevilla JASA17), up to 3 highest peak frequencies and
-#'   the 'troughs' between them (see \code{\link[PAMmisc]{peakTrough}}), and the 3
-#'   and 10dB bandwidth levels and 'Q' value (see \code{\link[seewave]{Q}}).
+#' @return A data frame with one row for each channel of click waveform
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'

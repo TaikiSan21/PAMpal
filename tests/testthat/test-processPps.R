@@ -30,6 +30,9 @@ test_that('Test process database', {
     expect_true(!any(
         is.na(detectors(exData[[1]])[[3]]$freqBeg)
     ))
+    exPps <- removeFunction(exPps, 1)
+    expect_warning(processPgDetections(exPps, mode='db', id='Test', progress=FALSE),
+                   'No functions for processing Module Type: ClickDetector')
 })
 
 test_that('Test process time', {

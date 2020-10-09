@@ -15,10 +15,11 @@ writeEventClips(x, buffer = 0.1, outDir = ".")
 }
 \value{
 A vector of file names for the wav clips that were successfully
-  created, any that were not able to be written will be \code{NA}
+  created, any that were not able to be written will be \code{NA}. Note
+  that currently this can only write clips with up to 2 channels.
 }
 \description{
-Creates an audio clip containing sounds from an event
+Creates audio clips containing sounds from events
 }
 \examples{
 

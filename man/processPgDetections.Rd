@@ -68,9 +68,9 @@ an \linkS4class{AcousticStudy} object with one \linkS4class{AcousticEvent}
 \description{
 Loads and processes acoustic detection data that has been
   run through Pamguard. Uses the binary files and database(s) contained
-  in \code{pps}, and will either group your data into events by the
-  grouping present in the 'OfflineEvents' or 'Detection Group Localiser'
-  tables (\code{mode = 'db'}) or by the grouping specified by start/end
+  in \code{pps}, and will group your data into events by the
+  grouping present in the 'OfflineEvents' and 'Detection Group Localiser'
+  tables (\code{mode = 'db'}) or by the grouping specified by start and end
   times in the supplied \code{grouping} (\code{mode = 'time'}). Will apply
   all processing functions in \code{pps} to the appropriate modules
 }

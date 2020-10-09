@@ -18,11 +18,23 @@ check for situations where detections were possibly added to the
 incorrect event.}
 }
 \value{
-invisibly returns \code{x} after printing possible issues
+returns a list of warning messages
 }
 \description{
 Checks for any possible issues in an \linkS4class{AcousticStudy}
-  object, printing statements to the console
+  object, issuing warnings and saving the messages
+}
+\details{
+This function is called at the end of \link{processPgDetections} with
+  default parameters, but can also be called later to investigate issues
+  specific to each user's data. For example, if you are expecting to process data
+  where all recordings were duty cycled to record 2 out of every 10 minutes, then
+  setting \code{maxLength = 60*2} will alert you to any events that are longer than
+  the 2 minute duty cycle.
+  For continuously recorded data, the \code{maxSep} argument can be used to
+  identify situations where there are large gaps between detections in a single
+  event, since this could mean that detections were accidentally added to the
+  incorrect event number during processing.
 }
 \examples{
 
@@ -32,6 +44,7 @@ data(exStudy)
 exStudy[[1]][[1]]$peak <- 0
 checkStudy(exStudy)
 checkStudy(exStudy, maxLength = 1, maxSep = 1)
+
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

@@ -47,7 +47,7 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
     detName <- gsub(' ', '_', detName)
     if(!(moduleType %in% names(binFuns)) ||
        length(binFuns[[moduleType]])==0) {
-        warning("I don't have functions for Module Type ", moduleType)
+        # warning("I don't have functions for Module Type ", moduleType)
         # If nothing, just UID and detectorName? Fine for now
         result <- data.frame(UID = sapply(binData$data, function(x) x$UID),
                              UTC = sapply(binData$data, function(x) x$date))
