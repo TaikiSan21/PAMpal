@@ -3,7 +3,7 @@
 \name{matchEnvData,AcousticEvent-method}
 \alias{matchEnvData,AcousticEvent-method}
 \alias{matchEnvData,AcousticStudy-method}
-\title{Match Data From an Existing Netcdf File or Download and Match}
+\title{Match Environmental Data to an AcousticStudy Object}
 \usage{
 \S4method{matchEnvData}{AcousticEvent}(
   data,
@@ -57,11 +57,13 @@ If your data spans a large amount of time and space this can be problematic.}
 original data object with environmental data added to the \code{ancillary} slot
   of each event. Complete data will be stored in \code{ancillary(data)$environmental},
   and the mean of each downloaded variable will be stored in \code{ancillary(data)$measures}
-  so that it can be exported for modeling
+  so that it can be exported for modeling. For each event the coordinates associated with
+  the earliest UTC value in that event are used to match
 }
 \description{
 Extracts all variables from a netcdf file matching Longitude,
-  Latitude, and UTC coordinates in given dataframe
+  Latitude, and UTC coordinates of the start of each AcousticEvent object.
+  Matched values are stored in the "ancillary" slot of each event
 }
 \examples{
 

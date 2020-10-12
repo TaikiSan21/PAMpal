@@ -2,13 +2,13 @@
 #'
 #' @description Calculate a set of measurements from a whistle contour. All
 #'   calculations following ROCCA method from Julie and Michael Oswald, as
-#'   implemented in Pamguard.
+#'   implemented in Pamguard and detailed in Oswald et al JASA 2007
 #'
 #' @param data a list that must have \code{freq} the whistle contour stored as a
 #'   vector of FFT bin frequencies in hertz, and \code{time} the time in seconds
 #'   at each bin.
 #'
-#' @return A list with 50 calculated rocca parameters, each item in the list will
+#' @return A list with 50 calculated ROCCA parameters, each item in the list will
 #'   only have 1 entry so that this can easily be converted to a data frame.
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}

@@ -1,7 +1,8 @@
-#' @title Match Data From an Existing Netcdf File or Download and Match
+#' @title Match Environmental Data to an AcousticStudy Object
 #'
 #' @description Extracts all variables from a netcdf file matching Longitude,
-#'   Latitude, and UTC coordinates in given dataframe
+#'   Latitude, and UTC coordinates of the start of each AcousticEvent object.
+#'   Matched values are stored in the "ancillary" slot of each event
 #'
 #' @param data an \linkS4class{AcousticStudy} or \linkS4class{AcousticEvent} object
 #'   that must have GPS data added to it using the \link{addGps} functions
@@ -24,7 +25,8 @@
 #' @return original data object with environmental data added to the \code{ancillary} slot
 #'   of each event. Complete data will be stored in \code{ancillary(data)$environmental},
 #'   and the mean of each downloaded variable will be stored in \code{ancillary(data)$measures}
-#'   so that it can be exported for modeling
+#'   so that it can be exported for modeling. For each event the coordinates associated with
+#'   the earliest UTC value in that event are used to match
 #'
 #' @examples
 #'

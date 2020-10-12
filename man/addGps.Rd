@@ -7,7 +7,7 @@
 \alias{addGps,list-method}
 \alias{addGps,AcousticStudy-method}
 \alias{addGps,ANY-method}
-\title{Add GPS Locations to Data}
+\title{Add GPS Locations to an AcousticStudy}
 \usage{
 addGps(x, gps = NULL, thresh = 3600, ...)
 
@@ -30,17 +30,21 @@ Must have columns \code{UTC}, \code{Latitude}, \code{Longitude}, and
 optionally \code{Channel}. If not provided and \code{x} is an
 \linkS4class{AcousticEvent} or \linkS4class{AcousticStudy} object, then
 the gps data will be read from the databases contained in the \code{files}
-slot of \code{x}rm(may}
+slot of \code{x}}
 
-\item{thresh}{maximum time in seconds for matching GPS coordinates to data.}
+\item{thresh}{maximum time apart in seconds for matching GPS coordinates to
+data, if the closest coordinate is more than \code{thresh} apart then the
+Latitude and Longitude values will be set to \code{NA}}
 
 \item{\dots}{additional arguments for other methods}
 }
 \value{
-the same data as \code{x}, with Lat/Long data added
+the same data as \code{x}, with Lat/Long data added. AcousticStudy objects
+  will have all GPS data used added to the "gps" slot, and all AcousticEvents will
+  have Latitude and Longitude added to all detector dataframes
 }
 \description{
-Add GPS Lat / Long to a variety of types of data.
+Add GPS Lat / Long to an AcousticStudy or AcousticEvent
 }
 \details{
 Latitude and Longitude coordinates will be matched to the data

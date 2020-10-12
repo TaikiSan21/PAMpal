@@ -1,7 +1,7 @@
-#' @title Export a List of AcousticEvent Ojbects for Banter Model
+#' @title Export Data for a BANTER Model
 #'
-#' @description Formats a list of AcousticEvent objects into the structure
-#'   needed to run a banter model.
+#' @description Exports data from an AcousticStudy into the format
+#'   required to run a BANTER model from the "banter" package
 #'
 #' @param x a \linkS4class{AcousticStudy} object or
 #'   a list of \linkS4class{AcousticEvent} objects

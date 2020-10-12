@@ -1,10 +1,3 @@
-# The 'show' functions work off of
-# AcEv which is currently saving the file name not entire calibration. Could
-# change that if we wanted to.
-# Also want the clickCalc or whatever function to be able to be called on its
-# own, so I probably can't do anything too janky. People probs need to be able
-# to test shit with the functions and pull them out or whatever without everything
-# going to shit.
 #' @title Add a Calibration File to a PAMpalSettings Object
 #'
 #' @description Adds a new calibration function to the "calibration" slot

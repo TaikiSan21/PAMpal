@@ -1,15 +1,25 @@
 #' @title Add Recordings to an AcousticStudy Object
 #'
-#' @description Adds recordings to an AcousticStudy object. Each
-#'    AcousticEvent within
+#' @description Adds recording files to an AcousticStudy object. No actual
+#'   recordings are stored, a dataframe containing information on the
+#'   start and end times of the recording files is added to the object.
 #'
 #' @param x a \linkS4class{AcousticStudy} object to add recordings to
-#' @param folder a folder of recordings to add
-#' @param log (optional) log files for SoundTrap recordings
+#' @param folder a folder of recordings to add. If \code{NULL}, user will be
+#'   prompted to select a folder of recordings for each database present in
+#'   \code{x}. If a single folder, this will be applied to all databases. If
+#'   multiple folders, length must be equal to the number of databases and they
+#'   will be applied to each database in the provided order.
+#' @param log (optional) log files for SoundTrap recordings. These are used to
+#'   adjust apparent lengths of recordings for missing data. If \code{NULL}, user
+#'   will be prompted to provide a folder (selecting no folder is a valid option here).
+#'   If \code{FALSE} this step will be skipped. If a single folder or multiple folders
+#'   will be applied similar to \code{folder}
 #' @param progress logical flag to show progress bars
 #'
 #' @return the same object as \code{x} with recording information added
-#'   to the \code{files} slots
+#'   to the \code{files} slots. The information added is a dataframe containing
+#'   the start and end times of recording
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'

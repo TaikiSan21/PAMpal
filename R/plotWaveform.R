@@ -1,7 +1,7 @@
 #' @title Plot Graphical Representations of Waveforms
 #'
 #' @description Fetches matching binary data from a single or multiple
-#'   detections in an \linkS4class{AcousticEvent} object, then plot
+#'   detections in an \linkS4class{AcousticStudy}  object, then plot
 #'   the resulting data
 #'
 #' @param x a \linkS4class{AcousticStudy} object, a list of \linkS4class{AcousticEvent}

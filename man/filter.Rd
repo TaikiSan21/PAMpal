@@ -7,7 +7,7 @@
 \method{filter}{AcousticStudy}(.data, ..., .preserve = FALSE)
 }
 \arguments{
-\item{.data}{AcousticStudy or AcousticEvent to filter}
+\item{.data}{\linkS4class{AcousticStudy} or \linkS4class{AcousticEvent} to filter}
 
 \item{\dots}{Logical expressions, syntax is identical to \link[dplyr]{filter}.
 There is a special case if \code{.data} is an AcousticStudy object where a

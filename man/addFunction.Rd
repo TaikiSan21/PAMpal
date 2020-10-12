@@ -12,7 +12,9 @@ addFunction(pps, fun, module = NULL, verbose = TRUE)
 \item{fun}{function to add OR another \linkS4class{PAMpalSettings} object.
 In this case all functions from the second object will be added to \code{pps}}
 
-\item{module}{PamGuard module output this function should act on}
+\item{module}{Pamguard module output this function should act on, one of
+ClickDetector, WhistlesMoans, or Cepstrum. If \code{NULL} (default), user
+will be prompted to select which module it applies to}
 
 \item{verbose}{logical flag to show messages}
 }

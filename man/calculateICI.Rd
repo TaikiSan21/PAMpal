@@ -39,10 +39,15 @@ objects, or a single \linkS4class{AcousticEvent} object}
 but also allows users to specify \code{whistle} or \code{cepstrum} to calculate this
 using other detector data}
 
-\item{\dots}{not used}
+\item{\dots}{not currently used}
 }
 \value{
-ICI data
+the same object as \code{x}, with ICI data added to the "ancillary" slot
+  of each AcousticEvent. Two items will be added. $ici contains all of the
+  individual inter-click intervals used to calculate the ICI, as well as an "All"
+  ICI using all the combined data. $measures will also have a ICI measurement added
+  for each detector, this will be the single modal value. Data in the $measures spot
+  can be exported easily to modeling algorithms.
 }
 \description{
 Calculate inter-click interval for click data

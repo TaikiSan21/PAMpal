@@ -1,6 +1,6 @@
-#' @title Add GPS Locations to Data
+#' @title Add GPS Locations to an AcousticStudy
 #'
-#' @description Add GPS Lat / Long to a variety of types of data.
+#' @description Add GPS Lat / Long to an AcousticStudy or AcousticEvent
 #'
 #' @param x data to add GPS coordinates to. Must have a column \code{UTC}, and
 #'   can also have an optional column \code{Channel}
@@ -9,8 +9,10 @@
 #'   optionally \code{Channel}. If not provided and \code{x} is an
 #'   \linkS4class{AcousticEvent} or \linkS4class{AcousticStudy} object, then
 #'   the gps data will be read from the databases contained in the \code{files}
-#'   slot of \code{x}rm(may
-#' @param thresh maximum time in seconds for matching GPS coordinates to data.
+#'   slot of \code{x}
+#' @param thresh maximum time apart in seconds for matching GPS coordinates to
+#'   data, if the closest coordinate is more than \code{thresh} apart then the
+#'   Latitude and Longitude values will be set to \code{NA}
 #' @param \dots additional arguments for other methods
 #'
 #' @details Latitude and Longitude coordinates will be matched to the data
@@ -29,7 +31,9 @@
 #'   data outside this range will not be stored (to reduce the potentially very large
 #'   amount of data stored in the \code{gps} slot)
 #'
-#' @return the same data as \code{x}, with Lat/Long data added
+#' @return the same data as \code{x}, with Lat/Long data added. AcousticStudy objects
+#'   will have all GPS data used added to the "gps" slot, and all AcousticEvents will
+#'   have Latitude and Longitude added to all detector dataframes
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'

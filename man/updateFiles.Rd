@@ -2,7 +2,7 @@
 % Please edit documentation in R/updateFiles.R
 \name{updateFiles}
 \alias{updateFiles}
-\title{Update Location of Binary and Databases Files}
+\title{Update Location of Files in an AcousticStudy}
 \usage{
 updateFiles(x, bin = NULL, db = NULL, recording = NULL, verbose = TRUE)
 }
@@ -11,13 +11,16 @@ updateFiles(x, bin = NULL, db = NULL, recording = NULL, verbose = TRUE)
 object}
 
 \item{bin}{folder containing updated binary file locations. If
-\code{NULL} (default), user will be prompted to select a folder}
+\code{NULL} (default), user will be prompted to select a folder.
+If \code{NA}, binary files will be skipped.}
 
-\item{db}{single file or folder containing updated database file locations. If
-\code{NULL} (default), user will be prompted to select a folder}
+\item{db}{single file or folder containing updated database file locations.
+\code{NULL} (default), user will be prompted to select a folder.
+If \code{NA}, database files will be skipped.}
 
 \item{recording}{folder containing updated recording file locations. If
-\code{NULL} (default), user will be prompted to select a folder}
+\code{NULL} (default), user will be prompted to select a folder.
+If \code{NA}, recording files will be skipped.}
 
 \item{verbose}{logical flag to print messages about success of replacement}
 }
@@ -27,9 +30,9 @@ the same \linkS4class{AcousticStudy} and
   updated file locations
 }
 \description{
-Updates the stored locations of binary and database files in
-  the \code{files} slots of all \linkS4class{AcousticStudy} and
-  \linkS4class{AcousticEvent} objects. Typically used after changing
+Updates the stored locations of binary, database, and/or recording
+  files in the \code{files} slots of an \linkS4class{AcousticStudy} and all
+  \linkS4class{AcousticEvent} objects within. Typically used after changing
   computers, or if original data was on an external hard drive. If any
   missing files are not able to be located, they will be kept in the files
   slot so that this function can be run again

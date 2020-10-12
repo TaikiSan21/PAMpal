@@ -4,7 +4,7 @@
 #'   AcousticStudy or AcousticEvent object, with a special case for
 #'   filtering by species for an AcousticStudy
 #'
-#' @param .data AcousticStudy or AcousticEvent to filter
+#' @param .data \linkS4class{AcousticStudy} or \linkS4class{AcousticEvent} to filter
 #' @param \dots Logical expressions, syntax is identical to \link[dplyr]{filter}.
 #'   There is a special case if \code{.data} is an AcousticStudy object where a
 #'   logical expression using \code{species} or \code{Species} will filter by the

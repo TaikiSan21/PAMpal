@@ -12,12 +12,13 @@ cepstrum contour, \code{sr} the sample rate of the data,
 and \code{time} the time in seconds at each bin}
 }
 \value{
-A list
+A list with inter-click interval (ici), duration (seconds), and
+  slope of the ici
 }
 \description{
 Calculate a set of measurements from a cepstrum contour. This
-  is currently used to measure the inter-pulse interval of the burst pulse
-  type calls, please refer to JASA PAPER DOOOD for details.
+  is currently used to measure the inter-click interval of the burst pulse
+  type calls
 }
 \examples{
 

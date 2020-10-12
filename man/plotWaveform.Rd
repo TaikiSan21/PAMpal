@@ -30,7 +30,7 @@ Nothing, just shows plots for every channel of the waveform for
 }
 \description{
 Fetches matching binary data from a single or multiple
-  detections in an \linkS4class{AcousticEvent} object, then plot
+  detections in an \linkS4class{AcousticStudy}  object, then plot
   the resulting data
 }
 \details{

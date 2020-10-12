@@ -44,10 +44,10 @@ A data frame with one row for each channel of click waveform
 Calculate a set of "standard" measurements for odontocete clicks
 }
 \details{
-Calculations mostly follow the approach outlined Calculates approximate noise level and click duration from the
-  TK energy (Soldevilla JASA17), up to 3 highest peak frequencies and
-  the 'troughs' between them (see \code{\link[PAMmisc]{peakTrough}}), and the 3
-  and 10dB bandwidth levels and 'Q' value (see \code{\link[seewave]{Q}}).
+Calculations of parameters mostly follow the approach outlined in Griffiths
+  et al JASA 2020, Baumann-Pickering et al JASA 2010, and Soldevilla et al JASA 2008.
+  Additionally, up to 3 highest peak frequencies and the "troughs" between them are
+  calculated (see \link[PAMmisc]{peakTrough})
 }
 \examples{
 

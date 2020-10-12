@@ -32,7 +32,7 @@ test_that('Test AcousticStudy accessors', {
     expect_identical(ancillary(exStudy), list(test='new'))
     expect_is(files(exStudy), 'list')
     expect_is(gps(exStudy), 'data.frame')
-    expect_equal(id(exStudy), '2020-10-01')
+    expect_equal(id(exStudy), 'ExampleData_10-12-2020')
     expect_is(models(exStudy), 'list')
     expect_is(effort(exStudy), 'data.frame')
 })

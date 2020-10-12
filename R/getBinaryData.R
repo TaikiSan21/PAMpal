@@ -1,4 +1,4 @@
-#' @title Get Binary Data for Detections from an Acoustic Event
+#' @title Get Raw Binary Data for Detections
 #'
 #' @description Fetches matching binary data from a single or multiple
 #'   detections in an \linkS4class{AcousticEvent} object

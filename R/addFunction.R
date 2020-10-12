@@ -6,7 +6,9 @@
 #' @param pps a \linkS4class{PAMpalSettings} object to add a function to
 #' @param fun function to add OR another \linkS4class{PAMpalSettings} object.
 #'   In this case all functions from the second object will be added to \code{pps}
-#' @param module PamGuard module output this function should act on
+#' @param module Pamguard module output this function should act on, one of
+#'   ClickDetector, WhistlesMoans, or Cepstrum. If \code{NULL} (default), user
+#'   will be prompted to select which module it applies to
 #' @param verbose logical flag to show messages
 #'
 #' @return the same \linkS4class{PAMpalSettings} object as pps, with the function

@@ -2,10 +2,10 @@
 #'
 #' @description Calculate a set of "standard" measurements for odontocete clicks
 #'
-#' @details Calculations mostly follow the approach outlined Calculates approximate noise level and click duration from the
-#'   TK energy (Soldevilla JASA17), up to 3 highest peak frequencies and
-#'   the 'troughs' between them (see \code{\link[PAMmisc]{peakTrough}}), and the 3
-#'   and 10dB bandwidth levels and 'Q' value (see \code{\link[seewave]{Q}}).
+#' @details Calculations of parameters mostly follow the approach outlined in Griffiths
+#'   et al JASA 2020, Baumann-Pickering et al JASA 2010, and Soldevilla et al JASA 2008.
+#'   Additionally, up to 3 highest peak frequencies and the "troughs" between them are
+#'   calculated (see \link[PAMmisc]{peakTrough})
 #'
 #' @param data a list that must have 'wave' containing the wave form as a
 #'   matrix with a separate column for each channel, and 'sr' the
@@ -178,7 +178,7 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
         # }
         calibratedClick <- cbind(freq, relDb)
 
-        peakData <- peakTrough(calibratedClick)
+        peakData <- lapply(peakTrough(calibratedClick), unname)
         thisDf <- c(thisDf, peakData)
 
         # peak-to-peak calcuation from anne s
@@ -293,7 +293,8 @@ Qfast <- function(spec,
     #          font = fontval)
     #     invisible(results)
     # }
-    return(results)
+    # stuff got named "freq" earlier? no want
+    lapply(results, unname)
 }
 
 oneInterp <- function(x, y, xout) {

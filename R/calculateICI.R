@@ -10,13 +10,18 @@
 #' @param callType the call type to calculate ICI for, usually this is \code{click}
 #'   but also allows users to specify \code{whistle} or \code{cepstrum} to calculate this
 #'   using other detector data
-#' @param \dots not used
+#' @param \dots not currently used
 #'
 #' @details Calculates the ICI for each individual detector and across all detectors.
 #'   ICI calculation is done by ordering all individual detections by time, then taking
 #'   the difference between consecutive detections and taking the mode value.
 #'
-#' @return ICI data
+#' @return the same object as \code{x}, with ICI data added to the "ancillary" slot
+#'   of each AcousticEvent. Two items will be added. $ici contains all of the
+#'   individual inter-click intervals used to calculate the ICI, as well as an "All"
+#'   ICI using all the combined data. $measures will also have a ICI measurement added
+#'   for each detector, this will be the single modal value. Data in the $measures spot
+#'   can be exported easily to modeling algorithms.
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
@@ -42,7 +47,6 @@ setGeneric('calculateICI', function(x,
                                     time=c('UTC', 'peakTime'),
                                     callType = c('click', 'whistle', 'cepstrum'),
                                     ...) standardGeneric('calculateICI'))
-
 
 #' @rdname calculateICI
 #' @export

@@ -28,6 +28,9 @@
 #' @export
 #'
 writeEventClips <- function(x, buffer = 0.1, outDir='.') {
+    if(!is.AcousticStudy(x)) {
+        stop('"x" must be an AcousticStudy object.')
+    }
     if(is.null(files(x)$recordings)) {
         stop('No recording files found, use function "addRecordings" first.')
     }

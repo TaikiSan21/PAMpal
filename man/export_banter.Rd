@@ -2,7 +2,7 @@
 % Please edit documentation in R/export_banter.R
 \name{export_banter}
 \alias{export_banter}
-\title{Export a List of AcousticEvent Ojbects for Banter Model}
+\title{Export Data for a BANTER Model}
 \usage{
 export_banter(
   x,
@@ -52,8 +52,8 @@ a list with three items, \code{events}, \code{detectors}, and
   random forest model and are removed from the exported dataset.
 }
 \description{
-Formats a list of AcousticEvent objects into the structure
-  needed to run a banter model.
+Exports data from an AcousticStudy into the format
+  required to run a BANTER model from the "banter" package
 }
 \examples{
 

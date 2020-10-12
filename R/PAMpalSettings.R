@@ -1,15 +1,13 @@
 #' @title Constructor for PAMpalSettings Object
 #'
 #' @description Create a PAMpalSettings object. Any values that are not supplied
-#'   will be asked for interactively.
+#'   will be asked for interactively. Three processing functions will also be added
+#'   by default: \link{standardClickCalcs}, \link{roccaWhistleCalcs}, and
+#'   \link{standardCepstrumCalcs}
 #'
-#' @param db the full path to a PamGuard database file
-#' @param binaries a list with items "folder" containing the directory of the
-#'   PamGuard binary files, and "list" containing the full path to each individual
-#'   binary file.
-#' @param calibration a named list of calibration functions to apply while
-#'   applying functions from the "functions" slot. Should named by the
-#'   PamGuard module, same as the "functions"
+#' @param db the full path to a Pamguard database file
+#' @param binaries a folder containing Pamguard binary files, all subfolders will
+#'   also be added
 #' @param verbose logical flag to show messages
 #'
 #' @return A PAMpalSettings object
@@ -28,7 +26,7 @@
 #' @importFrom methods new
 #' @export
 #'
-PAMpalSettings <- function(db=NULL, binaries=NULL, calibration=NULL, verbose=TRUE) {
+PAMpalSettings <- function(db=NULL, binaries=NULL, verbose=TRUE) {
     pps <- new('PAMpalSettings')
     pps <- addDatabase(pps, db, verbose)
     pps <- addBinaries(pps, binaries, verbose)
@@ -40,6 +38,5 @@ PAMpalSettings <- function(db=NULL, binaries=NULL, calibration=NULL, verbose=TRU
     pps <- addFunction(pps, standardClickCalcs, 'ClickDetector', verbose=verbose)
     pps <- addFunction(pps, roccaWhistleCalcs, 'WhistlesMoans', verbose=verbose)
     pps <- addFunction(pps, standardCepstrumCalcs, 'Cepstrum', verbose=verbose)
-    # pps <- addCalibration(pps, calibration)
     pps
 }

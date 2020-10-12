@@ -1,8 +1,8 @@
-#' @title Update Location of Binary and Databases Files
+#' @title Update Location of Files in an AcousticStudy
 #'
-#' @description Updates the stored locations of binary and database files in
-#'   the \code{files} slots of all \linkS4class{AcousticStudy} and
-#'   \linkS4class{AcousticEvent} objects. Typically used after changing
+#' @description Updates the stored locations of binary, database, and/or recording
+#'   files in the \code{files} slots of an \linkS4class{AcousticStudy} and all
+#'   \linkS4class{AcousticEvent} objects within. Typically used after changing
 #'   computers, or if original data was on an external hard drive. If any
 #'   missing files are not able to be located, they will be kept in the files
 #'   slot so that this function can be run again
@@ -10,11 +10,14 @@
 #' @param x an \linkS4class{AcousticStudy} or \linkS4class{AcousticEvent}
 #'   object
 #' @param bin folder containing updated binary file locations. If
-#'   \code{NULL} (default), user will be prompted to select a folder
-#' @param db single file or folder containing updated database file locations. If
-#'   \code{NULL} (default), user will be prompted to select a folder
+#'   \code{NULL} (default), user will be prompted to select a folder.
+#'   If \code{NA}, binary files will be skipped.
+#' @param db single file or folder containing updated database file locations.
+#'   \code{NULL} (default), user will be prompted to select a folder.
+#'   If \code{NA}, database files will be skipped.
 #' @param recording folder containing updated recording file locations. If
-#'   \code{NULL} (default), user will be prompted to select a folder
+#'   \code{NULL} (default), user will be prompted to select a folder.
+#'   If \code{NA}, recording files will be skipped.
 #' @param verbose logical flag to print messages about success of replacement
 #'
 #' @return the same \linkS4class{AcousticStudy} and

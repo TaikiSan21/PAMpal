@@ -5,7 +5,9 @@ Version: 0.9.4
 Authors@R: c(
   TS = person("Taiki", "Sakai", email = "taiki.sakai@noaa.gov", role = c("aut", "cre")),
   JB = person("Jay", "Barlow", role = c("ctb")),
+  MS = person("Melissa", "Soldevilla", role = c("ctb")),
   EG = person("Emily", "Griffiths", role = c("ctb")),
+  MO = person("Michael", "Oswald", role = c("ctb")),
   SB = person("Simone", "Baumann-Pickering", role = c("ctb")),
   JO = person("Julie", "Oswald", role = c("ctb")))
 Maintainer: Taiki Sakai <taiki.sakai@noaa.gov>

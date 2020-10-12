@@ -3,15 +3,14 @@
 #' @description Adds more binary files to the "binaries" slot of a
 #'   PAMpalSettings object
 #'
-#' @param pps a \linkS4class{PAMpalSettings} object to add a database to
-#' @param folder a folder of binaries to add
+#' @param pps a \linkS4class{PAMpalSettings} object to add binary files to
+#' @param folder a folder of binaries to add, all subfolders will also be added
 #' @param verbose logical flag to show messages
 #'
 #' @return the same \linkS4class{PAMpalSettings} object as pps, with the binary
 #'   files contained in \code{folder} added to the "binaries" slot. Only
 #'   binary files for Click Detector and WhistlesMoans modules will be added,
 #'   since these are the only types PAMpal currently knows how to process
-#'   (last updated v 0.7.0)
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'

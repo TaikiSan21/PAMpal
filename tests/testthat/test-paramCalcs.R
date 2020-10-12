@@ -25,6 +25,6 @@ test_that('Test cepstrum calcs', {
     data(testCeps)
     cepsData <- standardCepstrumCalcs(testCeps)
     expect_true(cepstrumChecker(standardCepstrumCalcs))
-    expect_true(all(c('ici', 'duration', 'avgSlope') %in% names(cepsData)))
+    expect_true(all(c('ici', 'duration', 'iciSlope') %in% names(cepsData)))
     expect_true(!any(is.na(cepsData)))
 })

@@ -2,7 +2,7 @@
 % Please edit documentation in R/getBinaryData.R
 \name{getBinaryData}
 \alias{getBinaryData}
-\title{Get Binary Data for Detections from an Acoustic Event}
+\title{Get Raw Binary Data for Detections}
 \usage{
 getBinaryData(x, UID, quiet = FALSE, ...)
 }
