@@ -48,6 +48,10 @@
 #'
 updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
     # do databases
+    # this check is for weirdness in older v of pampal
+    if(is.list(files(x)$db)) {
+        files(x)$db <- unlist(files(x)$db)
+    }
     dbExists <- file.exists(files(x)$db)
     if(all(dbExists)) {
         db <- character(0)
@@ -63,6 +67,10 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
         files(x)$db <- updatedDbs
     }
     # do binaries
+    # this check is for weirdness in older v of pampal
+    if(is.list(files(x)$binaries)) {
+        files(x)$binaries <- unlist(files(x)$binaries)
+    }
     binExists <- file.exists(files(x)$binaries)
     if(all(binExists)) {
         bin <- character(0)

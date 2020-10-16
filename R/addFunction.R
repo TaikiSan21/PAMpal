@@ -62,9 +62,9 @@ addFunction <- function(pps, fun, module=NULL, verbose = TRUE) {
 }
 
 # I put a function in yo function cuz i heard you like functions
-functionParser <- function(fun) {
+functionParser <- function(fun, skipArgs = c('data', 'calibration', '...')) {
     argList <- formals(fun)
-    toSet <- names(argList)[!(names(argList) %in% c('data', 'calibration', '...'))]
+    toSet <- names(argList)[!(names(argList) %in% skipArgs)]
     if(length(toSet) > 0) {
         for(a in toSet) {
             cat('Set a value for parameter "', a, '", please put quotes around strings', sep='')
@@ -72,6 +72,8 @@ functionParser <- function(fun) {
                 cat(' (no default value found):')
             } else if(class(argList[[a]]) == 'NULL') {
                 cat(' (default value is NULL):')
+            } else if(class(argList[[a]]) == 'call') {
+                cat(' (default value is ', deparse(argList[[a]]), '):', sep='')
             } else {
                 cat(' (default value is ', argList[[a]], '):', sep = '')
             }

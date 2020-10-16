@@ -152,7 +152,16 @@ setMethod('addGps', 'list', function(x, gps, thresh = 3600, ...) {
 #'
 setMethod('addGps', 'AcousticStudy', function(x, gps=NULL, thresh = 3600, ...) {
     if(is.null(gps)) {
+        dbExists <- file.exists(files(x)$db)
+        if(any(!dbExists)) {
+            message('Could not locate database file(s) ',
+                    printN(basename(files(x)$db[!dbExists]), 6),
+                    ', running "updateFiles()" may help.')
+        }
         gps <- rbindlist(lapply(files(x)$db, function(db) {
+            if(!file.exists(db)) {
+                return(NULL)
+            }
             gpsFromDb(db, extraCols=c('Speed', 'Heading', 'MagneticVariation', 'db'), ...)
         }))
         if(is.null(gps) ||
@@ -186,13 +195,26 @@ setMethod('addGps', 'ANY', function(x, gps, thresh = 3600, ...) {
 globalVariables(c('UTC', 'gpsTime', 'dataTime', 'db'))
 
 #' @importFrom data.table :=
+#' @importFrom PAMmisc addPgGps
 #'
 gpsFromDb <- function(db, extraCols=NULL, bounds=NULL) {
     con <- dbConnect(db, drv=SQLite())
     on.exit(dbDisconnect(con))
     if(!('gpsData' %in% dbListTables(con))) {
         cat('No "gpsData" table found in database', basename(db), '\n')
-        return(NULL)
+        addChoice <- menu(title = 'Would you like to add gps data to this database?',
+             choices = c('Yes', 'No'))
+        if(addChoice %in% c(0, 2)) {
+            return(NULL)
+        }
+        thisAddGps <- functionParser(addPgGps, skipArgs = c('db', 'gps'))
+        cat(paste0('Select a GPS file for database ', basename(db)))
+        chooseGps <- tk_choose.files(caption = paste0('Select a GPS file for database ', basename(db),':'))
+        if(length(chooseGps) == 0) {
+            return(NULL)
+        }
+        doAdd <- thisAddGps(db=db, gps=chooseGps)
+        return(gpsFromDb(db, extraCols, bounds))
     }
     thisGps <- dbReadTable(con, 'gpsData')
     setDT(thisGps)
