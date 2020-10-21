@@ -391,7 +391,7 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
         grouping <- c('event', 'detGroup')
     }
 
-    nBin<- sum(sapply(allDb, nBins))
+    nBin <- sum(sapply(allDb, nBins))
     if(progress) {
         cat('Processing databases... \n')
         pb <- txtProgressBar(min=0, max=nBin, style=3)
@@ -402,6 +402,7 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
     names(modWarn) <- modList
     allAcEv <- lapply(allDb, function(db) {
         tryCatch({
+            missBins <- character(0)
             binList <- pps@binaries$list
             binFuns <- pps@functions
             dbData <- getDbData(db, grouping, ...)
@@ -432,8 +433,9 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                     failBin <<- x$BinaryFile[1]
                     thisBin <- getMatchingBinaryData(x, binList, basename(db))
                     if(length(thisBin)==0) {
-                        warning('Could not find the matching binary file for ', x$BinaryFile[1],
-                                ' in database ', basename(db), call.=FALSE)
+                        missBins <<- c(missBins, x$BinaryFile[1])
+                        # warning('Could not find the matching binary file for ', x$BinaryFile[1],
+                        #         ' in database ', basename(db), call.=FALSE)
                         return(NULL)
                     }
                     modType <- getModuleType(thisBin)
@@ -452,6 +454,11 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                     }
                 }
             )
+            if(length(missBins) > 0) {
+                warning('Could not find the matching binary files for binaries ',
+                        printN(missBins, 3),
+                        ' in database ', basename(db), call.=FALSE)
+            }
             # This is a list for each binary, we want for each detector
             dbData <- dbData[sapply(dbData, function(x) !is.null(x))]
 
@@ -498,6 +505,7 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             return(NULL)
         })
     })
+
     if(progress) {
         cat('\n')
     }
@@ -614,12 +622,14 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
     allDetections <- inner_join(
         allDetections, allEvents, by=c('parentUID'='UID')
     )
-
+    if(!('newUID') %in% colnames(allDetections)) {
+        allDetections$newUID <- -1
+    }
     allDetections <- allDetections %>%
         mutate(BinaryFile = str_trim(.data$BinaryFile),
                # UTC = as.POSIXct(as.character(UTC), format='%Y-%m-%d %H:%M:%OS', tz='UTC')) %>%
                UTC = pgDateToPosix(.data$UTC)) %>%
-        select_(.dots=unique(c(eventColumns, 'UTC', 'Id', 'UID', 'parentUID', 'BinaryFile')))
+        select_(.dots=unique(c(eventColumns, 'UTC', 'Id', 'UID', 'parentUID', 'BinaryFile', 'newUID')))
 
     # rename column to use as label - standardize across event group types
     colnames(allDetections)[which(colnames(allDetections)==label)] <- 'eventLabel'
@@ -637,9 +647,9 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
     allDetections
 }
 
-getMatchingBinaryData <- function(dbData, binList, dbName) {
+getMatchingBinaryData <- function(dbData, binList, dbName, idCol = 'UID') {
     # dbData here has a single BinaryFile in it, we've split by that before here
-    dbData <- arrange(dbData, .data$UID)
+    dbData <- arrange(dbData, .data[[idCol]])
     # This breaks if 'dbData' doesnt have binaryfile...
     # Borked if UID mismatch between dems
     binFile <- dbData$BinaryFile[1]
@@ -647,50 +657,43 @@ getMatchingBinaryData <- function(dbData, binList, dbName) {
     if(length(allBinFiles)==0) {
         return(NULL)
     }
-    if(length(allBinFiles)==1) {
-        thisBin <- loadPamguardBinaryFile(allBinFiles, keepUIDs=dbData$UID)
-        matchSr <- select(dbData, .data$UID, .data$sampleRate) %>%
-            distinct() %>% arrange(.data$UID)
-        if(setequal(matchSr$UID, names(thisBin$data))) {
-            for(i in seq_along(matchSr$UID)) {
-                thisBin$data[[i]]$sr <- matchSr$sampleRate[i]
-            }
+    dbData$matched <- FALSE
+    for(bin in seq_along(allBinFiles)) {
+        thisBin <- loadPamguardBinaryFile(allBinFiles[bin], keepUIDs = unique(c(dbData[['UID']], dbData[['newUID']])))
+        if(bin == 1) {
+            result <- thisBin
         } else {
-            warning(paste0('UID(s) ', printN(setdiff(matchSr$UID, names(thisBin$data)), n=6, collapse=', '),
-                           ' are in database ', dbName, ' but not in binary file ', binFile), call.=FALSE)
-            for(i in names(thisBin$data)) {
-                thisBin$data[[i]]$sr <- matchSr$sampleRate[matchSr$UID==i]
+            result$data <- c(result$data, thisBin$data)
+        }
+        # We've found the right file if theres any data
+        if(length(thisBin$data) > 0) {
+            # thisBin$data <- thisBin$data[names(thisBin$data) %in% dbData[[idCol]]]
+            dbData$matched[dbData[['UID']] %in% names(thisBin$data)] <- TRUE
+            dbData$matched[dbData[['newUID']] %in% names(thisBin$data)] <- TRUE
+            if(all(dbData$matched)) {
+                break
             }
         }
-        return(thisBin)
     }
-    if(length(allBinFiles) > 1) {
-        for(bin in allBinFiles) {
-            thisBin <- loadPamguardBinaryFile(bin, keepUIDs = dbData$UID)
-            # We've found the right file if theres any data
-            if(length(thisBin$data) > 0) {
-                thisBin$data <- thisBin$data[names(thisBin$data) %in% dbData$UID]
-                matchSr <- select(dbData, .data$UID, .data$sampleRate) %>%
-                    distinct() %>% arrange(.data$UID)
-                if(setequal(matchSr$UID, names(thisBin$data))) {
-                    for(i in seq_along(matchSr$UID)) {
-                        thisBin$data[[i]]$sr <- matchSr$sampleRate[i]
-                    }
-                } else {
-                    warning(paste0('UID(s) ', printN(setdiff(matchSr$UID, names(thisBin$data)), n=6, collapse=', '),
-                                   ' are in database ', dbName, ' but not in binary file ', binFile), call.=FALSE)
-                    for(i in names(thisBin$data)) {
-                        thisBin$data[[i]]$sr <- matchSr$sampleRate[matchSr$UID==i]
-                    }
-                }
-                return(thisBin)
-            } else {
-                next
-            }
-        }
-        # If we made it here we didnt find a matching file
+    if(length(result$data) == 0) {
         return(NULL)
     }
+    if(!all(dbData$matched)) {
+        warning(paste0('UID(s) ', printN(dbData$UID[!dbData$matched], n=6),
+                       ' are in databases ', dbName, ' but not in binary file ', binFile), call.=FALSE)
+    }
+    # do SR match after, if onyl one we can just simple match
+    if(length(unique(dbData$sampleRate)) == 1) {
+        for(i in seq_along(result$data)) {
+            result$data[[i]]$sr <- dbData$sampleRate[1]
+        }
+    } else {
+        for(i in names(result$data)) {
+            ix <- min(which(dbData[['UID']] == i | dbData[['newUID']] == i))
+            result$data[[i]]$sr <- dbData$sampleRate[ix]
+        }
+    }
+    result
 }
 
 checkGrouping <- function(grouping, format) {
@@ -766,6 +769,9 @@ readSa <- function(db) {
 
 nBins <- function(db) {
     evData <- getDbData(db)
+    if(nrow(evData) == 0) {
+        return(0)
+    }
     length(unique(evData$BinaryFile))
 }
 

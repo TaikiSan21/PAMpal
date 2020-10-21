@@ -27,7 +27,7 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #' @rdname filter
-#' @importMethodsFrom dplyr filter
+#' @importFrom dplyr filter
 #' @importFrom rlang as_label quos parse_expr
 #' @export
 #'
