@@ -1,3 +1,13 @@
+## PAMpal 0.9.5
+
+* Modified `processPgDetections` for `mode='db'` to work with a possibel "newUID"
+column from PAMmisc's updateUID function. Also does a better job of matching if there
+are multiple possible binary files.
+
+* `addGps` now asks if you want to add gps data to your database if it has none
+
+* Better warning messages for processing data
+
 ## PAMpal 0.9.4
 
 * Big update to documentation and testing for CRAN prep

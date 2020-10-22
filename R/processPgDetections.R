@@ -328,7 +328,8 @@ processPgDetectionsTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%
     acousticEvents <- vector('list', length = nrow(grouping))
     evName <- as.character(grouping$id)
 
-    colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentUID', 'sr', 'callType')
+    colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentUID',
+                    'sr', 'callType', 'newUID')
     names(acousticEvents) <- evName
 
     for(i in seq_along(acousticEvents)) {
@@ -447,6 +448,8 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                     }
                     binData <- calculateModuleData(thisBin, binFuns)
                     if(!is.null(binData)) {
+                        noMatch <- which(!(x$UID %in% binData$UID))
+                        x$UID[noMatch] <- x$newUID[noMatch]
                         binData %>%
                             select(-.data$BinaryFile) %>%
                             inner_join(x, by='UID') %>%
@@ -476,7 +479,8 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
 
             # Should this function store the event ID? Right now its just the name
             # in the list, but is this reliable? Probably not
-            colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentUID', 'sr', 'callType')
+            colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentUID',
+                            'sr', 'callType', 'newUID')
             acousticEvents <- lapply(dbData, function(ev) {
                 ev <- ev[sapply(ev, function(x) !is.null(x))]
                 binariesUsed <- sapply(ev, function(x) unique(x$BinaryFile)) %>%
@@ -660,19 +664,20 @@ getMatchingBinaryData <- function(dbData, binList, dbName, idCol = 'UID') {
     dbData$matched <- FALSE
     for(bin in seq_along(allBinFiles)) {
         thisBin <- loadPamguardBinaryFile(allBinFiles[bin], keepUIDs = unique(c(dbData[['UID']], dbData[['newUID']])))
-        if(bin == 1) {
-            result <- thisBin
-        } else {
-            result$data <- c(result$data, thisBin$data)
-        }
+
         # We've found the right file if theres any data
         if(length(thisBin$data) > 0) {
             # thisBin$data <- thisBin$data[names(thisBin$data) %in% dbData[[idCol]]]
             dbData$matched[dbData[['UID']] %in% names(thisBin$data)] <- TRUE
             dbData$matched[dbData[['newUID']] %in% names(thisBin$data)] <- TRUE
-            if(all(dbData$matched)) {
-                break
-            }
+        }
+        if(bin == 1) {
+            result <- thisBin
+        } else {
+            result$data <- c(result$data, thisBin$data)
+        }
+        if(all(dbData$matched)) {
+            break
         }
     }
     if(length(result$data) == 0) {
