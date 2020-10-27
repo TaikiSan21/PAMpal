@@ -2,16 +2,29 @@
 % Please edit documentation in R/writeEventClips.R
 \name{writeEventClips}
 \alias{writeEventClips}
-\title{Create Wav Clips of Events}
+\title{Create Wav Clips of Data}
 \usage{
-writeEventClips(x, buffer = 0.1, outDir = ".")
+writeEventClips(
+  x,
+  buffer = c(-0.1, 0.1),
+  outDir = ".",
+  mode = c("event", "detection"),
+  progress = TRUE
+)
 }
 \arguments{
-\item{x}{\linkS4class{AcousticStudy} object containing events to make wav clips for}
+\item{x}{\linkS4class{AcousticStudy} object containing data to make wav clips for}
 
-\item{buffer}{amount around each event to also include in the clip, in seconds}
+\item{buffer}{amount before and after each event to also include in the clip, in seconds.
+Can either be a vector of length two specifying how much to buffer before and after
+(first number should be negative), or a single value if the buffer amount should be identical.}
 
 \item{outDir}{directory to write clips to, defaults to current directory}
+
+\item{mode}{either \code{'event'} or \code{'detection'} specifying whether to create
+wav clips of entire events or individual detections}
+
+\item{progress}{logical flag to show progress bar}
 }
 \value{
 A vector of file names for the wav clips that were successfully
@@ -19,16 +32,17 @@ A vector of file names for the wav clips that were successfully
   that currently this can only write clips with up to 2 channels.
 }
 \description{
-Creates audio clips containing sounds from events
+Creates audio clips containing sounds from events or detections
 }
 \examples{
 
 data(exStudy)
 recs <- system.file('extdata', 'Recordings', package='PAMpal')
 exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
-tdir <- tempdir()
-wavs <- writeEventClips(exStudy, outDir=tdir)
-file.remove(wavs)
+\dontrun{
+# not running so that no wav clips are written to disk
+wavs <- writeEventClips(exStudy, outDir='WavFolder')
+}
 
 }
 \author{

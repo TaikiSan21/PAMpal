@@ -78,9 +78,16 @@ checkTime <- function(x, length=Inf, between=60*60*2) {
             as.numeric(d[['UTC']])
         }))
         allTimes <- sort(allTimes)
-        list(evLen = diff(range(allTimes)),
-             evBtwn = max(diff(allTimes)),
-             id = id(e))
+        if(length(allTimes) > 1) {
+            list(evLen = diff(range(allTimes)),
+                 evBtwn = max(diff(allTimes)),
+                 id = id(e))
+        } else {
+            list(evLen = 0,
+                 evBtwn = 0,
+                 id = id(e)
+            )
+        }
     }))
     # browser()
     isLong <- evTimes$evLen > length

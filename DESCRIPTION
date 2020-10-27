@@ -21,7 +21,8 @@ LazyData: true
 Depends: 
     R (>= 3.5.0),
     PamBinaries (>= 1.3.0),
-    dplyr
+    dplyr,
+    tuneR
 Imports:
     seewave,
     gam,
@@ -34,7 +35,6 @@ Imports:
     magrittr,
     signal,
     readr,
-    tuneR,
     tidyr,
     ggplot2,
     manipulate,

@@ -135,17 +135,6 @@ safeListAdd <- function(x, value) {
     x
 }
 
-# named vector for AcEv, or named list of named vectors for AcSt
-getEventTime <- function(x) {
-    if(is.AcousticStudy(x)) {
-        return(lapply(events(x), getEventTime))
-    }
-    allDets <- bind_rows(lapply(detectors(x), function(d) {
-        d[, 'UTC', drop = FALSE]
-    }))
-    c(start=min(allDets$UTC), end=max(allDets$UTC))
-}
-
 # clip of fixed length, zeropads if needed and deals with edge case
 clipAroundPeak <- function(wave, length) {
     if(length(wave) < length) {
@@ -172,4 +161,8 @@ printN <- function(x, n=6, collapse=', ') {
         x <- c(x[1:n], paste0('... (', nItems-n, ' more not shown)'))
     }
     paste0(paste(x, collapse=collapse))
+}
+
+badRead <- function(x, ...) {
+    readWave(x, ...)
 }

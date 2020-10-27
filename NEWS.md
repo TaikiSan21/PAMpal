@@ -8,6 +8,8 @@ are multiple possible binary files.
 
 * Better warning messages for processing data
 
+* `writeEventClips` modified to work with events or individual detections
+
 ## PAMpal 0.9.4
 
 * Big update to documentation and testing for CRAN prep
@@ -15,6 +17,8 @@ are multiple possible binary files.
 ## PAMpal 0.9.3
 
 * `addRecordings` function added to deal with keeping track of wav recordings in a study
+
+* Name changed to PAMpal because `pamr` was taken on CRAN
 
 ## PAMr 0.9.2
 
