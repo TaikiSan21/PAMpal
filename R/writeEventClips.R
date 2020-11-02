@@ -9,6 +9,7 @@
 #' @param outDir directory to write clips to, defaults to current directory
 #' @param mode either \code{'event'} or \code{'detection'} specifying whether to create
 #'   wav clips of entire events or individual detections
+#' @param channel channel(s) of clips to write
 #' @param progress logical flag to show progress bar
 #'
 #' @return A vector of file names for the wav clips that were successfully
@@ -33,12 +34,28 @@
 #'
 #' @export
 #'
-writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event', 'detection'), progress=TRUE) {
+writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event', 'detection'),
+                            channel = 1, progress=TRUE) {
     if(!is.AcousticStudy(x)) {
         stop('"x" must be an AcousticStudy object.')
     }
     if(is.null(files(x)$recordings)) {
         stop('No recording files found, use function "addRecordings" first.')
+    }
+    if(length(channel) > 2) {
+        message('R can only write wav files with 2 or less events, channels will be split',
+                ' across multiple files.')
+        allFiles <- character(0)
+        for(i in 1:(ceiling(length(channel)/2))) {
+            ix <- (i-1)*2 +1
+            if((ix+1) <= length(channel)) {
+                thisChan <- channel[ix:(ix+1)]
+            } else {
+                thisChan <- channel[ix]
+            }
+            allFiles <- c(allFiles, writeEventClips(x, buffer, outDir, mode, channel = thisChan, progress))
+        }
+        return(allFiles)
     }
     if(!dir.exists(outDir)) dir.create(outDir)
     evDbs <- sapply(events(x), function(e) files(e)$db)
@@ -52,6 +69,12 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
     buffer <- abs(buffer) * c(-1, 1)
     # each database can have a different set of assigned recordings,
     # so we break up by DB
+
+    # setup warning storage
+    noMatch <- character(0)
+    nonConsec <- character(0)
+    fileDNE <- character(0)
+    noChan <- character(0)
     for(d in seq_along(dbMap)) {
         thisDbData <- x[which(evDbs == names(dbMap)[d])]
         if(length(events(thisDbData)) == 0) next
@@ -73,7 +96,8 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
             if(is.na(startIx)) {
                 startIx <- checkIn(timeRange[1] + buffer[1], wavMap)
                 if(is.na(startIx)) {
-                    warning('Could not find matching wav files for ', mode, names(allFiles)[i])
+                    noMatch <- c(noMatch, names(allFiles)[i])
+                    # warning('Could not find matching wav files for ', mode, names(allFiles)[i])
                     allFiles[[i]] <- NA
                     if(progress) {
                         setTxtProgressBar(pb, value=i)
@@ -86,7 +110,8 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
             if(is.na(endIx)) {
                 endIx <- checkIn(timeRange[2] - buffer[2], wavMap)
                 if(is.na(endIx)) {
-                    warning('Could not find matching wav files for ', mode, names(allFiles)[i])
+                    # warning('Could not find matching wav files for ', mode, names(allFiles)[i])
+                    noMatch <- c(noMatch, names(allFiles)[i])
                     allFiles[[i]] <- NA
                     if(progress) {
                         setTxtProgressBar(pb, value=i)
@@ -96,8 +121,9 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
                 timeRange[2] <- wavMap$end[endIx]
             }
             if(wavMap$fileGroup[startIx] != wavMap$fileGroup[endIx]) {
-                warning(oneUpper(mode), names(allFiles)[i],
-                        ' spanned two non-consecutive wav files, could not create clip.', call.=FALSE)
+                nonConsec <- c(nonConsec, names(allFiles)[i])
+                # warning(oneUpper(mode), names(allFiles)[i],
+                #         ' spanned two non-consecutive wav files, could not create clip.', call.=FALSE)
                 allFiles[[i]] <- NA_character_
                 if(progress) {
                     setTxtProgressBar(pb, value=i)
@@ -105,8 +131,9 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
                 next
             }
             if(any(!file.exists(wavMap$file[startIx:endIx]))) {
-                warning('Wav files for ', mode, names(allFiles)[i], ' could not be found on disk.',
-                        ' Function "updateFiles" can help relocate files that have moved.', call. = FALSE)
+                fileDNE <- c(fileDNE, names(allFiles)[i])
+                # warning('Wav files for ', mode, names(allFiles)[i], ' could not be found on disk.',
+                #         ' Function "updateFiles" can help relocate files that have moved.', call. = FALSE)
                 allFiles[[i]] <- NA_character_
                 if(progress) {
                     setTxtProgressBar(pb, value=i)
@@ -130,9 +157,24 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
 
             wavResult <- wavResult[!sapply(wavResult, is.null)]
             wavResult <- do.call(bind, wavResult) # [, 1:min(2, ncol(wavResult))]
-            wavResult <- wavResult[, 1:min(2, ncol(wavResult))]
-            colnames(wavResult) <- MCnames$name[1:min(2, ncol(wavResult))]
-            fileName <- paste0(oneUpper(mode), '_', names(allFiles)[i], '.wav')
+            chanIn <- channel <= ncol(wavResult@.Data)
+            if(!any(chanIn)) {
+                noChan <- c(noChan, names(allFiles)[i])
+                # warning('Wav files for ', mode, names(allFiles)[i], ' did not have the desired channels',
+                #         ' (file had ', ncol(wavResult), ' channels, you wanted ',
+                #         paste0(channel, collapse=', '))
+                allFiles[[i]] <- NA_character_
+                if(progress) {
+                    setTxtProgressBar(pb, value = i)
+                }
+                next
+            }
+            if(!all(chanIn)) {
+                noChan <- c(noChan, names(allFiles)[i])
+            }
+            wavResult <- wavResult[, channel[chanIn]]
+            colnames(wavResult) <- MCnames$name[1:ncol(wavResult)]
+            fileName <- paste0(oneUpper(mode), '_', names(allFiles)[i], 'CH', paste0(channel[chanIn], collapse=''))
             fileName <- paste0(gsub('\\.wav$', '', fileName), '.wav')
             fileName <- file.path(outDir, fileName)
             writeWave(wavResult, fileName, extensible = FALSE)
@@ -145,6 +187,21 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
         cat('\n', paste0('Wrote ', sum(!isNa), ' wav file(s).\n'))
         # names(allFiles) <- sapply(event, function(x) x@id)
         allFiles
+    }
+    if(length(noMatch) > 0) {
+        warning('Could not find matching wav files for ', mode, ' ', printN(noMatch, 6), call.=FALSE)
+    }
+    if(length(nonConsec) > 0) {
+        warning(oneUpper(mode), ' ', printN(nonConsec, 6),
+            ' spanned two non-consecutive wav files, could not create clip.', call.=FALSE)
+    }
+    if(length(fileDNE) > 0) {
+        warning('Wav files for ', mode, ' ', printN(fileDNE, 6), ' could not be found on disk.',
+            ' Function "updateFiles" can help relocate files that have moved.', call. = FALSE)
+    }
+    if(length(noChan) > 0) {
+        warning('Wav files for ', mode, ' ', printN(noChan, 6),
+                ' did not have the desired channels.', call.=FALSE)
     }
     invisible(allFiles)
 }

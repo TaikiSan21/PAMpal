@@ -1,3 +1,9 @@
+## PAMpal 0.9.6
+
+* `writeEventClips` updated to use channel argument
+
+* R and package version now stored in studies when created
+
 ## PAMpal 0.9.5
 
 * Modified `processPgDetections` for `mode='db'` to work with a possibel "newUID"

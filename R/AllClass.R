@@ -225,6 +225,8 @@ setClassUnion('dataframeORtable', members = c('data.frame', 'data.table'))
 #' @slot ancillary miscellaneous extra data
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
+#'
+#' @importFrom utils packageVersion
 #' @export
 #'
 setClass('AcousticStudy',
@@ -278,6 +280,8 @@ AcousticStudy <- function(id=NULL,
     for(n in names(files)) {
         fileTemp[[n]] <- files[[n]]
     }
+    ancillary$version <- list(R = R.version.string,
+                              PAMpal = packageVersion('PAMpal'))
     new('AcousticStudy', id=id, events=events, files=fileTemp, gps=gps,pps=pps,
         settings=settings, effort=effort, models=models, ancillary=ancillary)
 }

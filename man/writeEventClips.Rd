@@ -9,6 +9,7 @@ writeEventClips(
   buffer = c(-0.1, 0.1),
   outDir = ".",
   mode = c("event", "detection"),
+  channel = 1,
   progress = TRUE
 )
 }
@@ -23,6 +24,8 @@ Can either be a vector of length two specifying how much to buffer before and af
 
 \item{mode}{either \code{'event'} or \code{'detection'} specifying whether to create
 wav clips of entire events or individual detections}
+
+\item{channel}{channel(s) of clips to write}
 
 \item{progress}{logical flag to show progress bar}
 }
