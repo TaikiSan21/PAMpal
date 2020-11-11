@@ -92,7 +92,7 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
     sp[is.null(sp)] <- NA_character_
     spNa <- sapply(sp, is.na)
     if(training && any(spNa)) {
-        warning('Events ', paste(names(x)[which(spNa)], collapse=', '),
+        warning('Events ', printN(names(x)[which(spNa)], 6),
                 ' do not have a species ID. Data can only be used for prediction, not model training.', call. = FALSE)
         training <- FALSE
     }
@@ -120,7 +120,7 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
             noTrainSpecies <- names(nSpecies)[nSpecies < 2]
             noTrainSpecies <- noTrainSpecies[!(noTrainSpecies %in% dropSpecies)]
             if(length(noTrainSpecies) > 0) {
-                warning('Species ', paste0(noTrainSpecies, collapse=', '),
+                warning('Species ', printN(noTrainSpecies, 10),
                         ' do not have enough events to train a banter model (min 2),',
                         ' these will be removed.', call. = FALSE)
                 dropSpecies <- c(dropSpecies, noTrainSpecies)
@@ -129,7 +129,7 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
             noTrainSpecies <- names(nSpecies)[nSpecies < 3]
             noTrainSpecies <- noTrainSpecies[!(noTrainSpecies %in% dropSpecies)]
             if(length(noTrainSpecies) > 0) {
-                warning('Species ', paste0(noTrainSpecies, collapse=', '),
+                warning('Species ', printN(noTrainSpecies, 10),
                         ' do not have enough events to train a banter model (min 2',
                         ' to train plus 1 for testing), these will be removed.', call. = FALSE)
                 dropSpecies <- c(dropSpecies, noTrainSpecies)

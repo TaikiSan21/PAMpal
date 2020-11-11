@@ -4,6 +4,16 @@
 
 * R and package version now stored in studies when created
 
+* `standardClickCalcs` now uses "channelMap" from binaries to assign correct channel
+if it is present instead of defaulting to Channel 1 & 2
+
+* `export_banter` warning messagaes cleaned up
+
+* Removed extra "Peak 3dB" and "Peak 10dB" values from `standardClickCalcs`
+
+* `filter` now works with a special case for `database` and also works for
+any environmental variables added
+
 ## PAMpal 0.9.5
 
 * Modified `processPgDetections` for `mode='db'` to work with a possibel "newUID"

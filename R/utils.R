@@ -162,7 +162,3 @@ printN <- function(x, n=6, collapse=', ') {
     }
     paste0(paste(x, collapse=collapse))
 }
-
-badRead <- function(x, ...) {
-    readWave(x, ...)
-}

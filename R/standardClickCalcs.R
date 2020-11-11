@@ -46,8 +46,8 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
     result <- list()
     paramNames <- c('Channel', 'noiseLevel', 'duration', 'peakTime', 'peak', 'peak2', 'peak3', 'trough',
                     'trough2', 'peakToPeak2', 'peakToPeak3', 'peak2ToPeak3', 'dBPP', 'Q_10dB',
-                    'PeakHz_10dB', 'fmin_10dB', 'fmax_10dB', 'BW_10dB', 'centerHz_10dB',
-                    'Q_3dB', 'PeakHz_3dB', 'fmin_3dB', 'fmax_3dB', 'BW_3dB', 'centerHz_3dB')
+                    'fmin_10dB', 'fmax_10dB', 'BW_10dB', 'centerHz_10dB',
+                    'Q_3dB', 'fmin_3dB', 'fmax_3dB', 'BW_3dB', 'centerHz_3dB')
     # Do for each channel
     if(inherits(data, 'Wave')) {
         data <- WaveMC(data)
@@ -190,11 +190,11 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
         thisDf$dBPP <- dBPP
         # Finding 10/3 dB bandwidth - modified 'Q' function from seewave package
         dbBW10 <- Qfast(calibratedClick, f=sr, level=-10, plot=FALSE)
-        names(dbBW10) <- c('Q_10dB', 'PeakHz_10dB', 'fmin_10dB', 'fmax_10dB', 'BW_10dB')
+        names(dbBW10) <- c('Q_10dB', 'fmin_10dB', 'fmax_10dB', 'BW_10dB')
         dbBW10$centerHz_10dB <- dbBW10$fmax_10dB - (dbBW10$BW_10dB/2)
 
         dbBW3 <- Qfast(calibratedClick, f=sr, level=-3, plot=FALSE)
-        names(dbBW3) <- c('Q_3dB', 'PeakHz_3dB', 'fmin_3dB', 'fmax_3dB', 'BW_3dB')
+        names(dbBW3) <- c('Q_3dB', 'fmin_3dB', 'fmax_3dB', 'BW_3dB')
         dbBW3$centerHz_3dB <- dbBW3$fmax_3dB - (dbBW3$BW_3dB/2)
 
         thisDf <- c(thisDf, dbBW10, dbBW3)
@@ -203,8 +203,26 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
     }
     # Combine calcs for all channels
     result <- bind_rows(result)
+    if('channelMap' %in% names(data)) {
+        mapChans <- cmapToChan(data$channelMap)
+        if(length(mapChans) == nrow(result)) {
+            result$Channel <- mapChans
+        }
+    }
     result$Channel <- as.character(result$Channel)
     result
+}
+
+cmapToChan <- function(x) {
+    maxCheck <- ceiling(log2(x))
+    chan <- integer(0)
+    for(i in 1:maxCheck) {
+        if(bitwAnd(x, 2^(i-1)) == 0) {
+            next
+        }
+        chan <- c(chan, i)
+    }
+    chan
 }
 
 #' @importFrom stats approx
@@ -237,7 +255,7 @@ Qfast <- function(spec,
     }
     specMax <- which.max(spec)
     if(length(specMax)==0) {
-        return(list(Q = 0, dfreq = 0, fmin = 0, fmax = 0, bdw = 0))
+        return(list(Q = 0, fmin = 0, fmax = 0, bdw = 0))
     }
     # if (spec[specMax] == 1)
     #     stop("data must be in dB")
@@ -270,7 +288,9 @@ Qfast <- function(spec,
     }
     fBkhz <- ((fB-1)/(n1-1)) * (range[2]-range[1]) + range[1]
     Q <- f0khz/(fBkhz-fAkhz)
-    results <- list(Q = Q, dfreq = f0khz, fmin = fAkhz, fmax = fBkhz,
+    results <- list(Q = Q,
+                    fmin = fAkhz,
+                    fmax = fBkhz,
                     bdw = fBkhz - fAkhz)
 
     # Temp fix on missing, if any are borked then Q is borked so go check

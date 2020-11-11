@@ -87,20 +87,6 @@ test_that('Test working with AcousticStudy object', {
         sapply(lessData$detectors, function(x) 'peak' %in% colnames(x))
     ))
 
-    # test filtering
-    filterNone <- filter(exData, VARDNE == 'DNE')
-    expect_identical(exData, filterNone)
-    exData <- setSpecies(exData, method='manual', value=letters[1:2])
-    spFilter <- filter(exData, species == 'a')
-    expect_equal(length(events(spFilter)), 1)
-    expect_equal(species(spFilter[[1]])$id, 'a')
-    spFilter <- filter(exData, species %in% letters[1:3])
-    expect_identical(spFilter, exData)
-    peakFilter <- filter(exData, peak < 20)
-    expect_true(all(detectors(peakFilter)$click$peak < 20))
-    peakFilter <- filter(exData, peak < 2000)
-    expect_identical(peakFilter, exData)
-
     # test add recordings
     recs <- system.file('extdata', 'Recordings', package='PAMpal')
     exData <- addRecordings(exData, folder = recs, log=FALSE, progress=FALSE)
@@ -109,6 +95,41 @@ test_that('Test working with AcousticStudy object', {
 
 })
 
+test_that('Test filter', {
+    data(exStudy)
+    # test filtering
+    filterNone <- filter(exStudy, VARDNE == 'DNE')
+    expect_identical(exStudy, filterNone)
+    exStudy <- setSpecies(exStudy, method='manual', value=letters[1:2])
+    spFilter <- filter(exStudy, species == 'a')
+    expect_equal(length(events(spFilter)), 1)
+    expect_equal(species(spFilter[[1]])$id, 'a')
+    spFilter <- filter(exStudy, species %in% letters[1:3])
+    expect_identical(spFilter, exStudy)
+    peakFilter <- filter(exStudy, peak < 20)
+    expect_true(all(detectors(peakFilter)$click$peak < 20))
+    peakFilter <- filter(exStudy, peak < 2000)
+    events(peakFilter) <- lapply(events(peakFilter), function(x) {
+        detectors(x) <- lapply(detectors(x), function(y) {
+            row.names(y) <- NULL
+            y
+        })
+        x
+    })
+    events(exStudy) <- lapply(events(exStudy), function(x) {
+        detectors(x) <- lapply(detectors(x), function(y) {
+            row.names(y) <- NULL
+            y
+        })
+        x
+    })
+    expect_identical(peakFilter, exStudy)
+
+    dbFilter <- filter(exStudy, database == files(exStudy)$db)
+    expect_identical(exStudy, dbFilter)
+    dbNone <- filter(exStudy, database == 'NODB.sqlite3')
+    expect_equal(length(events(dbNone)), 0)
+})
 test_that('Test checkStudy test cases', {
     # create example data
     data(exStudy)

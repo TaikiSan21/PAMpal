@@ -71,7 +71,7 @@ getBinaryData <- function(x, UID, quiet=FALSE, ...) {
     if(is.null(bins) ||
        nrow(bins) == 0) {
         if(!quiet) {
-            warning('No matches found for UID(s) ', paste(UID, collapse=', '), '.')
+            warning('UID(s) ', printN(UID, 6), ' were not found in data.')
         }
         return(NULL)
     }
@@ -96,12 +96,12 @@ getBinaryData <- function(x, UID, quiet=FALSE, ...) {
     if(any(nIn == 0) &&
        !quiet) {
         warning('No matches found for UID(s) ',
-                paste(UID[nIn == 0], collapse=', '), '.')
+                printN(UID[nIn == 0], 6), '.')
     }
     if(any(nIn > 1)) {
         warning('Multiple matches found for UID(s) ',
-                paste(UID[nIn > 1], collapse=', '), '.')
-        print(bins[bins[['UID']] %in% UID[nIn > 1],])
+                printN(UID[nIn > 1], 6), '.')
+        # print(bins[bins[['UID']] %in% UID[nIn > 1],])
     }
     # Bins is detector data
     result <- lapply(unique(bins$BinaryFile), function(bin) {

@@ -33,18 +33,59 @@
 #'
 filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
     dotChars <- sapply(quos(...), as_label)
+    notFilt <- names(dotChars) != ''
+    if(any(notFilt)) {
+        warning('Did you put "=" when you meant "=="? This filter will not be applied.')
+    }
+    # do event level filters first
     isSpecies <- grepl('species|Species', dotChars)
     if(any(isSpecies)) {
         # do species filtering first
-        spKeep <- rep(FALSE, length(events(.data)))
+        naSp <- sapply(events(.data), function(x) is.na(species(x)$id))
+        if(any(naSp)) {
+            warning('Attempting to filter by species, but ', sum(naSp),
+                    ' species have not been set. These will be removed from',
+                    ' the filtered results.')
+        }
+        spKeep <- rep(TRUE, length(events(.data)))
         exprText <- gsub('(species|Species)', 'species(x)$id', dotChars[isSpecies])
         for(s in seq_along(exprText)) {
             thisKeep <- sapply(events(.data), function(x) eval(parse_expr(exprText[s])))
+            thisKeep[is.na(thisKeep)] <- FALSE
             # browser()
-            spKeep <- spKeep | thisKeep
+            spKeep <- spKeep & thisKeep
         }
         events(.data) <- events(.data)[spKeep]
+        if(length(events(.data)) == 0) {
+            return(.data)
+        }
     }
+
+    isDb <- grepl('database|Database', dotChars)
+    if(any(isDb)) {
+        dbKeep <- rep(TRUE, length(events(.data)))
+        exprText <- gsub('(database|Database)', 'files(x)$db', dotChars[isDb])
+        for(d in seq_along(exprText)) {
+            thisKeep <- sapply(events(.data), function(x) eval(parse_expr(exprText[d])))
+            dbKeep <- dbKeep & thisKeep
+        }
+        events(.data) <- events(.data)[dbKeep]
+        if(length(events(.data)) == 0) {
+            return(.data)
+        }
+    }
+    # do enviro?
+    if(!is.null(ancillary(.data[[1]])$environmental)) {
+        evDf <- bind_rows(lapply(events(.data), function(x) {
+            ancillary(x)$environmental
+        }))
+        filteredEv <- doFilter(evDf[, !(names(evDf) %in% c('UTC', 'Longitude', 'Latitude')), drop=FALSE], ...)
+        events(.data) <- events(.data)[unique(filteredEv$event)]
+        if(length(events(.data)) == 0) {
+            return(.data)
+        }
+    }
+
     events(.data) <- lapply(events(.data), function(x) {
         filter(x, ...)
     })
