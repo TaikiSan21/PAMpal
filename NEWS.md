@@ -14,6 +14,8 @@ if it is present instead of defaulting to Channel 1 & 2
 * `filter` now works with a special case for `database` and also works for
 any environmental variables added
 
+* Updating some docs for GitHub pages website
+
 ## PAMpal 0.9.5
 
 * Modified `processPgDetections` for `mode='db'` to work with a possibel "newUID"
