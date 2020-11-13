@@ -25,11 +25,6 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
-#' @examples
-#'
-#' data(exStudy)
-#' calculateAverageSpectra(exStudy, plot=TRUE)
-#'
 #' @importFrom signal hanning
 #' @importFrom graphics par image axis
 #' @importFrom stats fft
