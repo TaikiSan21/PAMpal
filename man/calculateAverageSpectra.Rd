@@ -46,12 +46,6 @@ invisibly returns a list with three items: \code{freq}, the frequency,
 Calculates the average spectra of all the clicks present in an
   event
 }
-\examples{
-
-data(exStudy)
-calculateAverageSpectra(exStudy, plot=TRUE)
-
-}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }
