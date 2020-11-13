@@ -229,5 +229,5 @@ For bug fixes and feature additions in each version see the [NEWS][news] file
 [in-development]: InDevelopment.md
 [next-steps-processing]: NextStepsProcessing.md
 [errors]: Errors.md
-[news]: ../NEWS.md
+[news]: https://github.com/TaikiSan21/PAMpal/blob/master/NEWS.md
 

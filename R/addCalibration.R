@@ -273,10 +273,12 @@ findCalibration <- function(calName, module = 'ClickDetector') {
         obj <- get(x, envir = .GlobalEnv)
         if('PAMpalSettings' %in% class(obj)) {
             obj
+        } else if(is.AcousticStudy(obj)) {
+            obj@pps
         } else {
             NULL
         }
-    })
+        })
     allPps <- allPps[!sapply(allPps, is.null)]
     hasCal <- which(sapply(allPps, function(x) calName %in% names(x@calibration[[module]])))
     if(length(hasCal) == 0) {
@@ -284,8 +286,8 @@ findCalibration <- function(calName, module = 'ClickDetector') {
              ' please re-apply calibration.')
     }
     if(length(hasCal) > 1) {
-        warning('Found more than one instance of calibration function named ', calName,
-                ', using the first one.')
+        # warning('Found more than one instance of calibration function named ', calName,
+        #         ', using the first one.')
         useCal <- hasCal[1]
     } else {
         useCal <- hasCal[1]

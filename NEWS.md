@@ -16,6 +16,8 @@ any environmental variables added
 
 * Updating some docs for GitHub pages website
 
+* Adding `calculateAverageSpectra` back
+
 ## PAMpal 0.9.5
 
 * Modified `processPgDetections` for `mode='db'` to work with a possibel "newUID"
