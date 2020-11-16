@@ -153,8 +153,13 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
         pb <- txtProgressBar(min=0, max=length(wav), style = 3)
         wix <- 1
     }
+    badWav <- character(0)
     wavMap <- bind_rows(lapply(wav, function(x) {
-        header <- readWave(x, header = TRUE)
+        header <- try(readWave(x, header = TRUE))
+        if(inherits(header, 'try-error')) {
+            badWav <<- c(badWav, x)
+            return(NULL)
+        }
         len <- header$samples / header$sample.rate
         format <- c(FOUNDFORMAT, c('pamguard', 'soundtrap', 'sm3'))
         for(f in format) {
@@ -212,6 +217,9 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
 
         list(start=rng[1], end=rng[2], file=x, length=len)
     }))
+    if(length(badWav) > 0) {
+        warning('Unable to read wav files ', printN(badWav, 6), ' these are possibly corrupt.')
+    }
     wavMap
 }
 getSoundtrapLog <- function(log) {

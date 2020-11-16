@@ -65,11 +65,20 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
     if(any(isDb)) {
         dbKeep <- rep(TRUE, length(events(.data)))
         exprText <- gsub('(database|Database)', 'files(x)$db', dotChars[isDb])
+        studyExpr <- gsub('\\(x\\)', '\\(\\.data\\)', exprText)
         for(d in seq_along(exprText)) {
             thisKeep <- sapply(events(.data), function(x) eval(parse_expr(exprText[d])))
             dbKeep <- dbKeep & thisKeep
         }
+        studyKeep <- rep(TRUE, length(files(.data)$db))
+        for(s in studyExpr) {
+            thisKeep <- eval(parse_expr(s))
+            if(all(is.logical(thisKeep))) {
+                studyKeep <- studyKeep & thisKeep
+            }
+        }
         events(.data) <- events(.data)[dbKeep]
+        files(.data)$db <- files(.data)$db[studyKeep]
         if(length(events(.data)) == 0) {
             return(.data)
         }

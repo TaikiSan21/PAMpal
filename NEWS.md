@@ -1,3 +1,9 @@
+## PAMpal 0.9.7
+
+* `addRecordings` prints some failure warnings
+
+* `filter` for databases also removes those databasess from the `files(x)$db`
+
 ## PAMpal 0.9.6
 
 * `writeEventClips` updated to use channel argument
