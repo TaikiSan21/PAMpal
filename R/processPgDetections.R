@@ -626,7 +626,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
     allDetections <- inner_join(
         allDetections, allEvents, by=c('parentUID'='UID')
     )
-    if(!('newUID') %in% colnames(allDetections)) {
+    if(!('newUID' %in% colnames(allDetections))) {
         allDetections$newUID <- -1
     }
     allDetections <- allDetections %>%
@@ -647,6 +647,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
     }
     allDetections <- select(allDetections, -.data$UTC)
     allDetections$UID <- as.character(allDetections$UID)
+    allDetections$newUID <- as.character(allDetections$newUID)
     allDetections$parentUID <- paste0(evName, allDetections$parentUID)
     allDetections
 }

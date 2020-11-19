@@ -1,3 +1,7 @@
+## PAMpal 0.9.8
+
+* newUIDs not getting used properly for some users because they were integer64
+
 ## PAMpal 0.9.7
 
 * `addRecordings` prints some failure warnings
@@ -26,7 +30,7 @@ any environmental variables added
 
 ## PAMpal 0.9.5
 
-* Modified `processPgDetections` for `mode='db'` to work with a possibel "newUID"
+* Modified `processPgDetections` for `mode='db'` to work with a possible "newUID"
 column from PAMmisc's updateUID function. Also does a better job of matching if there
 are multiple possible binary files.
 
