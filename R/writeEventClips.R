@@ -75,6 +75,7 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
     nonConsec <- character(0)
     fileDNE <- character(0)
     noChan <- character(0)
+    result <- character(0)
     for(d in seq_along(dbMap)) {
         thisDbData <- x[which(evDbs == names(dbMap)[d])]
         if(length(events(thisDbData)) == 0) next
@@ -186,7 +187,7 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
         isNa <- is.na(allFiles)
         cat('\n', paste0('Wrote ', sum(!isNa), ' wav file(s).\n'))
         # names(allFiles) <- sapply(event, function(x) x@id)
-        allFiles
+        result <- c(result, allFiles)
     }
     if(length(noMatch) > 0) {
         warning('Could not find matching wav files for ', mode, ' ', printN(noMatch, 6), call.=FALSE)
@@ -203,7 +204,7 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
         warning('Wav files for ', mode, ' ', printN(noChan, 6),
                 ' did not have the desired channels.', call.=FALSE)
     }
-    invisible(allFiles)
+    invisible(result)
 }
 
 checkIn <- function(time, map) {

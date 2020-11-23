@@ -31,7 +31,7 @@
 \alias{ancillary,AcousticEvent-method}
 \alias{ancillary<-}
 \alias{ancillary<-,AcousticEvent-method}
-\alias{[,AcousticEvent,ANY,ANY-method}
+\alias{[,AcousticEvent,ANY,ANY,ANY-method}
 \alias{[<-,AcousticEvent,ANY,ANY,ANY-method}
 \alias{$,AcousticEvent-method}
 \alias{$<-,AcousticEvent-method}
@@ -66,7 +66,7 @@
 \alias{models,AcousticStudy-method}
 \alias{models<-}
 \alias{models<-,AcousticStudy-method}
-\alias{[,AcousticStudy,ANY,ANY-method}
+\alias{[,AcousticStudy,ANY,ANY,ANY-method}
 \alias{[<-,AcousticStudy,ANY,ANY,ANY-method}
 \alias{$,AcousticStudy-method}
 \alias{$<-,AcousticStudy-method}
@@ -132,7 +132,7 @@ ancillary(x) <- value
 
 \S4method{ancillary}{AcousticEvent}(x) <- value
 
-\S4method{[}{AcousticEvent,ANY,ANY}(x, i)
+\S4method{[}{AcousticEvent,ANY,ANY,ANY}(x, i)
 
 \S4method{[}{AcousticEvent,ANY,ANY,ANY}(x, i) <- value
 
@@ -202,7 +202,7 @@ models(x) <- value
 
 \S4method{models}{AcousticStudy}(x) <- value
 
-\S4method{[}{AcousticStudy,ANY,ANY}(x, i)
+\S4method{[}{AcousticStudy,ANY,ANY,ANY}(x, i)
 
 \S4method{[}{AcousticStudy,ANY,ANY,ANY}(x, i) <- value
 

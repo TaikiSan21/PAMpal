@@ -1,6 +1,12 @@
+## PAMpal 0.9.9
+
+* Added `writeWignerData` function
+
 ## PAMpal 0.9.8
 
 * newUIDs not getting used properly for some users because they were integer64
+
+* fixed bug with `writeEventClips` not reporting all file names if multiple databases present
 
 ## PAMpal 0.9.7
 

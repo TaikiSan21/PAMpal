@@ -1,7 +1,7 @@
 Package: PAMpal
 Type: Package
 Title: Load and Process Passive Acoustic Data
-Version: 0.9.8
+Version: 0.9.9
 Authors@R: c(
   TS = person("Taiki", "Sakai", email = "taiki.sakai@noaa.gov", role = c("aut", "cre")),
   JB = person("Jay", "Barlow", role = c("ctb")),
@@ -42,7 +42,8 @@ Imports:
     rstudioapi,
     xml2,
     rjson,
-    rlang
+    rlang,
+    reticulate
 RoxygenNote: 7.1.1
 Suggests: 
     testthat
