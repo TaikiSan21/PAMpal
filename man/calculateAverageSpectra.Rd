@@ -46,6 +46,18 @@ invisibly returns a list with three items: \code{freq}, the frequency,
 Calculates the average spectra of all the clicks present in an
   event
 }
+\examples{
+
+data(exStudy)
+# need to update binary file locations to users PAMpal installation
+binUpd <- system.file('extdata', 'Binaries', package='PAMpal')
+exStudy <- updateFiles(exStudy, bin = binUpd)
+avSpec <- calculateAverageSpectra(exStudy)
+str(avSpec$average)
+range(avSpec$freq)
+str(avSpec$all)
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

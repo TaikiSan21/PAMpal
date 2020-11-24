@@ -25,6 +25,17 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @examples
+#'
+#' data(exStudy)
+#' # need to update binary file locations to users PAMpal installation
+#' binUpd <- system.file('extdata', 'Binaries', package='PAMpal')
+#' exStudy <- updateFiles(exStudy, bin = binUpd)
+#' avSpec <- calculateAverageSpectra(exStudy)
+#' str(avSpec$average)
+#' range(avSpec$freq)
+#' str(avSpec$all)
+#'
 #' @importFrom signal hanning
 #' @importFrom graphics par image axis
 #' @importFrom stats fft

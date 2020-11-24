@@ -184,13 +184,14 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                    oldSpec <- species(acev[[i]])[[type]]
                    newSpec <- value[value$old == oldSpec, c('new')]
                    if(length(newSpec) == 0) {
-                       unchanged <- ifelse(oldSpec %in% unchanged, unchanged, c(unchanged, oldSpec))
+                       unchanged <- c(unchanged, oldSpec)
                        newSpec <- oldSpec
                    }
                    species(acev[[i]])[[type]] <- as.character(newSpec)
                }
+               unchanged <- unique(unchanged)
                if(length(unchanged) > 0) {
-                   message(length(unchanged), ' species (', paste0(unchanged, collapse=', '), ') ',
+                   message(length(unchanged), ' species (', printN(unchanged, 6), ') ',
                        'were not in reassignment dataframe, they have not been changed.', sep='')
                }
            },

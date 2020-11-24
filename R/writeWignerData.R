@@ -21,6 +21,15 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @examples
+#'
+#' data(exStudy)
+#' exStudy <- setSpecies(exStudy, method='pamguard')
+#' \dontrun{
+#' # not running because files are written to disk
+#' wigFiles <- writeWignerData(exStudy, outDir = 'WigFolder')
+#' }
+#'
 #' @importFrom reticulate py_install install_miniconda np_array import py_available py_module_available
 #' @importFrom PAMmisc wignerTransform
 #' @importFrom utils write.csv
@@ -32,6 +41,11 @@ writeWignerData <- function(x, n=256, t=300, outDir='.', mode='nparray', progres
     }
     if(mode == 'nparray') {
         if(!py_available(TRUE)) {
+            message('Python is required but could not be found, is it okay to try and install via miniconda?')
+            pChoose <- menu(choices = c('Yes', 'No'), title = 'Install Python?')
+            if(pChoose != 1) {
+                stop('Cannot continue without Python')
+            }
             install_miniconda()
         }
         if(!py_module_available('numpy')) {

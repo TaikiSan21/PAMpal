@@ -110,7 +110,7 @@ species(x, ...)
 
 \S4method{species}{AcousticEvent}(x, ...)
 
-\S4method{species}{AcousticStudy}(x, ...)
+\S4method{species}{AcousticStudy}(x, type = "id", ...)
 
 species(x) <- value
 
@@ -220,6 +220,8 @@ models(x) <- value
 \item{\dots}{other arguments to pass to methods}
 
 \item{value}{value to assign with accessor}
+
+\item{type}{species type to select}
 
 \item{i}{index of the object to access}
 

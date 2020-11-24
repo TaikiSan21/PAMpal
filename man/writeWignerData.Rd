@@ -42,6 +42,16 @@ Create Wigner-Ville transform data of click clips from all
   detections and save them to disk. A CSV file will also be written that
   lists all UIDs contained in the output
 }
+\examples{
+
+data(exStudy)
+exStudy <- setSpecies(exStudy, method='pamguard')
+\dontrun{
+# not running because files are written to disk
+wigFiles <- writeWignerData(exStudy, outDir = 'WigFolder')
+}
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

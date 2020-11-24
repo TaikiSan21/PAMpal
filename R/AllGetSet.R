@@ -151,11 +151,12 @@ setGeneric('species', function(x, ...) standardGeneric('species'))
 setMethod('species', 'AcousticEvent', function(x, ...) x@species)
 
 #' @export
+#' @param type species type to select
 #' @rdname PAMpal.accessors
 #' @aliases species
 #'
-setMethod('species', 'AcousticStudy', function(x, ...) {
-    lapply(events(x), species)
+setMethod('species', 'AcousticStudy', function(x, type='id',...) {
+    sapply(events(x), function(e) species(e)[[type]])
 })
 
 #' @export
