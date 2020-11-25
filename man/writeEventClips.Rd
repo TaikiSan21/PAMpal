@@ -44,7 +44,7 @@ recs <- system.file('extdata', 'Recordings', package='PAMpal')
 exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
 \dontrun{
 # not running so that no wav clips are written to disk
-wavs <- writeEventClips(exStudy, outDir='WavFolder')
+wavs <- writeEventClips(exStudy, outDir='WavFolder', mode='event')
 }
 
 }

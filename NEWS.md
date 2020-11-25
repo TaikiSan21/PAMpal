@@ -1,3 +1,8 @@
+## PAMpal 0.9.11
+
+* `writeEventClips` now attaches clip times with _YYYYMMDDHHMMSS_mmm to the end
+of file names
+
 ## PAMpal 0.9.10
 
 * `writeWignerData` warns about bad directories instead of crashing

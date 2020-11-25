@@ -23,7 +23,7 @@
 #' exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
 #' \dontrun{
 #' # not running so that no wav clips are written to disk
-#' wavs <- writeEventClips(exStudy, outDir='WavFolder')
+#' wavs <- writeEventClips(exStudy, outDir='WavFolder', mode='event')
 #' }
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
@@ -42,6 +42,7 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
     if(is.null(files(x)$recordings)) {
         stop('No recording files found, use function "addRecordings" first.')
     }
+    mode <- match.arg(mode)
     if(length(channel) > 2) {
         message('R can only write wav files with 2 or less events, channels will be split',
                 ' across multiple files.')
@@ -176,7 +177,9 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
             wavResult <- wavResult[, channel[chanIn]]
             colnames(wavResult) <- MCnames$name[1:ncol(wavResult)]
             fileName <- paste0(oneUpper(mode), '_', names(allFiles)[i], 'CH', paste0(channel[chanIn], collapse=''))
+            fileName <- paste0(fileName, '_',psxToChar(timeRange[1]))
             fileName <- paste0(gsub('\\.wav$', '', fileName), '.wav')
+            # timeRange[1] is actual start time in posix
             fileName <- file.path(outDir, fileName)
             writeWave(wavResult, fileName, extensible = FALSE)
             allFiles[[i]] <- fileName
@@ -250,4 +253,13 @@ getTimeRange <- function(x, mode=c('event', 'detection')) {
 oneUpper <- function(x) {
     paste0(toupper(substr(x, 1, 1)),
            tolower(substr(x, 2, nchar(x))))
+}
+
+psxToChar <- function(x) {
+    psFloor <- as.character(as.POSIXct(floor(as.numeric(x)), origin='1970-01-01 00:00:00', tz='UTC'))
+    psMilli <- round(as.numeric(x)-floor(as.numeric(x)), 3)
+    psMilli <- sprintf('%.3f',psMilli)
+    psMilli <- substr(psMilli, 3, 5)
+    paste0(gsub('-| |:', '', psFloor), '_',gsub('^0\\.', '', psMilli))
+
 }
