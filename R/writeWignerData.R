@@ -65,8 +65,9 @@ writeWignerData <- function(x, n=256, t=300, outDir='.', mode='nparray', progres
                 }
                 for(c in 1:ncol(data[[d]]$wave)) {
                     thisWav <- clipAroundPeak(data[[d]]$wave[, c], t)
-                    wig <- wignerTransform(thisWav, n=n, sr=data[[d]]$sr)
-                    result[,,2*(d-1) + c] <- wig$tfr
+                    wig <- wignerTransform(thisWav, n=n, sr=data[[d]]$sr)$tfr
+                    wig <- (wig - min(wig)) / (max(wig) - min(wig)) * intMax
+                    result[,,2*(d-1) + c] <- wig
                 }
             }
             UID <- rep(names(data), each=2)
@@ -79,7 +80,7 @@ writeWignerData <- function(x, n=256, t=300, outDir='.', mode='nparray', progres
                             UID=NA))
             }
             # UID <- unique(UID)
-            result <- (result - min(result)) / (max(result)-min(result)) * intMax
+            # result <- (result - min(result)) / (max(result)-min(result)) * intMax
             result <- np_array(result, dtype='uint8')
             np$savez_compressed(file.path(dir, filename), result)
             list(file=paste0(file.path(dir, filename), '.npz'),
@@ -91,6 +92,28 @@ writeWignerData <- function(x, n=256, t=300, outDir='.', mode='nparray', progres
     noDet <- character(0)
     noBin <- character(0)
     allFiles <- character(0)
+    spList <- unique(species(x))
+    badDir <- sapply(spList, function(x) {
+        thisDir <- file.path(outDir, x)
+        if(dir.exists(thisDir)) {
+            return(FALSE)
+        } else {
+            !dir.create(thisDir, showWarnings=FALSE)
+        }
+    })
+    if(any(badDir)) {
+        warning('Unable to create directories for species names ', printN(spList[badDir], 20),
+                ', most likely due to symbols in the names. These will be excluded from the output',
+                ', change the species names using "setSpecies" with method="reassign" and run again',
+                ' for these species.')
+        # keepSpec <- spList[!badDir]
+        # this doesnt work because keepSpec doesnt exist in that environment, need to evaluate
+        # first somehow? FML
+        # x <- filter(x, species %in% keepSpec)
+        keepSpec <- species(x) %in% spList[!badDir]
+        x <- x[keepSpec]
+    }
+
     if(progress) {
         cat('Writing wigner data...\n')
         pb <- txtProgressBar(min=0, max=length(events(x)), style=3)
@@ -145,6 +168,9 @@ writeWignerData <- function(x, n=256, t=300, outDir='.', mode='nparray', progres
     }
     if(length(noBin) > 0) {
         warning('No binary data found for events ', printN(noBin), call.=FALSE)
+    }
+    if(progress) {
+        cat('\n')
     }
     invisible(list(files=allFiles,
                    warnings=list(noSpecies=naSp,

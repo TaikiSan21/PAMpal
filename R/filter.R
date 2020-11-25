@@ -38,7 +38,7 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
         warning('Did you put "=" when you meant "=="? This filter will not be applied.')
     }
     # do event level filters first
-    isSpecies <- grepl('species|Species', dotChars)
+    isSpecies <- grepl('^species|^Species', dotChars)
     if(any(isSpecies)) {
         # do species filtering first
         naSp <- sapply(events(.data), function(x) is.na(species(x)$id))
@@ -48,7 +48,7 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
                     ' the filtered results.')
         }
         spKeep <- rep(TRUE, length(events(.data)))
-        exprText <- gsub('(species|Species)', 'species(x)$id', dotChars[isSpecies])
+        exprText <- gsub('(^species|^Species)', 'species(x)$id', dotChars[isSpecies])
         for(s in seq_along(exprText)) {
             thisKeep <- sapply(events(.data), function(x) eval(parse_expr(exprText[s])))
             thisKeep[is.na(thisKeep)] <- FALSE
@@ -61,10 +61,10 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
         }
     }
 
-    isDb <- grepl('database|Database', dotChars)
+    isDb <- grepl('^database|^Database', dotChars)
     if(any(isDb)) {
         dbKeep <- rep(TRUE, length(events(.data)))
-        exprText <- gsub('(database|Database)', 'files(x)$db', dotChars[isDb])
+        exprText <- gsub('(^database|^Database)', 'files(x)$db', dotChars[isDb])
         studyExpr <- gsub('\\(x\\)', '\\(\\.data\\)', exprText)
         for(d in seq_along(exprText)) {
             thisKeep <- sapply(events(.data), function(x) eval(parse_expr(exprText[d])))

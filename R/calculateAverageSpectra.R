@@ -30,7 +30,8 @@
 #' data(exStudy)
 #' # need to update binary file locations to users PAMpal installation
 #' binUpd <- system.file('extdata', 'Binaries', package='PAMpal')
-#' exStudy <- updateFiles(exStudy, bin = binUpd)
+#' dbUpd <- system.file('extdata', package='PAMpal')
+#' exStudy <- updateFiles(exStudy, bin = binUpd, db=dbUpd)
 #' avSpec <- calculateAverageSpectra(exStudy)
 #' str(avSpec$average)
 #' range(avSpec$freq)

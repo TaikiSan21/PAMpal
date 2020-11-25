@@ -1,3 +1,10 @@
+## PAMpal 0.9.10
+
+* `writeWignerData` warns about bad directories instead of crashing
+
+* `filter` fixed for bug in species and database filtering if these keywords
+were present on the right hand side of the call
+
 ## PAMpal 0.9.9
 
 * Added `writeWignerData` function
