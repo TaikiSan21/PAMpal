@@ -95,3 +95,7 @@ byName <- myStudy[names(events(myStudy))[c(1,3,5)]]
 ## Accessing Binary Data
 
 ## Gathering Detection Data in a Dataframe
+
+The `AcousticStudy` and `AcousticEvent` classes that `PAMpal` creates can be awkward
+to work with if you need to do something that doesn't have a built-in function. 
+In order to get your data into a format that is easier to work with

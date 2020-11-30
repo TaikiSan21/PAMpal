@@ -84,3 +84,22 @@ getCallType <- function(x) {
     }
     NULL
 }
+
+#' @export
+#' 
+getClickData <- function(x) {
+    getDetectorData(x)$click
+}
+
+#' @export
+#'
+getWhistleData <- function(x) {
+    getDetectorData(x)$whistle
+}
+
+#' @export
+#'
+getCepstrumData <- function(x) {
+    getDetectorData(x)$cepstrum
+}
+
