@@ -450,8 +450,9 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                     if(!is.null(binData)) {
                         noMatch <- which(!(x$UID %in% binData$UID))
                         x$UID[noMatch] <- x$newUID[noMatch]
+                        x$BinaryFile <- NULL
                         binData %>%
-                            select(-.data$BinaryFile) %>%
+                            # select(-.data$BinaryFile) %>%
                             inner_join(x, by='UID') %>%
                             distinct()
                     }
@@ -488,6 +489,7 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                 binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE), USE.NAMES = FALSE))
                 evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentUID))
                 ev <- lapply(ev, function(x) {
+                    x$BinaryFile <- basename(x$BinaryFile)
                     thisType <- unique(x$callType)
                     x <- dropCols(x, colsToDrop)
                     attr(x, 'calltype') <- thisType

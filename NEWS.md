@@ -1,3 +1,15 @@
+## PAMpal 0.9.12
+
+* `getBinaryData` was not doing a good job if binaries had the same name. It do better now
+
+* `processPgDetections` will only store file names that it actually used instead of 
+all possible matching file names, related to other binary fix.
+
+* Added `getICI`, `getClickData`, `getWhistleData`, and `getCepstrumData` as easier
+accessors
+
+* Updating webpage with `calculateICI` and `getDetectorData` guides
+
 ## PAMpal 0.9.11
 
 * `writeEventClips` now attaches clip times with _YYYYMMDDHHMMSS_mmm to the end

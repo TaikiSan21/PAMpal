@@ -4,6 +4,7 @@
 \alias{calculateICI}
 \alias{calculateICI,AcousticStudy-method}
 \alias{calculateICI,AcousticEvent-method}
+\alias{getICI}
 \title{Calculate Inter-Click Interval}
 \usage{
 calculateICI(
@@ -26,6 +27,8 @@ calculateICI(
   callType = c("click", "whistle", "cepstrum"),
   ...
 )
+
+getICI(x, type = c("value", "data"))
 }
 \arguments{
 \item{x}{a \linkS4class{AcousticStudy} object, a list of \linkS4class{AcousticEvent}
@@ -40,6 +43,10 @@ but also allows users to specify \code{whistle} or \code{cepstrum} to calculate 
 using other detector data}
 
 \item{\dots}{not currently used}
+
+\item{type}{the type of data to return, one of 'value' or 'data'. 'value' returns
+the single ICI value for each detector, 'data' returns all the individual ICI values
+used to calculate the number returned by 'value'}
 }
 \value{
 the same object as \code{x}, with ICI data added to the "ancillary" slot
@@ -47,7 +54,9 @@ the same object as \code{x}, with ICI data added to the "ancillary" slot
   individual inter-click intervals used to calculate the ICI, as well as an "All"
   ICI using all the combined data. $measures will also have a ICI measurement added
   for each detector, this will be the single modal value. Data in the $measures spot
-  can be exported easily to modeling algorithms.
+  can be exported easily to modeling algorithms. \code{getICI} will just return either
+  the values stored in $ici for \code{type = 'data'} or the values stored in
+  $measures for \code{type = 'value'}
 }
 \description{
 Calculate inter-click interval for click data

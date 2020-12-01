@@ -42,6 +42,8 @@ test_that('Test working with AcousticStudy object', {
     ))
 
     # check ici
+    expect_warning(iciData <- getICI(exData), 'No ICI data')
+    expect_null(iciData)
     exData <- calculateICI(exData)
     expect_true(all(c('Click_Detector_1', 'All') %in% names(ancillary(exData[[1]])$ici)))
     expect_true(!any(
@@ -51,6 +53,11 @@ test_that('Test working with AcousticStudy object', {
         is.na(ancillary(exData[[1]])$ici[[2]]$ici)
     ))
     expect_true(all(c('Click_Detector_1_ici', 'All_ici') %in% names(ancillary(exData[[1]])$measures)))
+    iciData <- getICI(exData, 'data')
+    expect_true(all(c('Click_Detector_1', 'All') %in% names(iciData[[1]])))
+    expect_identical(names(iciData), names(events(exData)))
+    iciData <- getICI(exData, 'value')
+    expect_true(all(c('Click_Detector_1_ici', 'All_ici') %in% names(iciData[[1]])))
 
     # check setSpecies
     exData <- setSpecies(exData, method='pamguard')
@@ -160,6 +167,9 @@ test_that('Test getDetectorData', {
     # works same on events and studies
     expect_identical(getDetectorData(exStudy[1]),
                      getDetectorData(exStudy[[1]]))
+    expect_identical(dets$click, getClickData(exStudy))
+    expect_identical(dets$whistle, getWhistleData(exStudy))
+    expect_identical(dets$cepstrum, getCepstrumData(exStudy))
 })
 
 test_that('Test updateFiles', {

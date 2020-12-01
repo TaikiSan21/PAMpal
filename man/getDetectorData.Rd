@@ -2,9 +2,18 @@
 % Please edit documentation in R/getDetectorData.R
 \name{getDetectorData}
 \alias{getDetectorData}
+\alias{getClickData}
+\alias{getWhistleData}
+\alias{getCepstrumData}
 \title{Extract and Combine Detector Data}
 \usage{
 getDetectorData(x)
+
+getClickData(x)
+
+getWhistleData(x)
+
+getCepstrumData(x)
 }
 \arguments{
 \item{x}{data to extract detector data from, either an \code{AcousticStudy},

@@ -85,13 +85,19 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
     }
     # do enviro?
     if(!is.null(ancillary(.data[[1]])$environmental)) {
-        evDf <- bind_rows(lapply(events(.data), function(x) {
-            ancillary(x)$environmental
-        }))
-        filteredEv <- doFilter(evDf[, !(names(evDf) %in% c('UTC', 'Longitude', 'Latitude')), drop=FALSE], ...)
-        events(.data) <- events(.data)[unique(filteredEv$event)]
-        if(length(events(.data)) == 0) {
-            return(.data)
+        envNames <- names(ancillary(.data[[1]])$environmental)
+        envNames <- envNames[!(envNames %in% c('UTC', 'Longitude', 'Latitude'))]
+        hasEnv <- sapply(dotChars, function(d) any(sapply(envNames, function(nm) grepl(nm, d))))
+        if(any(hasEnv)) {
+            evDf <- bind_rows(lapply(events(.data), function(x) {
+                ancillary(x)$environmental
+            }))
+
+            filteredEv <- doFilter(evDf[, !(names(evDf) %in% c('UTC', 'Longitude', 'Latitude')), drop=FALSE], ...)
+            events(.data) <- events(.data)[names(events(.data)) %in% unique(filteredEv$event)]
+            if(length(events(.data)) == 0) {
+                return(.data)
+            }
         }
     }
 

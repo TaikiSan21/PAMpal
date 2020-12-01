@@ -4,6 +4,124 @@
 
 ## Adding GPS Data
 
+## Gathering Detection Data in a Dataframe
+
+The `AcousticStudy` and `AcousticEvent` classes that `PAMpal` creates can be awkward
+to work with if you need to do something that doesn't have a built-in function. 
+In order to get your data into a format that is easier to work with, `PAMpal` has functions
+that will gather your data into dataframes. 
+
+The function `getDetectorData` takes as input either an entire `AcousticStudy` or a single
+`AcousticEvent`, and gathers all the detector data contained within into separate dataframes
+for clicks, whistles, and cepstrum data. It returns a list of dataframes, named by these
+detector types. Each dataframe within that list will contain all the parameters calculated
+by the processing functions, as well as the event ID, detector name, and the species ID (
+species will be NA if it has not been set using `setSpecies`). In addition to 
+`getDetectorData`, there are also three functions that do the exact same thing to get data
+for only specific detectors, `getClickData`, `getWhistleData`, and `getCepstrumData`. These
+have the exact same functionality, and are just convenient to directly output a dataframe
+instead of needing to access it from a list.
+
+```r
+# Get data for your entire study
+allDets <- getDetectorData(myStudy)
+# this will contain $click, $whistle, and $cepstrum (if those are present in your data)
+names(allDets)
+# To get the actual dataframe, get it out of the list first
+str(allDets$click)
+str(allDets$whistle)
+str(allDets$cepstrum)
+
+# The functions for accessing just one type of detector directly
+justClicks <- getClickData(myStudy)
+str(justClicks)
+identical(justClicks, allDets$click)
+justWhistles <- getWhistleData(myStudy)
+justCepstrums <- getCepstrumData(myStudy)
+
+# These also works for a single event
+oneDets <- getDetectorData(myStudy$`Example.OE1`)
+oneDets <- getDetectorData(myStudy[[1]])
+oneClick <- getClickData(myStudy[[1]])
+```
+
+## Calculating Inter-Click Interval (ICI)
+
+`PAMpal` has a built in function for calculating the inter-click interval of your
+data since this is a common step for a lot of analyses. The calculation is done by
+simply sorting all the detections by time, and then for each detection taking the 
+difference in seconds between it and the previous detection. Then from these values
+the most common number is selected as the ICI value (it is slightly more complicated 
+than this because the individual time differences are likely to be all slightly different values,
+but this is the idea).
+
+The function is called `calculateICI`, and is very straight forward.
+There is only really one option to set, this controls what number to use
+as the time of each detection. `time='time'` simply uses UTC time in Pamguard
+
+```r
+myStudy <- calculateICI(myStudy, time='time')
+```
+
+`time='peakTime'` adjusts this slightly by using the time of the highest value
+in the waveform clip. So if the peak value of the waveform for a given
+detection is 500 samples into a clip, then 'peakTime' will use the UTC
+time plus 500 / SampleRate as the time of that click
+
+```r
+myStudy <- calculateICI(myStudy, time='peakTime')
+```
+
+This calculation is done for every event, and is done separately for each click detector
+in the event (note that `PAMpal` splits click detections up by click classification number,
+so you have Click_Detector_0, Click_Detector_1, etc.), and also calculated combining all the
+detectors in an event. These data are stored within the `ancillary` slot of each event which can
+be accessed using the `ancillary()` function, but the easiest way to get the data back out is using
+the `getICI` function. This has one parameter, selecting the type of data you want to get.
+`type='value'` will return the single ICI value calculated for each
+detector as a list named by detector name.
+
+```r
+
+iciValues <- getICI(myStudy, type='value')
+```
+
+This returns a list of results for every single event, so to see the
+ICI values for your first event:
+
+```r
+iciValues[[1]]
+```
+
+`type='data'` will return all the individual time differences used to calculate
+the number returned by 'value', this can be useful for making plots or 
+if you have your own way of doing things
+
+```r
+iciData <- getICI(myStudy, type='data')
+```
+These are similarly returned as a list for each event, and the result
+is a list of dataframes for each click detector that just contain
+the name of the detector and the time difference values used
+
+```r
+str(iciData[[1]])
+```
+
+Looking at the actual numbers for the ICI data that combines all the detectors,
+the first value will always be 0 since there is no time between the first detection
+and the previous detection. It can also appear that the ICI values are repeated,
+especially for `time = 'time'`, but this is because the time difference calculations are
+done separately for each channel. In fact for `time = 'time'` the values across channels
+will be exactly the same since Pamguard does not store a separate detection time for
+each channel, but the ICI values should be close but slightly different for `time ='peakTime'`
+
+```r
+iciData[[1]]$All
+```
+
+## Calculate and Plot Average Click Spectra
+
 ## Adding Environmental Data
 
 ## Filtering Data
@@ -92,10 +210,34 @@ someOdds <- myStudy[c(1,3,5,7,9)]
 byName <- myStudy[names(events(myStudy))[c(1,3,5)]]
 ```
 
+**KNOWN ISSUES WITH FILTERING**
+
+Currently there are two known issues with the `filter` function as implemented. First, if you
+supply a long list of options for a single filter, it won't work and will likely give you an
+error. As a workaround, the function works fine if you first assign these to a variable, then
+filter.
+
+```r
+# This probably won't work
+badFilt <- filter(myStudy, species %in% c("SPECIES1", "SPECIES2", "SPECIES3", "SPECIES4", "SPECIES5",
+                             "SPECIES6", "SPECIES7", "SPECIES8", "SPECIES9", "SPECIES10"))
+# This should be fine
+mySpecies <- c("SPECIES1", "SPECIES2", "SPECIES3", "SPECIES4", "SPECIES5",
+                "SPECIES6", "SPECIES7", "SPECIES8", "SPECIES9", "SPECIES10")
+goodFilt <- filter(myStudy, species %in% mySpecies)
+```
+
+Second, the `filter` function currently does not behave well if you try to use it inside
+other functions. Unfortunately there is not currently a work around for this, but I will
+be looking into improving the function in the filter so that these issues do not occur.
+
+```r
+# This probably won't work
+myFilter <- function(x, sp) {
+    filter(x, species %in% sp)
+}
+# running this will give an error about "object 'sp' not found"
+myFilter(myStudy, 'SPECIES1')
+```
+
 ## Accessing Binary Data
-
-## Gathering Detection Data in a Dataframe
-
-The `AcousticStudy` and `AcousticEvent` classes that `PAMpal` creates can be awkward
-to work with if you need to do something that doesn't have a built-in function. 
-In order to get your data into a format that is easier to work with

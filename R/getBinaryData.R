@@ -108,22 +108,40 @@ getBinaryData <- function(x, UID, quiet=FALSE, ...) {
         # this has full path name
         fullBin <- grep(bin, unique(allBinaries), value = TRUE)
         if(length(fullBin)==0) {
-            warning('Binary file ', bin, ' not found in files slot.')
+            warning('Binary file ', bin, ' not found in files slot.', call.=FALSE)
             return(NULL)
         }
-        if(length(fullBin) > 1) {
-            warning('More than one binary file found for ', bin, ' only using first one.')
-            fullBin <- fullBin[1]
+        data <- list()
+        matchUID <- rep(FALSE, length(bins[['UID']][bins$BinaryFile == bin]))
+        names(matchUID) <- bins[['UID']][bins$BinaryFile == bin]
+        for(i in seq_along(fullBin)) {
+
+            # if(length(fullBin) > 1) {
+            #     warning('More than one binary file found for ', bin, ' only using first one.')
+            #     fullBin <- fullBin[1]
+            # }
+            if(!file.exists(fullBin[i])) {
+                warning('Binary file ', fullBin[i], ' could not be located, if files have moved ',
+                        'please use "updateFiles" function.', call.=FALSE)
+                # return(NULL)
+                next
+            }
+            thisData <- loadPamguardBinaryFile(fullBin[i], skipLarge = FALSE, convertDate = TRUE,
+                                             keepUIDs = names(matchUID)[!matchUID], ...)$data
+            # just for useful stuff later in other functions and if theres two you see what we chose
+            ##### I DONT KNOW IF THIS IS A GOOD IDEAAAAA
+            if(length(thisData) > 0) {
+                matchUID[names(thisData)] <- TRUE
+                data <- c(data, thisData)
+            }
+            if(all(matchUID)) {
+                break
+            }
         }
-        if(!file.exists(fullBin)) {
-            warning('Binary file ', fullBin, ' does not exist, please check (this file name',
-                    ' should be the full file path).')
+        if(length(data) == 0) {
+            warning('No data found for binary file ', bin, call.=FALSE)
             return(NULL)
         }
-        data <- loadPamguardBinaryFile(fullBin, skipLarge = FALSE, convertDate = TRUE,
-                                       keepUIDs = bins[['UID']][bins$BinaryFile == bin], ...)$data
-        # just for useful stuff later in other functions and if theres two you see what we chose
-        ##### I DONT KNOW IF THIS IS A GOOD IDEAAAAA
         if('sr' %in% names(bins)) {
             for(i in names(data)) {
                 data[[i]]$sr <- bins$sr[bins$UID == i][1]

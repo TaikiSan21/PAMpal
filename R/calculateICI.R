@@ -21,7 +21,9 @@
 #'   individual inter-click intervals used to calculate the ICI, as well as an "All"
 #'   ICI using all the combined data. $measures will also have a ICI measurement added
 #'   for each detector, this will be the single modal value. Data in the $measures spot
-#'   can be exported easily to modeling algorithms.
+#'   can be exported easily to modeling algorithms. \code{getICI} will just return either
+#'   the values stored in $ici for \code{type = 'data'} or the values stored in
+#'   $measures for \code{type = 'value'}
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
@@ -124,5 +126,46 @@ calcICI <- function(x) {
     time <- sort(as.numeric(x))
     ici <- time - c(time[1], time[1:(length(time)-1)])
     ici
+}
+
+#' @export
+#' @rdname calculateICI
+#' @param type the type of data to return, one of 'value' or 'data'. 'value' returns
+#'  the single ICI value for each detector, 'data' returns all the individual ICI values
+#'  used to calculate the number returned by 'value'
+#'
+getICI <- function(x, type=c('value', 'data')) {
+  type <- match.arg(type)
+  if(is.AcousticStudy(x)) {
+    result <- suppressWarnings(lapply(events(x), function(e) getICI(e, type)))
+    noICI <- sapply(result, function(r) is.null(r))
+    if(all(noICI)) {
+      warning('No ICI data found, run "calculateICI" first')
+      return(NULL)
+    }
+    if(any(noICI)) {
+      warning('No ICI data found in event(s) ', printN(names(result)[noICI], 6))
+    }
+    return(result)
+  }
+  if(!is.AcousticEvent(x)) {
+    stop('Input must be an AcousticStudy or AcousticEvent')
+  }
+  switch(type,
+         'value' = {
+           isIci <- grep('_ici$', names(ancillary(x)$measures), value=TRUE)
+           if(length(isIci) == 0) {
+             warning('No ICI data found in event ', id(x), ' run "calculateICI" first.')
+             return(NULL)
+           }
+           ancillary(x)$measures[isIci]
+         },
+         'data' = {
+           if(is.null(ancillary(x)$ici)) {
+             warning('No ICI data found in event ', id(x), ' run "calculateICI" first.')
+             return(NULL)
+           }
+           ancillary(x)$ici
+         })
 }
 

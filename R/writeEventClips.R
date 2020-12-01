@@ -14,7 +14,10 @@
 #'
 #' @return A vector of file names for the wav clips that were successfully
 #'   created, any that were not able to be written will be \code{NA}. Note
-#'   that currently this can only write clips with up to 2 channels.
+#'   that currently this can only write clips with up to 2 channels. File names
+#'   will be formatted as
+#'   [Event or Detection]_[EventId]CH[ChannelNumber(s)]_[YYYYMMDDHHMMSS]_[mmm].wav
+#'   (the last numbers are the start time of the file in UTC, accurate to milliseconds)
 #'
 #' @examples
 #'
@@ -261,5 +264,4 @@ psxToChar <- function(x) {
     psMilli <- sprintf('%.3f',psMilli)
     psMilli <- substr(psMilli, 3, 5)
     paste0(gsub('-| |:', '', psFloor), '_',gsub('^0\\.', '', psMilli))
-
 }

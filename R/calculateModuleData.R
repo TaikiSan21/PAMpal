@@ -54,7 +54,7 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
         result$UID <- as.character(result$UID)
         result$UTC <- convertPgDate(result$UTC)
         result$detectorName <- rep(detName, nrow(result))
-        result$BinaryFile <- rep(basename(binData$fileInfo$fileName), nrow(result))
+        result$BinaryFile <- rep(binData$fileInfo$fileName, nrow(result))
         return(result)
     }
     # Adding this to binFuns for PG version so we always at least get UID and time
@@ -121,7 +121,7 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
         },
         warning("I don't know how to deal with Module Type ", moduleType)
     )
-    result$BinaryFile <- basename(binData$fileInfo$fileName)
+    result$BinaryFile <- binData$fileInfo$fileName
     result$UTC <- convertPgDate(result$UTC)
     result
 }
