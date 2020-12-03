@@ -193,6 +193,9 @@ and more details about what exactly is stored here.
 - [Data processing: Next steps][next-steps-processing] Adding GPS data, assigning
 species ID, and more info on how to access
 and manipulate your data
+- [Case Studies][case-studies] Some tutorials of working through a specific problem,
+great for examples of manipulating `AcousticStudy` objects and seeing how to program
+with your data
 
 *Sections below are still under construction*
 
@@ -230,4 +233,4 @@ For bug fixes and feature additions in each version see the [NEWS][news] file
 [next-steps-processing]: NextStepsProcessing.md
 [errors]: Errors.md
 [news]: https://github.com/TaikiSan21/PAMpal/blob/master/NEWS.md
-
+[case-studies]: CaseStudies.md
