@@ -95,16 +95,19 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
     iciMode <- lapply(iciList, function(i) {
         ici <- i$ici[i$ici > 0]
         if(length(ici) == 0) {
-            return(NA)
+            return(0)
         }
-        iciZ <- (ici - mean(ici)) / sd(ici)
-        ici <- ici[abs(iciZ) < 2]
-        if(any(abs(iciZ) < 2)) {
+        if(!is.na(sd(ici)) &&
+           sd(ici) != 0) {
             iciZ <- (ici - mean(ici)) / sd(ici)
             ici <- ici[abs(iciZ) < 2]
-        }
-        if(length(ici) == 0) {
-            return(NA)
+            if(any(abs(iciZ) < 2)) {
+                iciZ <- (ici - mean(ici)) / sd(ici)
+                ici <- ici[abs(iciZ) < 2]
+            }
+            if(length(ici) == 0) {
+                return(0)
+            }
         }
         den <- density(ici)
         mode <- den$x[which.max(den$y)]
