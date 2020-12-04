@@ -1,3 +1,9 @@
+## PAMpal 0.9.13
+
+* Fixed bug in `calculateICI` if large values were present rounding would lead
+to bad answers. Now filters results by z-score < 2 before taking ICI to get
+rid of outlier large values
+
 ## PAMpal 0.9.12
 
 * `getBinaryData` was not doing a good job if binaries had the same name. It do better now

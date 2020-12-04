@@ -64,7 +64,7 @@ Calculate inter-click interval for click data
 \details{
 Calculates the ICI for each individual detector and across all detectors.
   ICI calculation is done by ordering all individual detections by time, then taking
-  the difference between consecutive detections and taking the mode value.
+  the difference between consecutive detections and approximating the mode value.
 }
 \examples{
 

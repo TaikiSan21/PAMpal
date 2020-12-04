@@ -1,10 +1,10 @@
 ## Case Study: Splitting Events into Smaller Subsets
 
-Problem: most of our events are from 2 minute long duty cycled
+**Problem:** most of our events are from 2 minute long duty cycled
 recordings, but some are from continuous recordings and are longer
 than two minutes.
 
-Solution: Let's split the longer events into smaller 2 minute events,
+**Solution:** Let's split the longer events into smaller 2 minute events,
 and we'll add on _1, _2, etc. to the event name for events we split up
 
 First let's take a look at our problem. The `checkStudy` function checks for possible
