@@ -45,7 +45,8 @@ Calculate a set of "standard" measurements for odontocete clicks
 }
 \details{
 Calculations of parameters mostly follow the approach outlined in Griffiths
-  et al JASA 2020, Baumann-Pickering et al JASA 2010, and Soldevilla et al JASA 2008.
+  et al (2020) <doi:10.1121/10.0001229> and Baumann-Pickering et al (2010)
+  <doi:10.1121/1.3479549>.
   Additionally, up to 3 highest peak frequencies and the "troughs" between them are
   calculated (see \link[PAMmisc]{peakTrough})
 }

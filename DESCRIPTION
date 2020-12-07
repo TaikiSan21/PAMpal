@@ -5,7 +5,6 @@ Version: 0.9.13
 Authors@R: c(
   TS = person("Taiki", "Sakai", email = "taiki.sakai@noaa.gov", role = c("aut", "cre")),
   JB = person("Jay", "Barlow", role = c("ctb")),
-  MS = person("Melissa", "Soldevilla", role = c("ctb")),
   EG = person("Emily", "Griffiths", role = c("ctb")),
   MO = person("Michael", "Oswald", role = c("ctb")),
   SB = person("Simone", "Baumann-Pickering", role = c("ctb")),
@@ -15,6 +14,9 @@ Description: A package for loading and processing passive acoustic data.
     This package contains tools for loading in data from 'Pamguard' 
     (<https://www.pamguard.org/>), applying various processing functions 
     to this data, and for exporting data for reports or external modeling tools.
+    Parameter calculations implement methods by Oswald et al (2007) <doi:10.1121/1.2743157>,
+    Griffiths et al (2020) <doi:10.1121/10.0001229> and Baumann-Pickering et al (2010)
+    <doi:10.1121/1.3479549>.
 License: GNU General Public License
 Encoding: UTF-8
 LazyData: true

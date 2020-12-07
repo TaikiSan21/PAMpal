@@ -18,7 +18,7 @@ A list with 50 calculated ROCCA parameters, each item in the list will
 \description{
 Calculate a set of measurements from a whistle contour. All
   calculations following ROCCA method from Julie and Michael Oswald, as
-  implemented in Pamguard and detailed in Oswald et al JASA 2007
+  implemented in Pamguard and detailed in Oswald et al (2007) <doi:10.1121/1.2743157>
 }
 \examples{
 
