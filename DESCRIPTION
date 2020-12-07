@@ -47,5 +47,3 @@ Imports:
 RoxygenNote: 7.1.1
 Suggests: 
     testthat
-Remotes:
-    TaikiSan21/PAMmisc
