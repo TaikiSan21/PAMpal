@@ -40,7 +40,8 @@
 #'   a filepath to a csv file.
 #' @param format the date format for the \code{start} and \code{end} columns
 #'   in \code{grouping} if it is a csv. Times are assumed to be UTC. See
-#'   ?strptime for details.
+#'   details section of \link{strptime} for more information on how to properly
+#'   format this
 #' @param progress logical flog to show progress bars
 #' @param verbose logical flag to show messages
 #' @param \dots additional arguments to pass onto to different methods

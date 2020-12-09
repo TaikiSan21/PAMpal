@@ -4,6 +4,12 @@
 to bad answers. Now filters results by z-score < 2 before taking ICI to get
 rid of outlier large values
 
+* Fixed bug in `writeEventClips` that was undoing buffer in the wrong direction if
+the buffered time was not present in any of your wav files, would previously get a
+false warning of "cant find wav file"
+
+* Updated how warnings work for `writeEventClips`, now always reported even on failure
+
 ## PAMpal 0.9.12
 
 * `getBinaryData` was not doing a good job if binaries had the same name. It do better now

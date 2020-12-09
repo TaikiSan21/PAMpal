@@ -76,10 +76,32 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
 
     # setup warning storage
     noMatch <- character(0)
+    multMatch <- character(0)
     nonConsec <- character(0)
     fileDNE <- character(0)
     noChan <- character(0)
     result <- character(0)
+    on.exit({
+        if(length(noMatch) > 0) {
+            warning('Could not find matching wav files for ', mode, ' ', printN(noMatch, 6), call.=FALSE)
+        }
+        if(length(multMatch) > 0) {
+            warning(oneUpper(mode), ' ', printN(multMatch, 6),
+                    ' matched more than 1 possible wav file, could not create clip.', call.=FALSE)
+        }
+        if(length(nonConsec) > 0) {
+            warning(oneUpper(mode), ' ', printN(nonConsec, 6),
+                    ' spanned two non-consecutive wav files, could not create clip.', call.=FALSE)
+        }
+        if(length(fileDNE) > 0) {
+            warning('Wav files for ', mode, ' ', printN(fileDNE, 6), ' could not be found on disk.',
+                    ' Function "updateFiles" can help relocate files that have moved.', call. = FALSE)
+        }
+        if(length(noChan) > 0) {
+            warning('Wav files for ', mode, ' ', printN(noChan, 6),
+                    ' did not have the desired channels.', call.=FALSE)
+        }
+    })
     for(d in seq_along(dbMap)) {
         thisDbData <- x[which(evDbs == names(dbMap)[d])]
         if(length(events(thisDbData)) == 0) next
@@ -98,8 +120,16 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
             # for start and end check if in range. if we buffered, try undoing that first.
             # so like if buffer put us before first file, start and beginning of first file instead.
             startIx <- checkIn(timeRange[1], wavMap)
+            if(length(startIx) > 1) {
+                multMatch <- c(multMatch, names(allFiles)[i])
+                allFiles[[i]] <- NA
+                if(progress) {
+                    setTxtProgressBar(pb, value=i)
+                }
+                next
+            }
             if(is.na(startIx)) {
-                startIx <- checkIn(timeRange[1] + buffer[1], wavMap)
+                startIx <- checkIn(timeRange[1] - buffer[1], wavMap)
                 if(is.na(startIx)) {
                     noMatch <- c(noMatch, names(allFiles)[i])
                     # warning('Could not find matching wav files for ', mode, names(allFiles)[i])
@@ -112,6 +142,14 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
                 timeRange[1] <- wavMap$start[startIx]
             }
             endIx <- checkIn(timeRange[2], wavMap)
+            if(length(endIx) > 1) {
+                multMatch <- c(multMatch, names(allFiles)[i])
+                allFiles[[i]] <- NA
+                if(progress) {
+                    setTxtProgressBar(pb, value=i)
+                }
+                next
+            }
             if(is.na(endIx)) {
                 endIx <- checkIn(timeRange[2] - buffer[2], wavMap)
                 if(is.na(endIx)) {
@@ -194,21 +232,6 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
         cat('\n', paste0('Wrote ', sum(!isNa), ' wav file(s).\n'))
         # names(allFiles) <- sapply(event, function(x) x@id)
         result <- c(result, allFiles)
-    }
-    if(length(noMatch) > 0) {
-        warning('Could not find matching wav files for ', mode, ' ', printN(noMatch, 6), call.=FALSE)
-    }
-    if(length(nonConsec) > 0) {
-        warning(oneUpper(mode), ' ', printN(nonConsec, 6),
-            ' spanned two non-consecutive wav files, could not create clip.', call.=FALSE)
-    }
-    if(length(fileDNE) > 0) {
-        warning('Wav files for ', mode, ' ', printN(fileDNE, 6), ' could not be found on disk.',
-            ' Function "updateFiles" can help relocate files that have moved.', call. = FALSE)
-    }
-    if(length(noChan) > 0) {
-        warning('Wav files for ', mode, ' ', printN(noChan, 6),
-                ' did not have the desired channels.', call.=FALSE)
     }
     invisible(result)
 }

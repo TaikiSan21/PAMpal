@@ -52,7 +52,8 @@ not supplied (recommended to supply your own informative id)}
 
 \item{format}{the date format for the \code{start} and \code{end} columns
 in \code{grouping} if it is a csv. Times are assumed to be UTC. See
-?strptime for details.}
+details section of \link{strptime} for more information on how to properly
+format this}
 
 \item{progress}{logical flog to show progress bars}
 
