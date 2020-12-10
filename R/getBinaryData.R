@@ -76,6 +76,9 @@ getBinaryData <- function(x, UID, quiet=FALSE, ...) {
         return(NULL)
     }
     bins <- unique(bins)
+    # just doing this bec i goofed earlier and some people had data where this
+    # never happened in processing. BinaryFile should already be basename
+    bins$BinaryFile <- basename(bins$BinaryFile)
 
     if(length(settings(x)$sr) == 1) {
         bins$sr <- settings(x)$sr

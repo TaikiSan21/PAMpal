@@ -343,12 +343,13 @@ processPgDetectionsTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%
         thisData <- thisData[sapply(thisData, function(x) !is.null(x))]
         binariesUsed <- sapply(thisData, function(x) unique(x$BinaryFile)) %>%
             unlist(recursive = FALSE) %>% unique()
-        binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE), USE.NAMES = FALSE))
+        # binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE), USE.NAMES = FALSE))
         # Check and warning here for empty event
         if(length(thisData) == 0) {
             warning('No detections in Event ', names(acousticEvents)[i], call.=FALSE)
         }
         thisData <- lapply(thisData, function(x) {
+            x$BinaryFile <- basename(x$BinaryFile)
             thisType <- unique(x$callType)
             x <- dropCols(x, colsToDrop)
             attr(x, 'calltype') <- thisType

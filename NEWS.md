@@ -12,6 +12,10 @@ false warning of "cant find wav file"
 
 * Adding filter options to `calculateAverageSpectra` similar to `standardClickCalcs`
 
+* Fixed bug where processing with `mode='time'` was leaving in full binary path names
+instead of just file basename, messing up other stuff like `getBinaryData`. Fixed and
+temporary adjustment to `getBinaryData` made
+
 ## PAMpal 0.9.12
 
 * `getBinaryData` was not doing a good job if binaries had the same name. It do better now
