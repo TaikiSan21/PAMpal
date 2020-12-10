@@ -7,8 +7,14 @@
 #' @param evNum if \code{x} is a study, the event number to calculate the average
 #'   spectra for
 #' @param calibration a calibration function to apply, if desired
-#' @param wl the size of the click clips to use for calculating the spectra. If
+#' @param wl the size of the click clips to use for calculating the spectrum. If
 #'   greater than the clip present in the binary, clip will be zero padded
+#' @param filterfrom_khz frequency in khz of highpass filter to apply, or the lower
+#'   bound of a bandpass filter if \code{filterto_khz} is not \code{NULL}
+#' @param filterto_khz if a bandpass filter is desired, set this as the upper bound.
+#'   If only a highpass filter is desired, leave as the default \code{NULL} value.
+#'   Currently only highpass and bandpass filters are supported, so if
+#'   \code{filterfrom_khz} is left as zero then this parameter will have no effect
 #' @param sr a sample rate to use if the sample rate present in the database needs
 #'   to be overridden (typically only needed if a decimator was used)
 #' @param norm logical flag to normalize magnitudes to 0-1 range
@@ -21,7 +27,7 @@
 #'
 #' @return invisibly returns a list with three items: \code{freq}, the frequency,
 #'   \code{average}, the average spectra of the event, and \code{all}, the individual
-#'   spectra of each click in the event as a matrix.
+#'   spectrum of each click in the event as a matrix.
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
@@ -40,9 +46,12 @@
 #' @importFrom signal hanning
 #' @importFrom graphics par image axis
 #' @importFrom stats fft
+#' @importFrom fftw planFFT FFT
+#'
 #' @export
 #'
 calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=1024,
+                                    filterfrom_khz=0, filterto_khz=NULL,
                                     sr=NULL, norm=TRUE, plot=TRUE) {
     if(is.AcousticEvent(x)) {
         ev <- x
@@ -75,7 +84,9 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=1024,
         }
         result <- 0
         for(c in 1:ncol(x$wave)) {
-            result <- result + myGram(x, channel = c, wl=wl)$dB + calFun(freq)
+            result <- result + myGram(x, channel = c, wl=wl,
+                                      from=filterfrom_khz,
+                                      to=filterto_khz)$dB + calFun(freq)
         }
         result / ncol(x$wave)
     })
@@ -110,14 +121,27 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=1024,
     invisible(list(freq=freq, average=averageSpec, all=specMat))
 }
 
-myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL) {
+myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
+                   from=0, to=NULL) {
     wave <- x$wave[, channel]
     if(is.null(sr)) {
         sr <- x$sr
     }
+    if(from > 0) {
+        # kinda janky because NULL * 1e3 is not NULL anymore, its numeric(0)
+        if(!is.null(to)) {
+            to_hz <- to * 1e3
+        } else {
+            to_hz <- NULL
+        }
+        wave <- bwfilter(wave, f=sr, n=4, from=from*1e3, to = to_hz, output='sample')
+    }
     wave <- clipAroundPeak(wave, wl)
+
     FUN <- function(x) {
-        20*log10(abs(fft(x)))
+        p <- planFFT(length(x))
+        result <- Mod(FFT(x, plan = p))
+        20*log10(result)
     }
 
     y <- (1:(wl)) / wl * sr

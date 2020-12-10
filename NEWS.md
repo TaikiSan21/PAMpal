@@ -10,6 +10,8 @@ false warning of "cant find wav file"
 
 * Updated how warnings work for `writeEventClips`, now always reported even on failure
 
+* Adding filter options to `calculateAverageSpectra` similar to `standardClickCalcs`
+
 ## PAMpal 0.9.12
 
 * `getBinaryData` was not doing a good job if binaries had the same name. It do better now

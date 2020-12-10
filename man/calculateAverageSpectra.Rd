@@ -9,6 +9,8 @@ calculateAverageSpectra(
   evNum = 1,
   calibration = NULL,
   wl = 1024,
+  filterfrom_khz = 0,
+  filterto_khz = NULL,
   sr = NULL,
   norm = TRUE,
   plot = TRUE
@@ -22,8 +24,16 @@ spectra for}
 
 \item{calibration}{a calibration function to apply, if desired}
 
-\item{wl}{the size of the click clips to use for calculating the spectra. If
+\item{wl}{the size of the click clips to use for calculating the spectrum. If
 greater than the clip present in the binary, clip will be zero padded}
+
+\item{filterfrom_khz}{frequency in khz of highpass filter to apply, or the lower
+bound of a bandpass filter if \code{filterto_khz} is not \code{NULL}}
+
+\item{filterto_khz}{if a bandpass filter is desired, set this as the upper bound.
+If only a highpass filter is desired, leave as the default \code{NULL} value.
+Currently only highpass and bandpass filters are supported, so if
+\code{filterfrom_khz} is left as zero then this parameter will have no effect}
 
 \item{sr}{a sample rate to use if the sample rate present in the database needs
 to be overridden (typically only needed if a decimator was used)}
@@ -40,7 +50,7 @@ is frequency.}
 \value{
 invisibly returns a list with three items: \code{freq}, the frequency,
   \code{average}, the average spectra of the event, and \code{all}, the individual
-  spectra of each click in the event as a matrix.
+  spectrum of each click in the event as a matrix.
 }
 \description{
 Calculates the average spectra of all the clicks present in an
