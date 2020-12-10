@@ -44,8 +44,7 @@ Imports:
     xml2,
     rjson,
     rlang,
-    reticulate,
-    fftw
+    reticulate
 RoxygenNote: 7.1.1
 Suggests: 
     testthat

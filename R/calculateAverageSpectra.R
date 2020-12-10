@@ -46,7 +46,6 @@
 #' @importFrom signal hanning
 #' @importFrom graphics par image axis
 #' @importFrom stats fft
-#' @importFrom fftw planFFT FFT
 #'
 #' @export
 #'
@@ -139,8 +138,7 @@ myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
     wave <- clipAroundPeak(wave, wl)
 
     FUN <- function(x) {
-        p <- planFFT(length(x))
-        result <- Mod(FFT(x, plan = p))
+        result <- Mod(fft(x))
         20*log10(result)
     }
 
