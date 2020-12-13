@@ -1,3 +1,13 @@
+## PAMpal 0.9.14
+
+* Cepstrum module can now be named "BurstPulse" or "Burst Pulse" in addition
+to "Cepstrum" to be recognized by `PAMpal`
+
+* Function checker was set up poorly and would unintentially write to global env
+on some failed checks
+
+* `calculateAverageSpectra` was not passing along manual `sr` input properly
+
 ## PAMpal 0.9.13
 
 * Fixed bug in `calculateICI` if large values were present rounding would lead

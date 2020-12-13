@@ -106,15 +106,12 @@ functionChecker <- function(fun, module) {
 
 clickChecker <- function(fun) {
     good <- TRUE
-    tryCatch({
-        testThisClick <- fun(data=PAMpal::testClick)
-    },
-    error = function(e) {
-        print(e)
-        good <<- FALSE
-    })
-    if(!exists('testThisClick')) {
+
+    testThisClick <- try(fun(data=PAMpal::testClick))
+
+    if(inherits(testThisClick, 'try-error')) {
         message('Click function did not run succesfully.')
+        message('Error: ', attr(testThisClick, 'condition')$message)
         return(FALSE)
     }
     if(is.null(testThisClick)) {
@@ -130,15 +127,12 @@ clickChecker <- function(fun) {
 
 whistleChecker <- function(fun) {
     good <- TRUE
-    tryCatch({
-        testThisWhistle <- fun(data=PAMpal::testWhistle)
-    },
-    error = function(e) {
-        print(e)
-        good <<- FALSE
-    })
-    if(!exists('testThisWhistle')) {
+
+    testThisWhistle <- try(fun(data=PAMpal::testWhistle))
+
+    if(inherits(testThisWhistle, 'try-error')) {
         message('Whistle function did not run successfully.')
+        message('Error: ', attr(testThisWhistle, 'condition')$message)
         return(FALSE)
     }
     if(is.null(testThisWhistle)) {
@@ -154,15 +148,11 @@ whistleChecker <- function(fun) {
 
 cepstrumChecker <- function(fun) {
     good <- TRUE
-    tryCatch({
-        testThisCeps <- fun(data=PAMpal::testCeps)
-    },
-    error = function(e) {
-        print(e)
-        good <<- FALSE
-    })
-    if(!exists('testThisCeps')) {
+    testThisCeps <- try(fun(data=PAMpal::testCeps))
+
+    if(inherits(testThisCeps, 'try-error')) {
         message('Cepstrum function did not run successfully.')
+        message('Error: ', attr(testThisCeps, 'condition')$message)
         return(FALSE)
     }
     if(is.null(testThisCeps)) {

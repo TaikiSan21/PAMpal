@@ -85,7 +85,8 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=1024,
         for(c in 1:ncol(x$wave)) {
             result <- result + myGram(x, channel = c, wl=wl,
                                       from=filterfrom_khz,
-                                      to=filterto_khz)$dB + calFun(freq)
+                                      to=filterto_khz,
+                                      sr = sr)$dB + calFun(freq)
         }
         result / ncol(x$wave)
     })
@@ -103,6 +104,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=1024,
     averageSpec <- apply(specMat, 1, mean)
     if(plot) {
         oldMf <- par()$mfrow
+        on.exit(par(mfrow = oldMf))
         par(mfrow=c(2,1))
         image(t(specMat), xaxt='n', yaxt='n', ylab='Frequency (kHz)', xlab='Click Number')
         xPretty <- pretty(1:length(specData), n=5)
@@ -115,12 +117,12 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=1024,
         axis(1, at = freqPretty*1e3, labels=freqPretty)
         yPretty <- pretty(range(averageSpec), n=5)
         axis(2, at=yPretty, labels=yPretty)
-        par(mfrow = oldMf)
+
     }
     invisible(list(freq=freq, average=averageSpec, all=specMat))
 }
 
-myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
+myGram <- function(x, channel=1, wl = 512, window = F, sr=NULL,
                    from=0, to=NULL) {
     wave <- x$wave[, channel]
     if(is.null(sr)) {

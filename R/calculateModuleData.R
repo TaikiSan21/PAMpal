@@ -41,7 +41,7 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
     }
     # For now, cepstrum-ing like dis
     if(moduleType == 'WhistlesMoans' &&
-       grepl('cepstrum', detName, ignore.case = TRUE)) {
+       grepl('cepstrum|burst pulse|burstpulse', detName, ignore.case = TRUE)) {
         moduleType <- 'Cepstrum'
     }
     detName <- gsub(' ', '_', detName)
