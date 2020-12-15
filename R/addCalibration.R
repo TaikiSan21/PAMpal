@@ -1,7 +1,8 @@
 #' @title Add a Calibration File to a PAMpalSettings Object
 #'
 #' @description Adds a new calibration function to the "calibration" slot
-#'   of a PAMpalSettings object.
+#'   of a PAMpalSettings object. Interactively asks user to supply
+#'   file and other parameters if not supplied.
 #'
 #' @param pps a \linkS4class{PAMpalSettings} object to add a database to
 #' @param calFile a calibration file name. Must be csv format with two columns.

@@ -1,7 +1,8 @@
 #' @title Add a Function to a PAMpalSettings Object
 #'
 #' @description Adds a new function to the "function" slot in a PAMpalSettings
-#'   object.
+#'   object. Must be run interactively, user will be prompted to assign
+#'   values for any parameters in the function to be added
 #'
 #' @param pps a \linkS4class{PAMpalSettings} object to add a function to
 #' @param fun function to add OR another \linkS4class{PAMpalSettings} object.

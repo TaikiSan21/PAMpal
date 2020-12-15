@@ -21,7 +21,8 @@ the same \linkS4class{PAMpalSettings} object as pps, with the binary
 }
 \description{
 Adds more binary files to the "binaries" slot of a
-  PAMpalSettings object
+  PAMpalSettings object. Interactively asks user to supply
+  folder location if not provided.
 }
 \examples{
 

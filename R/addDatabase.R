@@ -1,7 +1,7 @@
 #' @title Add a Database to a PAMpalSettings Object
 #'
 #' @description Adds a new function to the "function" slot in a PAMpalSettings
-#'   object.
+#'   object. Interactively asks for database files if none are supplied as input
 #'
 #' @param pps a \linkS4class{PAMpalSettings} object to add a database to
 #' @param db a database to add

@@ -10,7 +10,8 @@ writeEventClips(
   outDir = ".",
   mode = c("event", "detection"),
   channel = 1,
-  progress = TRUE
+  progress = TRUE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ wav clips of entire events or individual detections}
 \item{channel}{channel(s) of clips to write}
 
 \item{progress}{logical flag to show progress bar}
+
+\item{verbose}{logical flag to show summary messages}
 }
 \value{
 A vector of file names for the wav clips that were successfully

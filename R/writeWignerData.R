@@ -92,6 +92,17 @@ writeWignerData <- function(x, n=256, t=300, outDir='.', mode='nparray', progres
     noDet <- character(0)
     noBin <- character(0)
     allFiles <- character(0)
+    on.exit({
+        if(length(naSp) > 0) {
+            warning('No species id for events ', printN(naSp), call.=FALSE)
+        }
+        if(length(noDet) > 0) {
+            warning('No detections found in events ', printN(naSp), call. = FALSE)
+        }
+        if(length(noBin) > 0) {
+            warning('No binary data found for events ', printN(noBin), call.=FALSE)
+        }
+    })
     spList <- unique(species(x))
     badDir <- sapply(spList, function(x) {
         thisDir <- file.path(outDir, x)
@@ -160,15 +171,7 @@ writeWignerData <- function(x, n=256, t=300, outDir='.', mode='nparray', progres
             setTxtProgressBar(pb, value=e)
         }
     }
-    if(length(naSp) > 0) {
-        warning('No species id for events ', printN(naSp), call.=FALSE)
-    }
-    if(length(noDet) > 0) {
-        warning('No detections found in events ', printN(naSp), call. = FALSE)
-    }
-    if(length(noBin) > 0) {
-        warning('No binary data found for events ', printN(noBin), call.=FALSE)
-    }
+
     if(progress) {
         cat('\n')
     }

@@ -46,7 +46,8 @@ the same \linkS4class{PAMpalSettings} object as pps, with the calibration
 }
 \description{
 Adds a new calibration function to the "calibration" slot
-  of a PAMpalSettings object.
+  of a PAMpalSettings object. Interactively asks user to supply
+  file and other parameters if not supplied.
 }
 \details{
 When adding a calibration, you will be asked what units your calibration

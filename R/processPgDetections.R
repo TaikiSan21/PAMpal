@@ -708,15 +708,17 @@ getMatchingBinaryData <- function(dbData, binList, dbName, idCol = 'UID') {
 
 checkGrouping <- function(grouping, format) {
     if(is.null(grouping)) {
-        cat('Please provide a csv file with columns "start", "end", "id", and',
-            'optionally "species" to group detections into events.')
-        grouping <- tk_choose.files(caption = 'Select event time csv file:', multi = FALSE)
+        # cat('Please provide a csv file with columns "start", "end", "id", and',
+        #     'optionally "species" to group detections into events.')
+        # grouping <- tk_choose.files(caption = 'Select event time csv file:', multi = FALSE)
+        stop('Grouping file with columns "start", "end", and "id" must be provided to',
+             ' group detections into events.')
     }
     if(inherits(grouping, 'character')) {
         if(!file.exists(grouping)) {
-            cat('Provided grouping file does not exist, please provide a csv file with',
-                'columns "start", "end", and "id" to group detections into events.')
-            grouping <- tk_choose.files(caption = 'Select event time csv file:', multi = FALSE)
+            stop('Provided grouping file does not exist, please provide a csv file with',
+                ' columns "start", "end", and "id" to group detections into events.')
+            # grouping <- tk_choose.files(caption = 'Select event time csv file:', multi = FALSE)
         }
         grouping <- read_csv(grouping, col_types = cols(.default=col_character()))
     }
@@ -729,30 +731,23 @@ checkGrouping <- function(grouping, format) {
         # if times arent posix, convert and check that it worked
         if(!inherits(grouping$start, 'POSIXct') ||
            !inherits(grouping$end, 'POSIXct')) {
-            if(inherits(grouping$start, 'factor')) {
-                grouping$start <- as.character(grouping$start)
-            }
-            if(inherits(grouping$start, 'character')) {
-                grouping$start <- as.POSIXct(grouping$start, format=format, tz='UTC')
-            }
-            if(inherits(grouping$end, 'factor')) {
-                grouping$end <- as.character(grouping$end)
-            }
-            if(inherits(grouping$end, 'character')) {
-                grouping$end <- as.POSIXct(grouping$end, format=format, tz='UTC')
-            }
+
+            grouping$start <- parseUTC(grouping$start, format)
+            grouping$end <- parseUTC(grouping$end, format)
+
             if(any(is.na(grouping$start)) ||
                any(is.na(grouping$end))) {
-                warning('Some event start/end times were not able to be converted, please check format.')
+                stop('Some event start/end times were not able to be converted, please check to',
+                        ' ensure that format argument matches date format in provided file.')
             }
-            checkDate <- menu(title = paste0('\nThe first event start time is ', grouping$start[1],
-                                             ', does this look okay?'),
-                              choices = c('Yes, continue processing.',
-                                          "No. I'll stop and check grouping data and the time format argument.")
-            )
-            if(checkDate != 1) {
-                stop('Stopped due to invalid event times.')
-            }
+            # checkDate <- menu(title = paste0('\nThe first event start time is ', grouping$start[1],
+            #                                  ', does this look okay?'),
+            #                   choices = c('Yes, continue processing.',
+            #                               "No. I'll stop and check grouping data and the time format argument.")
+            # )
+            # if(checkDate != 1) {
+            #     stop('Stopped due to invalid event times.')
+            # }
         }
         grouping$id <- as.character(grouping$id)
     }
@@ -801,4 +796,16 @@ getModuleType <- function(x) {
         return('Cepstrum')
     }
     moduleType
+}
+
+#' @importFrom lubridate parse_date_time
+#'
+parseUTC <- function(x, format) {
+    if(inherits(x, 'factor')) {
+        x <- as.character(x)
+    }
+    if(is.character(x)) {
+        x <- parse_date_time(x, orders=format, tz='UTC', exact=TRUE, truncated=2, quiet=TRUE)
+    }
+    x
 }

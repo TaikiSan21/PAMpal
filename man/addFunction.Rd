@@ -24,7 +24,8 @@ the same \linkS4class{PAMpalSettings} object as pps, with the function
 }
 \description{
 Adds a new function to the "function" slot in a PAMpalSettings
-  object.
+  object. Must be run interactively, user will be prompted to assign
+  values for any parameters in the function to be added
 }
 \examples{
 

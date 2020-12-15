@@ -19,7 +19,7 @@ the same \linkS4class{PAMpalSettings} object as pps, with the database
 }
 \description{
 Adds a new function to the "function" slot in a PAMpalSettings
-  object.
+  object. Interactively asks for database files if none are supplied as input
 }
 \examples{
 

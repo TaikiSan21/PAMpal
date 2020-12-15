@@ -1,6 +1,8 @@
 #' @title Add Recordings to an AcousticStudy Object
 #'
-#' @description Adds recording files to an AcousticStudy object. No actual
+#' @description Adds recording files to an AcousticStudy object, runs
+#'   interactively to allow users to select files if they are not
+#'   provided. No actual
 #'   recordings are stored, a dataframe containing information on the
 #'   start and end times of the recording files is added to the object.
 #'
@@ -79,7 +81,6 @@ addRecordings <- function(x, folder=NULL, log=NULL, progress=TRUE) {
     if(length(folder) != length(dbMap)) {
         stop('Number of folders must either be 1 or equal to the number of databases.')
     }
-
 
     logList <- vector('list', length = length(unique(log)))
     names(logList) <- as.character(unique(log))

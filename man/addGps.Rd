@@ -44,7 +44,9 @@ the same data as \code{x}, with Lat/Long data added. AcousticStudy objects
   have Latitude and Longitude added to all detector dataframes
 }
 \description{
-Add GPS Lat / Long to an AcousticStudy or AcousticEvent
+Add GPS Lat / Long to an AcousticStudy or AcousticEvent.
+  If GPS data is not present in any of the databases, user will
+  interactively be asked to provide GPS data to add
 }
 \details{
 Latitude and Longitude coordinates will be matched to the data

@@ -60,16 +60,6 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
         # NEED TO UNLIST IF ITS A STUDY BUT THEN PROB SHOULDNT DO ALL IN ONE THING WHATEVER BRO
         x <- c(x[whichEvent],
                unlist(sapply(x[whichStudy], events)))
-        # x <- sapply(x, function(e) {
-        #     if(is.AcousticStudy(e)) {
-        #         return(events(e))
-        #     } else if(is.AcousticEvent(e)) {
-        #         return(e)
-        #     } else {
-        #         warning('Some inputs were not an AcousticEvent or AcousticStudy.')
-        #         return(NULL)
-        #     }
-        # })
     }
     if(is.AcousticStudy(x)) {
         x <- events(x)

@@ -1,6 +1,8 @@
 #' @title Add GPS Locations to an AcousticStudy
 #'
-#' @description Add GPS Lat / Long to an AcousticStudy or AcousticEvent
+#' @description Add GPS Lat / Long to an AcousticStudy or AcousticEvent.
+#'   If GPS data is not present in any of the databases, user will
+#'   interactively be asked to provide GPS data to add
 #'
 #' @param x data to add GPS coordinates to. Must have a column \code{UTC}, and
 #'   can also have an optional column \code{Channel}
@@ -188,7 +190,7 @@ setMethod('addGps', 'AcousticStudy', function(x, gps=NULL, thresh = 3600, ...) {
 #' @export
 #'
 setMethod('addGps', 'ANY', function(x, gps, thresh = 3600, ...) {
-    cat('No addGps method for object type', class(x))
+    warning('No addGps method for object type', class(x))
     x
 })
 

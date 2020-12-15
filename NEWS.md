@@ -8,6 +8,11 @@ on some failed checks
 
 * `calculateAverageSpectra` was not passing along manual `sr` input properly
 
+* `processPgDetections` with `mode='time'` handles date converting better, will no longer
+fail with Excel rounding 12:10:00 to 12:10. Also removed some unnecessary interactive 
+steps, will now stop and ask user to provide instead of asking user to provide during
+call
+
 ## PAMpal 0.9.13
 
 * Fixed bug in `calculateICI` if large values were present rounding would lead

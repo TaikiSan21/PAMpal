@@ -45,10 +45,15 @@ test_that('Test process time', {
     exPps <- addFunction(exPps, exClick, module = 'ClickDetector', verbose=FALSE)
     exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans', verbose=FALSE)
     exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum', verbose=FALSE)
-    grp <- data.frame(start = as.POSIXct('2018-03-20 15:25:10', tz='UTC'),
+    grp <- data.frame(start = as.POSIXct('2018-03-20 15:25:00', tz='UTC'),
                       end = as.POSIXct('2018-03-20 15:25:11', tz='UTC'),
                       id = 'TimeExample')
     exTime <- processPgDetections(exPps, mode='time', grouping=grp, id='Time', progress=FALSE)
+    grpChar <- data.frame(start = c('2018-03-20 15:25'),
+                      end = c('2018-03-20 15:25:11'),
+                      id = 'TimeExample')
+    exChar <- processPgDetections(exPps, mode='time', grouping=grpChar, id='Time', format='%Y-%m-%d %H:%M:%S', progress=FALSE)
+    expect_identical(exChar, exTime)
     dets <- getDetectorData(exTime)
     times <- do.call(rbind, lapply(dets, function(x) {
         x[, c('UTC', 'UID')]

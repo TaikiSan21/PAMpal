@@ -29,7 +29,9 @@ the same object as \code{x} with recording information added
   the start and end times of recording
 }
 \description{
-Adds recording files to an AcousticStudy object. No actual
+Adds recording files to an AcousticStudy object, runs
+  interactively to allow users to select files if they are not
+  provided. No actual
   recordings are stored, a dataframe containing information on the
   start and end times of the recording files is added to the object.
 }

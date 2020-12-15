@@ -11,6 +11,7 @@
 #'   wav clips of entire events or individual detections
 #' @param channel channel(s) of clips to write
 #' @param progress logical flag to show progress bar
+#' @param verbose logical flag to show summary messages
 #'
 #' @return A vector of file names for the wav clips that were successfully
 #'   created, any that were not able to be written will be \code{NA}. Note
@@ -38,7 +39,7 @@
 #' @export
 #'
 writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event', 'detection'),
-                            channel = 1, progress=TRUE) {
+                            channel = 1, progress=TRUE, verbose=TRUE) {
     if(!is.AcousticStudy(x)) {
         stop('"x" must be an AcousticStudy object.')
     }
@@ -229,7 +230,9 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
             }
         }
         isNa <- is.na(allFiles)
-        cat('\n', paste0('Wrote ', sum(!isNa), ' wav file(s).\n'))
+        if(verbose) {
+            cat('\n', paste0('Wrote ', sum(!isNa), ' wav file(s).\n'))
+        }
         # names(allFiles) <- sapply(event, function(x) x@id)
         result <- c(result, allFiles)
     }

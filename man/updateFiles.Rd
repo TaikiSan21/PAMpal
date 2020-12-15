@@ -32,7 +32,8 @@ the same \linkS4class{AcousticStudy} and
 \description{
 Updates the stored locations of binary, database, and/or recording
   files in the \code{files} slots of an \linkS4class{AcousticStudy} and all
-  \linkS4class{AcousticEvent} objects within. Typically used after changing
+  \linkS4class{AcousticEvent} objects within. Runs interactively to prompt
+  users to select folders if missing files are found. Typically used after changing
   computers, or if original data was on an external hard drive. If any
   missing files are not able to be located, they will be kept in the files
   slot so that this function can be run again

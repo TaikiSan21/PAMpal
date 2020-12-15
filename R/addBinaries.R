@@ -1,7 +1,8 @@
 #' @title Add Binaries to a PAMpalSettings Object
 #'
 #' @description Adds more binary files to the "binaries" slot of a
-#'   PAMpalSettings object
+#'   PAMpalSettings object. Interactively asks user to supply
+#'   folder location if not provided.
 #'
 #' @param pps a \linkS4class{PAMpalSettings} object to add binary files to
 #' @param folder a folder of binaries to add, all subfolders will also be added
