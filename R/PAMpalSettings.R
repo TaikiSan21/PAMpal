@@ -9,6 +9,7 @@
 #' @param binaries a folder containing Pamguard binary files, all subfolders will
 #'   also be added
 #' @param verbose logical flag to show messages
+#' @param \dots values to pass on to default \link{standardClickCalcs} function
 #'
 #' @return A PAMpalSettings object
 #'
@@ -26,7 +27,7 @@
 #' @importFrom methods new
 #' @export
 #'
-PAMpalSettings <- function(db=NULL, binaries=NULL, verbose=TRUE) {
+PAMpalSettings <- function(db=NULL, binaries=NULL, verbose=TRUE, ...) {
     pps <- new('PAMpalSettings')
     pps <- addDatabase(pps, db, verbose)
     pps <- addBinaries(pps, binaries, verbose)
@@ -35,7 +36,7 @@ PAMpalSettings <- function(db=NULL, binaries=NULL, verbose=TRUE) {
             '"roccaWhistleCalcs" for the "WhistlesMoans" module,',
             'and "standardCepstrumCalcs" for the "Cepstrum" module.\n')
     }
-    pps <- addFunction(pps, standardClickCalcs, 'ClickDetector', verbose=verbose)
+    pps <- addFunction(pps, standardClickCalcs, 'ClickDetector', verbose=verbose, ...)
     pps <- addFunction(pps, roccaWhistleCalcs, 'WhistlesMoans', verbose=verbose)
     pps <- addFunction(pps, standardCepstrumCalcs, 'Cepstrum', verbose=verbose)
     pps

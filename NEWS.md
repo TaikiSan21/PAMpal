@@ -1,3 +1,13 @@
+## PAMpal 0.10.1
+
+* Multiple functions that tried to match files against a list would fail if
+filepaths contained "\\" as file separators, these have been changed to use
+`fixed=TRUE` so that this no longer happens
+
+* Can now set function parameters for functions being adding during the initial
+call to `PAMpalSettings` and `addFunction` instead of being forced to go through
+interactive menus
+
 ## PAMpal 0.9.14
 
 * Cepstrum module can now be named "BurstPulse" or "Burst Pulse" in addition

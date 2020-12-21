@@ -4,7 +4,7 @@
 \alias{PAMpalSettings}
 \title{Constructor for PAMpalSettings Object}
 \usage{
-PAMpalSettings(db = NULL, binaries = NULL, verbose = TRUE)
+PAMpalSettings(db = NULL, binaries = NULL, verbose = TRUE, ...)
 }
 \arguments{
 \item{db}{the full path to a Pamguard database file}
@@ -13,6 +13,8 @@ PAMpalSettings(db = NULL, binaries = NULL, verbose = TRUE)
 also be added}
 
 \item{verbose}{logical flag to show messages}
+
+\item{\dots}{values to pass on to default \link{standardClickCalcs} function}
 }
 \value{
 A PAMpalSettings object

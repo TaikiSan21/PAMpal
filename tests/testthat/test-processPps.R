@@ -10,8 +10,17 @@ test_that('Test process database', {
     exPps <- addFunction(exPps, exClick, module = 'ClickDetector', verbose=FALSE)
     exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans', verbose=FALSE)
     exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum', verbose=FALSE)
+    
+    
+    setArgPps <- removeFunction(exPps, 1)
+    setArgPps <- addFunction(setArgPps, standardClickCalcs, sr_hz='auto', filterfrom_khz=0, filterto_khz=NULL,
+                             winLen_sec=.0025, module='ClickDetector', verbose=FALSE)
+    
     exData <- processPgDetections(exPps, mode='db', id='Example', progress=FALSE)
-
+    setArgData <- processPgDetections(setArgPps, mode='db', id='Example', progress=FALSE)
+    
+    expect_identical(events(exData), events(setArgData))
+    
     expect_is(exData, 'AcousticStudy')
     expect_is(exData[1], 'AcousticStudy')
     expect_is(exData[[1]], 'AcousticEvent')

@@ -109,7 +109,7 @@ getBinaryData <- function(x, UID, quiet=FALSE, ...) {
     # Bins is detector data
     result <- lapply(unique(bins$BinaryFile), function(bin) {
         # this has full path name
-        fullBin <- grep(bin, unique(allBinaries), value = TRUE)
+        fullBin <- grep(bin, unique(allBinaries), value = TRUE, fixed=TRUE)
         if(length(fullBin)==0) {
             warning('Binary file ', bin, ' not found in files slot.', call.=FALSE)
             return(NULL)

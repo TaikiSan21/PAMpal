@@ -4,7 +4,7 @@
 \alias{addFunction}
 \title{Add a Function to a PAMpalSettings Object}
 \usage{
-addFunction(pps, fun, module = NULL, verbose = TRUE)
+addFunction(pps, fun, module = NULL, verbose = TRUE, ...)
 }
 \arguments{
 \item{pps}{a \linkS4class{PAMpalSettings} object to add a function to}
@@ -17,6 +17,8 @@ ClickDetector, WhistlesMoans, or Cepstrum. If \code{NULL} (default), user
 will be prompted to select which module it applies to}
 
 \item{verbose}{logical flag to show messages}
+
+\item{\dots}{named arguments to pass to function being added}
 }
 \value{
 the same \linkS4class{PAMpalSettings} object as pps, with the function

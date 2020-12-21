@@ -140,12 +140,12 @@ processPgDetectionsTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%
     # match db to events
     for(i in dbToAssign) {
         if(is.na(grouping$db[i]) ||
-           !any(grepl(grouping$db[i], allDbs))) {
+           !any(grepl(grouping$db[i], allDbs, fixed=TRUE))) {
             dbPossible <- allDbs[sapply(saList, function(x) {
                 inInterval(c(grouping$start[i], grouping$end[i]), x)
             })]
         } else { # case if you just specified basename of the database it will find it
-            dbPossible <- grep(grouping$db[i], allDbs, value=TRUE)
+            dbPossible <- grep(grouping$db[i], allDbs, value=TRUE, fixed=TRUE)
         }
 
         if(length(dbPossible) == 0 ||
@@ -488,7 +488,7 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                 ev <- ev[sapply(ev, function(x) !is.null(x))]
                 binariesUsed <- sapply(ev, function(x) unique(x$BinaryFile)) %>%
                     unlist(recursive = FALSE) %>% unique()
-                binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE), USE.NAMES = FALSE))
+                binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE, fixed=TRUE), USE.NAMES = FALSE))
                 evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentUID))
                 ev <- lapply(ev, function(x) {
                     x$BinaryFile <- basename(x$BinaryFile)
@@ -662,7 +662,7 @@ getMatchingBinaryData <- function(dbData, binList, dbName, idCol = 'UID') {
     # This breaks if 'dbData' doesnt have binaryfile...
     # Borked if UID mismatch between dems
     binFile <- dbData$BinaryFile[1]
-    allBinFiles <- grep(binFile, binList, value=TRUE)
+    allBinFiles <- grep(binFile, binList, value=TRUE, fixed=TRUE)
     if(length(allBinFiles)==0) {
         return(NULL)
     }
