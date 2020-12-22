@@ -8,7 +8,7 @@ calculateAverageSpectra(
   x,
   evNum = 1,
   calibration = NULL,
-  wl = 1024,
+  wl = 512,
   filterfrom_khz = 0,
   filterto_khz = NULL,
   sr = NULL,
@@ -38,13 +38,12 @@ Currently only highpass and bandpass filters are supported, so if
 \item{sr}{a sample rate to use if the sample rate present in the database needs
 to be overridden (typically only needed if a decimator was used)}
 
-\item{norm}{logical flag to normalize magnitudes to 0-1 range}
+\item{norm}{logical flag to normalize dB magnitude to maximum of 0}
 
-\item{plot}{logical flag whether or not to plot the result. The plot will be a
-two panel plot, the top is a concatenated spectrogram where the y-axis is
-frequency and the x-axis is click number. The bottom plot is the average
-spectrogram of all clicks, the y-axis is normalized magnitude (dB values
-for each click are normalized between 0 and 1 before averaging), x-axis
+\item{plot}{logical flag whether or not to plot the result. This will create two
+plots, the first is a concatenated spectrogram where the y-axis is
+frequency and the x-axis is click number. The second plot is the average
+spectrogram of all clicks, the y-axis is dB, x-axis
 is frequency.}
 }
 \value{

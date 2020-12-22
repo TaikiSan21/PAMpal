@@ -17,12 +17,11 @@
 #'   \code{filterfrom_khz} is left as zero then this parameter will have no effect
 #' @param sr a sample rate to use if the sample rate present in the database needs
 #'   to be overridden (typically only needed if a decimator was used)
-#' @param norm logical flag to normalize magnitudes to 0-1 range
-#' @param plot logical flag whether or not to plot the result. The plot will be a
-#'   two panel plot, the top is a concatenated spectrogram where the y-axis is
-#'   frequency and the x-axis is click number. The bottom plot is the average
-#'   spectrogram of all clicks, the y-axis is normalized magnitude (dB values
-#'   for each click are normalized between 0 and 1 before averaging), x-axis
+#' @param norm logical flag to normalize dB magnitude to maximum of 0
+#' @param plot logical flag whether or not to plot the result. This will create two
+#'   plots, the first is a concatenated spectrogram where the y-axis is
+#'   frequency and the x-axis is click number. The second plot is the average
+#'   spectrogram of all clicks, the y-axis is dB, x-axis
 #'   is frequency.
 #'
 #' @return invisibly returns a list with three items: \code{freq}, the frequency,
@@ -49,7 +48,7 @@
 #'
 #' @export
 #'
-calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=1024,
+calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                                     filterfrom_khz=0, filterto_khz=NULL,
                                     sr=NULL, norm=TRUE, plot=TRUE) {
     if(is.AcousticEvent(x)) {
@@ -92,28 +91,32 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=1024,
     })
     specData <- specData[!sapply(specData, is.null)]
     specMat <- matrix(NA,nrow=length(specData[[1]]), ncol=length(specData))
-
+    
     for(i in seq_along(specData)) {
-        if(norm) {
-            specMat[, i] <- (specData[[i]] - min(specData[[i]]))/diff(range(specData[[i]]))
-        } else {
-            specMat[, i] <- specData[[i]]
-        }
+        specMat[, i] <- specData[[i]]
     }
-
-    averageSpec <- apply(specMat, 1, mean)
+    
+    
+    averageSpec <- 20*log10(apply(specMat, 1, function(x) {
+        mean(10^(x/20))
+    }))
+    if(norm) {
+        averageSpec <- averageSpec - max(averageSpec)
+    }
     if(plot) {
-        oldMf <- par()$mfrow
-        on.exit(par(mfrow = oldMf))
-        par(mfrow=c(2,1))
+        # oldMf <- par()$mfrow
+        # on.exit(par(mfrow = oldMf))
+        # par(mfrow=c(2,1))
         image(t(specMat), xaxt='n', yaxt='n', ylab='Frequency (kHz)', xlab='Click Number')
+        title('Concatenated Click Spectrogram')
         xPretty <- pretty(1:length(specData), n=5)
         axis(1, at = xPretty/length(specData), labels = xPretty)
         freqPretty <- pretty(0:max(freq/1e3), n=5)
         axis(2, at = freqPretty/max(freq/1e3), labels = freqPretty)
-        ylab <- ifelse(norm, 'Normalized Magnitude', 'Magnitude (dB)')
+        ylab <- ifelse(norm, 'Normalized Magnitude (dB)', 'Magnitude (dB)')
         plot(x=freq, averageSpec, type='l',
              xaxt='n', yaxt='n', ylab=ylab, xlab='Frequency (kHz)')
+        title('Average Spectrum')
         axis(1, at = freqPretty*1e3, labels=freqPretty)
         yPretty <- pretty(range(averageSpec), n=5)
         axis(2, at=yPretty, labels=yPretty)

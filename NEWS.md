@@ -1,3 +1,9 @@
+## PAMpal 0.10.2
+
+* `calculateAverageSpectra` now averages in exponential space rather than in
+dB space, and plots are created in separate plotting windows. The `norm` option
+now just scales to a maximum dB value of 0
+
 ## PAMpal 0.10.1
 
 * Multiple functions that tried to match files against a list would fail if
