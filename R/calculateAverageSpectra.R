@@ -54,7 +54,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     if(is.AcousticEvent(x)) {
         ev <- x
     } else if(is.AcousticStudy(x)) {
-        ev <- events(x)[[evNum]]
+        ev <- x[evNum]
         if(is.null(calibration) &&
            length(x@pps@calibration$ClickDetector) == 1) {
             calibration <- x@pps@calibration$ClickDetector[[1]]
