@@ -9,11 +9,14 @@ calculateAverageSpectra(
   evNum = 1,
   calibration = NULL,
   wl = 512,
+  channel = 1:2,
   filterfrom_khz = 0,
   filterto_khz = NULL,
   sr = NULL,
   norm = TRUE,
-  plot = TRUE
+  plot = TRUE,
+  noise = FALSE,
+  ...
 )
 }
 \arguments{
@@ -26,6 +29,10 @@ spectra for}
 
 \item{wl}{the size of the click clips to use for calculating the spectrum. If
 greater than the clip present in the binary, clip will be zero padded}
+
+\item{channel}{channel(s) to include in calculations. Currently does not
+correspond to actual channel in instrument, just the order present in the
+binary file}
 
 \item{filterfrom_khz}{frequency in khz of highpass filter to apply, or the lower
 bound of a bandpass filter if \code{filterto_khz} is not \code{NULL}}
@@ -45,6 +52,13 @@ plots, the first is a concatenated spectrogram where the y-axis is
 frequency and the x-axis is click number. The second plot is the average
 spectrogram of all clicks, the y-axis is dB, x-axis
 is frequency.}
+
+\item{noise}{logical flag to calculate and plot an average noise spectra. This
+is currently not well-defined in all cases (where the desired window length
+is a large portion of the total available clip length the noise floor will
+appear to be identical or similar to the signal level)}
+
+\item{\dots}{optional args}
 }
 \value{
 invisibly returns a list with three items: \code{freq}, the frequency,

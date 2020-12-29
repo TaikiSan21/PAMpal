@@ -1,3 +1,8 @@
+## PAMpal 0.10.3
+
+* `calculateAverageSpectra` has a channel argument, better color scaling for concatenated
+spectrogram, and a beta version of average noise floor
+
 ## PAMpal 0.10.2
 
 * `calculateAverageSpectra` now averages in exponential space rather than in

@@ -9,6 +9,9 @@
 #' @param calibration a calibration function to apply, if desired
 #' @param wl the size of the click clips to use for calculating the spectrum. If
 #'   greater than the clip present in the binary, clip will be zero padded
+#' @param channel channel(s) to include in calculations. Currently does not
+#'   correspond to actual channel in instrument, just the order present in the
+#'   binary file
 #' @param filterfrom_khz frequency in khz of highpass filter to apply, or the lower
 #'   bound of a bandpass filter if \code{filterto_khz} is not \code{NULL}
 #' @param filterto_khz if a bandpass filter is desired, set this as the upper bound.
@@ -23,6 +26,11 @@
 #'   frequency and the x-axis is click number. The second plot is the average
 #'   spectrogram of all clicks, the y-axis is dB, x-axis
 #'   is frequency.
+#' @param noise logical flag to calculate and plot an average noise spectra. This
+#'   is currently not well-defined in all cases (where the desired window length
+#'   is a large portion of the total available clip length the noise floor will
+#'   appear to be identical or similar to the signal level)
+#' @param \dots optional args
 #'
 #' @return invisibly returns a list with three items: \code{freq}, the frequency,
 #'   \code{average}, the average spectra of the event, and \code{all}, the individual
@@ -43,14 +51,14 @@
 #' str(avSpec$all)
 #'
 #' @importFrom signal hanning
-#' @importFrom graphics par image axis
+#' @importFrom graphics par image axis lines legend
 #' @importFrom stats fft
 #'
 #' @export
 #'
 calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
-                                    filterfrom_khz=0, filterto_khz=NULL,
-                                    sr=NULL, norm=TRUE, plot=TRUE) {
+                                    channel = 1:2, filterfrom_khz=0, filterto_khz=NULL,
+                                    sr=NULL, norm=TRUE, plot=TRUE, noise=FALSE, ...) {
     if(is.AcousticEvent(x)) {
         ev <- x
     } else if(is.AcousticStudy(x)) {
@@ -76,30 +84,62 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
         calFun <- function(x) 0
     }
     freq <- myGram(binData[[1]], channel=1, wl=wl, sr=sr)$freq
+    # calc spectra
     specData <- lapply(binData, function(x) {
         if(is.null(x$wave)) {
             return(NULL)
         }
         result <- 0
-        for(c in 1:ncol(x$wave)) {
-            result <- result + myGram(x, channel = c, wl=wl,
+        hasChan <- 1:ncol(x$wave)
+        useChan <- hasChan[hasChan %in% channel]
+        for(c in useChan) {
+            result <- result + 10^((myGram(x, channel = c, wl=wl,
                                       from=filterfrom_khz,
                                       to=filterto_khz,
-                                      sr = sr)$dB + calFun(freq)
+                                      sr = sr, noise=FALSE, ...)$dB + calFun(freq))/20)
         }
-        result / ncol(x$wave)
+        20*log10(result / length(useChan))
     })
     specData <- specData[!sapply(specData, is.null)]
     specMat <- matrix(NA,nrow=length(specData[[1]]), ncol=length(specData))
-    
+
     for(i in seq_along(specData)) {
         specMat[, i] <- specData[[i]]
     }
-    
-    
     averageSpec <- 20*log10(apply(specMat, 1, function(x) {
         mean(10^(x/20))
     }))
+    # calc noise spectra
+    if(noise) {
+        noiseData <- lapply(binData, function(x) {
+            if(is.null(x$wave)) {
+                return(NULL)
+            }
+            result <- 0
+            hasChan <- 1:ncol(x$wave)
+            useChan <- hasChan[hasChan %in% channel]
+            for(c in useChan) {
+                result <- result + 10^((myGram(x, channel = c, wl=wl,
+                                          from=filterfrom_khz,
+                                          to=filterto_khz,
+                                          sr = sr, noise=TRUE, ...)$dB + calFun(freq))/20)
+            }
+            20*log10(result / length(useChan))
+        })
+        noiseData <- noiseData[!sapply(noiseData, is.null)]
+        noiseMat <- matrix(NA,nrow=length(noiseData[[1]]), ncol=length(noiseData))
+
+        for(i in seq_along(noiseData)) {
+            noiseMat[, i] <- noiseData[[i]]
+        }
+        averageNoise <- 20*log10(apply(noiseMat, 1, function(x) {
+            mean(10^(x/20))
+        }))
+        if(norm) {
+            averageNoise <- averageNoise - max(averageSpec)
+        }
+    }
+
     if(norm) {
         averageSpec <- averageSpec - max(averageSpec)
     }
@@ -107,7 +147,16 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
         # oldMf <- par()$mfrow
         # on.exit(par(mfrow = oldMf))
         # par(mfrow=c(2,1))
-        image(t(specMat), xaxt='n', yaxt='n', ylab='Frequency (kHz)', xlab='Click Number')
+        plotMat <- specMat
+        q <- .001
+        qlim <- quantile(plotMat, c(q, 1-q))
+        zlim <- mean(plotMat, na.rm=TRUE) + c(-1,1) * 3 * sd(plotMat, na.rm=TRUE)
+        lim <- c(min(qlim[1], zlim[1]), max(qlim[2], zlim[2]))
+        # lim <- max(plotAll) - sd(all) * 7
+        # plotAll[plotAll < lim] <- lim
+        plotMat[plotMat < lim[1]] <- lim[1]
+        plotMat[plotMat > lim[2]] <- lim[2]
+        image(t(plotMat), xaxt='n', yaxt='n', ylab='Frequency (kHz)', xlab='Click Number')
         title('Concatenated Click Spectrogram')
         xPretty <- pretty(1:length(specData), n=5)
         axis(1, at = xPretty/length(specData), labels = xPretty)
@@ -116,17 +165,24 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
         ylab <- ifelse(norm, 'Normalized Magnitude (dB)', 'Magnitude (dB)')
         plot(x=freq, averageSpec, type='l',
              xaxt='n', yaxt='n', ylab=ylab, xlab='Frequency (kHz)')
+        if(noise) {
+            lines(x=freq, averageNoise, type='l', lty=2, lwd=2)
+            legend('topright', inset=c(0, 0), xpd=TRUE, legend=c('Signal', 'Noise'), lty=1:2, bty='n')
+        }
         title('Average Spectrum')
         axis(1, at = freqPretty*1e3, labels=freqPretty)
         yPretty <- pretty(range(averageSpec), n=5)
         axis(2, at=yPretty, labels=yPretty)
 
     }
+    if(noise) {
+        return(invisible(list(freq=freq, average=averageSpec, all=specMat, avgNoise=averageNoise,allNoise=noiseMat)))
+    }
     invisible(list(freq=freq, average=averageSpec, all=specMat))
 }
 
-myGram <- function(x, channel=1, wl = 512, window = F, sr=NULL,
-                   from=0, to=NULL) {
+myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
+                   from=0, to=NULL, noise=FALSE) {
     wave <- x$wave[, channel]
     if(is.null(sr)) {
         sr <- x$sr
@@ -140,7 +196,7 @@ myGram <- function(x, channel=1, wl = 512, window = F, sr=NULL,
         }
         wave <- bwfilter(wave, f=sr, n=4, from=from*1e3, to = to_hz, output='sample')
     }
-    wave <- clipAroundPeak(wave, wl)
+    wave <- clipAroundPeak(wave, wl, noise=noise)
 
     FUN <- function(x) {
         result <- Mod(fft(x))
@@ -149,7 +205,9 @@ myGram <- function(x, channel=1, wl = 512, window = F, sr=NULL,
 
     y <- (1:(wl)) / wl * sr
 
-    if(window) wave <- wave * hanning(length(wave)) / mean(hanning(length(wave)))
+    if(window) {
+        wave <- wave * hanning(length(wave)) / mean(hanning(length(wave)))
+    }
     dB <- FUN(wave)[1:(wl)]
     isInf <- is.infinite(dB)
     if(any(isInf)) {
