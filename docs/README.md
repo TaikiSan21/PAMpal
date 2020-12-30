@@ -11,7 +11,7 @@ report any other issues to [taiki.sakai@noaa.gov](mailto:taiki.sakai@noaa.gov).
 Our goal is to make your life easier, so if you have any other suggestions or 
 feedback feel free to pass that along as well!
 
-### Using This Guide
+## Using This Guide
 
 This document is meant to be a resource to help you get started with PAMpal 
 for the first time, and then then the [Next Steps](#next-steps) section has
@@ -19,9 +19,10 @@ links with more in depth information and the more advanced capabilites of
 PAMpal. This is also meant to be a complimentary
 resource to the help files within R, so if you have questions about a specific
 function you should first try `?function` and then look here if that
-doesn't answer your question.
+doesn't answer your question. Some images may have small text, you can click
+on an image to open up a larger version.
 
-### Installation
+## Installation
 
 To install the latest version from GitHub, first make sure that you have
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) installed, then 
@@ -34,11 +35,11 @@ if(!require('devtools')) install.packages('devtools')
 devtools::install_github('TaikiSan21/PAMpal')
 ```
 
-#### Common Installation Issues
+### Common Installation Issues
 
-* If you are getting errors related to "Unable to unload package ______", try
+* If you are getting errors related to `Unable to unload package 'ProblemPackage'`, try
 opening a fresh R session, or installing the package from the R console instead
-of RStudio
+of RStudio. Sometimes R can have troubles updating package that are currently in use.
 
 * If you see an error like `Error in strptime(xx, f, tz = tz) : unable to identify current timezone 'C'`,
 then run the code `Sys.setenv(TZ = 'UTC')` and try again. This is common on field laptops, or laptops
@@ -50,9 +51,15 @@ try installing the package "ProblemPackage" separately. PAMpal relies on quite a
 fail to install properly then PAMpal will not install. Sometimes a package will request to be "Installed from
 source", try both options if it fails to install.
 
+* If you see an error like 
+`Error: (converted from warning) package 'ProblemPackage' was built under R version 4.0.3` try updating R
+and installing again. I recommend using the `updateR()` function from the `installr` package to update R. 
+You may need to update "ProblemPackage" separately after updating, or if using `updateR()` it is usually a
+good idea to just update all of your packages (this can take a while).
+
 ---
 
-### Quick Start Guide
+## Quick Start Guide
 
 PAMpal is currently only built to work with [Pamguard][pamguard],
 and is built to organize your acoustic detections into events. Before getting
@@ -64,7 +71,7 @@ started you'll need to have three things:
 Detection Group Localizer modules, or by specifying start and end times (see
 [guide][time-grouping] for details on how to do this)
 
-#### Create a PAMpalSettings Object
+### Create a PAMpalSettings Object
 
 Once you have these ready, the first step to using PAMpal is to create a
 PAMpalSettings object (PPS) using the `PAMpalSettings()` function. You can call this 
@@ -73,6 +80,7 @@ function with no arguments and pop-up menus will walk you through the rest:
 ```r
 myPps <- PAMpalSettings()
 ```
+
 First you will be asked to select the database files. You can select more than one
 using CTRL or SHIFT. Don't worry - you can add or remove databases later, nothing
 here is final.
@@ -117,13 +125,14 @@ filter. If a highpass or no filter is desired, leave as the default NULL (just p
 
 **NOTE:** You will need to enter these values in the R Console, so if you are running
 `PAMpalSettings()` from a script you need to either click in the console before typing
-or use the shortcut CTRL+2
+or use the shortcut CTRL+2.
 
 Once you've finished entering values for these (or accepting the defaults), you're 
 ready to process some data! For more details about the PPS, including adding or 
-removing data or functions, see the [PAMpalSettings page][pampalsettings]
+removing data and functions, or ways to set up a PPS without the interactive parts,
+see the [PAMpalSettings page][pampalsettings].
 
-#### Processing Your Data
+### Processing Your Data
 
 Once you have a PPS, processing your data is easily accomplished by calling
 the `processPgDetections` function. This function has two modes, `mode = 'db'`
@@ -131,7 +140,9 @@ for processing events labeled within Pamguard, and `mode = 'time'` for events
 labelled by start and end times. For "db", you can just run:
 
 ```r
-myStudy <- processPgDetections(myPps, mode='db', id='MyStudyName')
+myStudy <- processPgDetections(myPps, 
+                               mode='db', 
+                               id='MyStudyName')
 ```
 
 Note that if `id` is not specified it will default to today's date, but it is
@@ -141,7 +152,10 @@ For "time", you will also need to supply your event data, see [this guide][time-
 or `?processPgDetections` for details on how this should be formatted:
 
 ```r
-myStudy <- processPgDetections(myPps, mode='time', id='MyStudyName', grouping='myEvents.csv')
+myStudy <- processPgDetections(myPps, 
+                               mode='time', 
+                               id='MyStudyName', 
+                               grouping='myEvents.csv')
 ```
 
 **NOTE:** When running `mode='time'`, you may be prompted to make some decisions about matching
@@ -183,7 +197,7 @@ can't find, or if there's anything else you want PAMpal to do!
 
 ---
 
-### Next Steps
+## Next Steps
 
 To learn more about what PAMpal can do for you, click on the links below
 
@@ -207,14 +221,14 @@ to add to your PPS. We don't claim to have all the answers in our provided
 - [Common error messages][errors] A (probably incomplete) list of some warning
 and error messages you might encounter, why they are happening, and what to
 do about them
-- [Currently in development][in-development] See what is currently in development, as well as
+- [Currently in development][testavg] See what is currently in development, as well as
 some possible future ideas that we hope to get to
 
-### Contact
+## Contact
 
 Feel free to reach out with any questions, comments, suggestions: [taiki.sakai@noaa.gov](mailto:taiki.sakai@noaa.gov)
 
-### Versions
+## Versions
 
 For bug fixes and feature additions in each version see the [NEWS][news] file
 
@@ -234,3 +248,4 @@ For bug fixes and feature additions in each version see the [NEWS][news] file
 [errors]: Errors.md
 [news]: https://github.com/TaikiSan21/PAMpal/blob/master/NEWS.md
 [case-studies]: CaseStudies.md
+[testavg]: AvTest.Rmd

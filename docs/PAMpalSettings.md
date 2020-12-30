@@ -24,15 +24,22 @@ characteristics. Optional, currently only affects certain 'ClickDetector' functi
 Note that none of these slots should ever be manually edited, use the functions described
 below if you want to add or remove anything.
 
+#### Creating a PPS Without Pop-Ups
+
 A PAMpalSettings object can be created without supplying any arguments (as described in the
 [quick start guide](README.md)), or it can be created by directly supplying the database and binary
-file paths, although the user will still be asked to input parameters for the 
-`standardClickCalcs` function.
+file paths. You can also provide the parameter values for `standardClickCalcs` to avoid the
+interactive menus entirely.
 
 ```r
 myDb <- './Data/TestDB.sqlite3'
 myBinaryFolder <- './Data/Binaries'
-myPps <- PAMpalSettings(db = myDb, binaries = myBinaryFolder)
+myPps <- PAMpalSettings(db = myDb, 
+                        binaries = myBinaryFolder,
+                        sr_hz = 'auto',
+                        filterfrom_khz = 10,
+                        filterto_khz = NULL,
+                        winLen_sec = .001)
 ```
 #### Adding to Your PPS
 
@@ -58,8 +65,9 @@ or 'Cepstrum'.
 If you do not specify, you will be asked to choose. `addFunction` will also
 ask the user to set the value for any parameters that are arguments to the
 function you provide, except for parameters named "data" or "calibration".
-In the following example, the user would be ask to set a value for "a" and
-would be told that the default for "a" is 1.
+In the following example, the user would be ask to set a value for "add" and
+would be told that the default for "add" is 1. You can also provide values for the
+function arguments in the `addFunction()` call.
 
 ```r
 meanAdd <- function(data, add=1) {
@@ -68,7 +76,14 @@ meanAdd <- function(data, add=1) {
                MeanAdd = result)
 }
 
-myPps <- addFunction(myPps, meanAdd, module = 'ClickDetector') 
+myPps <- addFunction(myPps, 
+                     meanAdd, 
+                     module = 'ClickDetector') 
+# This avoids the interactive pop-up asking to set the value of 'add'
+myPps <- addFunction(myPps, 
+                     meanAdd, 
+                     module = 'ClickDetector', 
+                     add = 2)
 ```
 
 PAMpal does some checking when a new function is added to a PPS to ensure

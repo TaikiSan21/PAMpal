@@ -3,6 +3,13 @@
 * `calculateAverageSpectra` has a channel argument, better color scaling for concatenated
 spectrogram, and a beta version of average noise floor
 
+* `processPgDetections` will now automatically use `mode='time'` if a `grouping` argument
+is provided and is either a dataframe or a valid filepath
+
+* `processPgDetections` now properly updates progress bar for `mode='time'` when some
+binary files have no data or are not within any events, previously would not get to 100%
+or would jump
+
 ## PAMpal 0.10.2
 
 * `calculateAverageSpectra` now averages in exponential space rather than in

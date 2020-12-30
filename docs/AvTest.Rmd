@@ -1,0 +1,24 @@
+---
+title: "RMDTest"
+author: "Taiki Sakai"
+date: "12/30/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(include = FALSE)
+db <- '../Data/3D2PAMr_test_files/HB1603_MF_Master_Leg3_Skala.sqlite3'
+bin <- '../Data/3D2PAMr_test_files/BinaryFiles_20160815_WithUID/'
+pps <- PAMpalSettings(db=db, binaries = bin, sr_hz='auto',filterfrom_khz=10,
+                      filterto_khz=NULL, winLen_sec=.001)
+myStudy <- processPgDetections(pps, id='AvgSpec', progress=FALSE, verbose=FALSE)
+```
+
+## R Markdown
+Does this stuff show up codey?
+
+```{r plotspec, echo=TRUE}
+avSpec <- calculateAverageSpectra(myStudy)
+avAll <- calculateAverageSpectra(myStudy, 1:4, wl=256)
+```
+

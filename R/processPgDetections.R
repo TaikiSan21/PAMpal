@@ -84,6 +84,12 @@
 #'
 processPgDetections <- function(pps, mode = c('db', 'time'), id=NULL, grouping=NULL,
                                 format='%Y-%m-%d %H:%M:%OS', progress=TRUE, verbose=TRUE, ...) {
+    if(identical(mode, c('db', 'time'))) {
+        if(is.data.frame(grouping) ||
+           (is.character(grouping) && file.exists(grouping))) {
+            mode <- 'time'
+        }
+    }
     mode <- match.arg(mode)
     if(is.AcousticStudy(pps)) {
         if(mode == 'time' &&
@@ -264,6 +270,9 @@ processPgDetectionsTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%
             loaded <- TRUE
             dataLen <- length(thisBin$data)
             if(dataLen == 0) {
+                if(progress) {
+                    setTxtProgressBar(pb, value=which(binList==bin))
+                }
                 return(NULL)
             }
             binBounds <- convertPgDate(c(thisBin$data[[1]]$date, thisBin$data[[dataLen]]$date))
@@ -275,12 +284,18 @@ processPgDetectionsTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%
 
         # if not overlapping any events, skip doing data part mobetta
         if(!any(evPossible)) {
+            if(progress) {
+                setTxtProgressBar(pb, value=which(binList==bin))
+            }
             return(NULL)
         }
         if(!loaded) {
             thisBin <- loadPamguardBinaryFile(bin)
         }
         if(length(thisBin$data) == 0) {
+            if(progress) {
+                setTxtProgressBar(pb, value=which(binList==bin))
+            }
             return(NULL)
         }
         modType <- getModuleType(thisBin)
@@ -406,6 +421,7 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
     allAcEv <- lapply(allDb, function(db) {
         tryCatch({
             missBins <- character(0)
+            failBin <- 'No file processed'
             binList <- pps@binaries$list
             binFuns <- pps@functions
             dbData <- getDbData(db, grouping, ...)
@@ -426,7 +442,7 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             dbData <- select(dbData, -.data$SystemType)
             calibrationUsed <- names(pps@calibration[[1]])
             if(length(calibrationUsed)==0) calibrationUsed <- 'None'
-            failBin <- 'No file processed'
+
             dbData <- lapply(
                 split(dbData, dbData$BinaryFile), function(x) {
                     if(progress) {
