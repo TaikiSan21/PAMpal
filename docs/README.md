@@ -248,4 +248,4 @@ For bug fixes and feature additions in each version see the [NEWS][news] file
 [errors]: Errors.md
 [news]: https://github.com/TaikiSan21/PAMpal/blob/master/NEWS.md
 [case-studies]: CaseStudies.md
-[testavg]: AvTest.Rmd
+[testavg]: AvTest.html
