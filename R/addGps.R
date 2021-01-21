@@ -180,7 +180,14 @@ setMethod('addGps', 'AcousticStudy', function(x, gps=NULL, thresh = 3600, ...) {
 
     } else {
         gps <- checkGpsKey(gps)
-        events(x) <- lapply(events(x), function(y) addGps(y, gps, thresh, ...))
+        events(x) <- lapply(events(x), function(y) {
+            if(db %in% colnames(gps)) {
+                thisGps <- gps[db %in% files(y)$db, c('UTC', 'Latitude', 'Longitude'), with=FALSE]
+            } else {
+                thisGps <- gps
+            }
+            addGps(y, thisGps, thresh, ...)
+            })
     }
     gps(x) <- gps
     x

@@ -6,3 +6,4 @@
 ^Rprof\.out$
 ^docs$
 ^_config\.yml$
+^paper$

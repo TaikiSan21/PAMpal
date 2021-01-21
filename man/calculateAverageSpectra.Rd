@@ -13,6 +13,7 @@ calculateAverageSpectra(
   filterfrom_khz = 0,
   filterto_khz = NULL,
   sr = NULL,
+  snr = 0,
   norm = TRUE,
   plot = TRUE,
   noise = FALSE,
@@ -22,8 +23,10 @@ calculateAverageSpectra(
 \arguments{
 \item{x}{an \linkS4class{AcousticEvent} or \linkS4class{AcousticStudy} object}
 
-\item{evNum}{if \code{x} is a study, the event number to calculate the average
-spectra for}
+\item{evNum}{if \code{x} is a study, the event index number to calculate the average
+spectra for. Note that this is the index in the order that they appear in the
+\linkS4class{AcousticStudy} object, not the actual event number. Alternatively
+full event names can be used}
 
 \item{calibration}{a calibration function to apply, if desired}
 
@@ -43,7 +46,12 @@ Currently only highpass and bandpass filters are supported, so if
 \code{filterfrom_khz} is left as zero then this parameter will have no effect}
 
 \item{sr}{a sample rate to use if the sample rate present in the database needs
-to be overridden (typically only needed if a decimator was used)}
+to be overridden (typically not needed)}
+
+\item{snr}{minimum signal-to-noise ratio to be included in the average, in dB. SNR is
+calculated as the maximum difference between the signal and noise spectra calculated
+for each click and thus can be inaccurate (see \code{noise} for issues with noise
+calculations)}
 
 \item{norm}{logical flag to normalize dB magnitude to maximum of 0}
 
@@ -53,17 +61,21 @@ frequency and the x-axis is click number. The second plot is the average
 spectrogram of all clicks, the y-axis is dB, x-axis
 is frequency.}
 
-\item{noise}{logical flag to calculate and plot an average noise spectra. This
-is currently not well-defined in all cases (where the desired window length
-is a large portion of the total available clip length the noise floor will
-appear to be identical or similar to the signal level)}
+\item{noise}{logical flag to plot an average noise spectrum. This is estimated
+by taking a window of length \code{wl} immediately before click. Since there
+are only a limited number of samples saved in the Pamguard binary files, this
+can be very inaccurate when \code{wl} is a large proportion of the total samples
+saved. In these cases the noise floor will appear nearly identical to the signal,
+reducing \code{wl} can help get a more accurate noise floor.}
 
 \item{\dots}{optional args}
 }
 \value{
-invisibly returns a list with three items: \code{freq}, the frequency,
-  \code{average}, the average spectra of the event, and \code{all}, the individual
-  spectrum of each click in the event as a matrix.
+invisibly returns a list with six items: \code{freq} - the frequency,
+  \code{UID} - the UID of each click, \code{avgSpec} - the average spectra of the event,
+  \code{allSpec} - the individual spectrum of each click in the event as a matrix with
+  each spectrum in a separate column, \code{avgNoise} - the average noise spectra,
+  \code{allNoise} - the individual noise spectrum for each click
 }
 \description{
 Calculates the average spectra of all the clicks present in an
@@ -77,9 +89,9 @@ binUpd <- system.file('extdata', 'Binaries', package='PAMpal')
 dbUpd <- system.file('extdata', package='PAMpal')
 exStudy <- updateFiles(exStudy, bin = binUpd, db=dbUpd)
 avSpec <- calculateAverageSpectra(exStudy)
-str(avSpec$average)
+str(avSpec$avgSpec)
 range(avSpec$freq)
-str(avSpec$all)
+str(avSpec$allSpec)
 
 }
 \author{

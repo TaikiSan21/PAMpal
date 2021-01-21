@@ -1,3 +1,9 @@
+## PAMpal 0.10.4
+
+* `calculateAverageSpectra` - more improvements. Noise shouldnt fail anymore, added SNR
+threshold argument, returns all noise data and UIDs. Output names changed from `all` and
+`average` to `allSpec` and `avgSpec`.
+
 ## PAMpal 0.10.3
 
 * `calculateAverageSpectra` has a channel argument, better color scaling for concatenated
