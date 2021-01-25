@@ -23,9 +23,9 @@
 #' @param sr a sample rate to use if the sample rate present in the database needs
 #'   to be overridden (typically not needed)
 #' @param snr minimum signal-to-noise ratio to be included in the average, in dB. SNR is
-#'   calculated as the maximum difference between the signal and noise spectra calculated
-#'   for each click and thus can be inaccurate (see \code{noise} for issues with noise
-#'   calculations)
+#'   calculated as difference between the signal and noise spectra at the peak frequency
+#'   of the signal. This can be inaccurate if noise is inaccurate (see \code{noise} for
+#'   issues with noise calculations)
 #' @param norm logical flag to normalize dB magnitude to maximum of 0
 #' @param plot logical flag whether or not to plot the result. This will create two
 #'   plots, the first is a concatenated spectrogram where the y-axis is
@@ -152,16 +152,30 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     for(i in seq_along(noiseData)) {
         noiseMat[, i] <- noiseData[[i]]
     }
-    snrMat <- specMat - noiseMat
-    snrMat <- apply(snrMat, 2, function(y) {
-        if(all(is.na(y))) return(Inf)
-        max(y, na.rm=TRUE)
-    })
+    # snrMat <- specMat - noiseMat
+    # snrMat <- apply(snrMat, 2, function(y) {
+    #     if(all(is.na(y))) return(Inf)
+    #     max(y, na.rm=TRUE)
+    # })
+
+    snrVals <- vector('numeric', length = ncol(specMat))
+    for(i in seq_along(snrVals)) {
+        wherePeak <- which.max(specMat[, i])
+        if(length(wherePeak) == 0) {
+            snrVals[i] <- NA
+            next
+        }
+        if(is.na(noiseMat[wherePeak, i])) {
+            snrVals[i] <- Inf
+            next
+        }
+        snrVals[i] <- specMat[wherePeak, i] - noiseMat[wherePeak, i]
+    }
     averageNoise <- 20*log10(apply(noiseMat, 1, function(x) {
         mean(10^(x/20), na.rm=TRUE)
     }))
 
-    averageSpec <- 20*log10(apply(specMat[, snrMat >= snr, drop=FALSE], 1, function(x) {
+    averageSpec <- 20*log10(apply(specMat[, snrVals >= snr, drop=FALSE], 1, function(x) {
         mean(10^(x/20), na.rm=TRUE)
     }))
 
@@ -170,7 +184,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
         averageSpec <- averageSpec - max(averageSpec, na.rm=TRUE)
     }
     if(plot) {
-        plotMat <- specMat[, snrMat >= snr, drop=FALSE]
+        plotMat <- specMat[, snrVals >= snr, drop=FALSE]
         lim <- mean(plotMat, na.rm=TRUE) + c(-1,1) * 3 * sd(plotMat, na.rm=TRUE)
         plotMat[plotMat < lim[1]] <- lim[1]
         plotMat[plotMat > lim[2]] <- lim[2]

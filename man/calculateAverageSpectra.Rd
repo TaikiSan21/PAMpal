@@ -49,9 +49,9 @@ Currently only highpass and bandpass filters are supported, so if
 to be overridden (typically not needed)}
 
 \item{snr}{minimum signal-to-noise ratio to be included in the average, in dB. SNR is
-calculated as the maximum difference between the signal and noise spectra calculated
-for each click and thus can be inaccurate (see \code{noise} for issues with noise
-calculations)}
+calculated as difference between the signal and noise spectra at the peak frequency
+of the signal. This can be inaccurate if noise is inaccurate (see \code{noise} for
+issues with noise calculations)}
 
 \item{norm}{logical flag to normalize dB magnitude to maximum of 0}
 
