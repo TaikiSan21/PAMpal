@@ -116,6 +116,8 @@ addRecordings <- function(x, folder=NULL, log=NULL, progress=TRUE) {
     #     )
     #     files(x[[e]])$recordings <- checkConsecutive(files(x[[e]])$recordings)
     # }
+    files(x)$recordings$numStart <- as.numeric(files(x)$recordings$start)
+    files(x)$recordings$numEnd <- as.numeric(files(x)$recordings$end)
     x
 }
 

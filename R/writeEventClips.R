@@ -43,9 +43,10 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
     if(!is.AcousticStudy(x)) {
         stop('"x" must be an AcousticStudy object.')
     }
-    if(is.null(files(x)$recordings)) {
-        stop('No recording files found, use function "addRecordings" first.')
-    }
+    # if(is.null(files(x)$recordings)) {
+    #     stop('No recording files found, use function "addRecordings" first.')
+    # }
+    fileExists <- checkRecordings(x)
     mode <- match.arg(mode)
     if(length(channel) > 2) {
         message('R can only write wav files with 2 or less events, channels will be split',

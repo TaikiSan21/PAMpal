@@ -96,7 +96,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     } else {
         calFun <- function(x) 0
     }
-    freq <- myGram(binData[[1]], channel=1, wl=wl, sr=sr)$freq
+    freq <- myGram(binData[[1]], channel=1, wl=wl, sr=sr)[, 1]
     # calc spectra
     specData <- lapply(binData, function(x) {
         if(is.null(x$wave)) {
@@ -109,7 +109,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
             tmp <- 10^((myGram(x, channel = c, wl=wl,
                                       from=filterfrom_khz,
                                       to=filterto_khz,
-                                      sr = sr, noise=FALSE, ...)$dB + calFun(freq))/20)
+                                      sr = sr, noise=FALSE, ...)[, 2] + calFun(freq))/20)
             if(any(is.na(tmp))) next
             result <- result + tmp
         }
@@ -137,7 +137,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
             tmp <- 10^((myGram(x, channel = c, wl=wl,
                                from=filterfrom_khz,
                                to=filterto_khz,
-                               sr = sr, noise=TRUE, ...)$dB + calFun(freq))/20)
+                               sr = sr, noise=TRUE, ...)[, 2] + calFun(freq))/20)
             if(any(is.na(tmp))) next
             result <- result + tmp
         }
@@ -213,10 +213,31 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
 }
 
 myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
-                   from=0, to=NULL, noise=FALSE) {
-    wave <- x$wave[, channel]
-    if(is.null(sr)) {
-        sr <- x$sr
+                   from=0, to=NULL, noise=FALSE, mode=c('spec', 'ceps')) {
+    if(is.list(x)) {
+        wave <- x$wave[, channel]
+        if(is.null(sr)) {
+            sr <- x$sr
+        }
+    } else if(is.vector(x)) {
+        wave <- x
+    } else if(inherits(x, 'Wave')) {
+        wave <- switch(channel,
+                       '1' = x@left,
+                       '2' = x@right,
+                       return(NULL)
+        )
+        if(is.null(sr)) {
+            sr <- x@samp.rate
+        }
+    } else if(inherits(x, 'WaveMC')) {
+        if(channel > ncol(x@.Data)) {
+            return(NULL)
+        }
+        wave <- x@.Data[, channel]
+        if(is.null(sr)) {
+            sr <- x@samp.rate
+        }
     }
     if(from > 0) {
         # kinda janky because NULL * 1e3 is not NULL anymore, its numeric(0)
@@ -228,27 +249,43 @@ myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
         wave <- bwfilter(wave, f=sr, n=4, from=from*1e3, to = to_hz, output='sample')
     }
     wave <- clipAroundPeak(wave, wl, noise=noise)
-
-    FUN <- function(x) {
-        result <- Mod(fft(x))
-        20*log10(result)
-    }
-
-    y <- (1:(wl)) / wl * sr
-
     if(window) {
         wave <- wave * hanning(length(wave)) / mean(hanning(length(wave)))
     }
+
+    switch(match.arg(mode),
+           'spec' = {
+               FUN <- function(x) {
+                   result <- Mod(fft(x))
+                   20*log10(result)
+               }
+               y <- (1:(wl)) / wl * sr
+           },
+           'ceps' = {
+               FUN <- function(x) {
+                   result <- Mod(fft(x))^2
+                   result <- ifelse(result == 0, 1e-15, result)
+                   result <- log(result)
+                   result <- fft(result, inverse=TRUE)
+                   Re(result)
+               }
+               y <- (1:wl) / sr
+           })
+
+    ans <- matrix(NA, nrow=wl%/%2, ncol=2)
+    ans[, 1] <- y[1:(wl%/%2)]
     dB <- FUN(wave)[1:(wl)]
     isInf <- is.infinite(dB)
     if(all(isInf)) {
-        return(list(dB = rep(NA, wl%/%2), freq=y[1:(wl%/%2)]))
+        return(ans)
     }
     if(any(isInf)) {
         dB[dB == Inf] <- max(dB[!isInf], na.rm=TRUE)
         dB[dB == -Inf] <- min(dB[!isInf], na.rm=TRUE)
     }
-    list(dB = dB[1:(wl%/%2)], freq=y[1:(wl%/%2)])
+    ans[, 2] <- dB[1:(wl%/%2)]
+    # list(dB = dB[1:(wl%/%2)], freq=y[1:(wl%/%2)])
+    ans
 }
 
 getSr <- function(x) {

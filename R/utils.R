@@ -169,3 +169,39 @@ printN <- function(x, n=6, collapse=', ') {
     }
     paste0(paste(x, collapse=collapse))
 }
+
+checkRecordings <- function(x) {
+    if(is.null(files(x)$recordings)) {
+        stop('No recordings found, use function "addRecordings" first.', call.=FALSE)
+    }
+    exists <- file.exists(files(x)$recordings$file)
+    if(all(!exists)) {
+        stop('Recording files could not be located on disk, try ',
+             '"updateFiles" first.', call.=FALSE)
+    }
+    exists
+}
+
+getPamFft <- function(data) {
+    if(inherits(data, 'PamBinary')) {
+        data$data <- contourToFreq(data$data)
+        return(data)
+    }
+    if(length(data) == 0) {
+        return(data)
+    }
+    if(!(all(c('sliceData', 'nSlices', 'sampleDuration', 'startSample', 'maxFreq') %in%
+             names(data[[1]])))) {
+        stop('Appears data is not a Whistle and Moan Detector binary file.')
+    }
+    tempData <- data[[1]]
+    if(tempData$sliceData[[1]]$sliceNumber == 0) {
+        tempData <- data[[2]]
+    }
+    fftHop <- (tempData$startSample + 1)/tempData$sliceData[[1]]$sliceNumber
+    fftLen <- tempData$sampleDuration -
+        (tempData$sliceData[[tempData$nSlices]]$sliceNumber - tempData$sliceData[[1]]$sliceNumber) * fftHop
+    sr <- fftLen * tempData$maxFreq /
+        max(unlist(lapply(tempData$sliceData, function(x) x$peakData)))
+    list(sr=sr, hop=fftHop, wl=fftLen)
+}
