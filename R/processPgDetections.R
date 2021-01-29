@@ -653,7 +653,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
         mutate(BinaryFile = str_trim(.data$BinaryFile),
                # UTC = as.POSIXct(as.character(UTC), format='%Y-%m-%d %H:%M:%OS', tz='UTC')) %>%
                UTC = pgDateToPosix(.data$UTC)) %>%
-        select_(.dots=unique(c(eventColumns, 'UTC', 'Id', 'UID', 'parentUID', 'BinaryFile', 'newUID')))
+        select_(.dots=unique(c(eventColumns, 'UTC', 'UID', 'parentUID', 'BinaryFile', 'newUID')))
 
     # rename column to use as label - standardize across event group types
     colnames(allDetections)[which(colnames(allDetections)==label)] <- 'eventLabel'

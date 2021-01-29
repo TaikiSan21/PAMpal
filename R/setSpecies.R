@@ -135,39 +135,39 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                    }
                }
            },
-           # 'am' = {
-           #     specDf <- distinct(do.call(rbind, lapply(acev, function(oneAe) {
-           #         dbs <- files(oneAe)$db
-           #         events <- do.call(rbind, lapply(dbs, function(y) {
-           #             con <- dbConnect(y, drv=SQLite())
-           #             evs <- dbReadTable(con, 'Click_Detector_OfflineEvents')
-           #             dbDisconnect(con)
-           #             # browser()
-           #             evs <- evs[, c('UID', 'eventType', 'comment')]
-           #             evs$event <- paste0(gsub('\\.sqlite3', '', basename(y)),
-           #                                    '.OE', as.character(evs$UID))
-           #             evs$eventType <- str_trim(evs$eventType)
-           #             evs$comment <- gsub('OFF EFF', '', evs$comment)
-           #             evs$comment <- gsub("[[:punct:]]", '', evs$comment)
-           #             evs$comment <- str_trim(evs$comment)
-           #             evs
-           #         }))
-           #         # events$event <- paste0('OE', as.character(events$UID))
-           #         events$species <- 'unid'
-           #         goodEvents <- c('BEAK', 'FORG')
-           #         events$species[events$eventType %in% goodEvents] <- str_split(events$comment[events$eventType %in% goodEvents],
-           #                                                               ' ', simplify=TRUE)[, 1]
-           #         events$species <- tolower(events$species)
-           #         events$species[events$species %in% c('mmme', 'mm')] <- 'unid'
-           #         events
-           #     }
-           #     )))
-           #     specToAssign <- unique(specDf[specDf$event %in% sapply(acev, id), 'species'])
-           #     if(length(specToAssign) > 0) {
-           #         cat('Assigning unique species: ', paste0(specToAssign, collapse = ', '), '.\n', sep = '')
-           #     }
-           #     acev <- setSpecies(acev, method = 'manual', type=type, value = specDf)
-           # },
+           'am' = {
+               specDf <- distinct(do.call(rbind, lapply(acev, function(oneAe) {
+                   dbs <- files(oneAe)$db
+                   events <- do.call(rbind, lapply(dbs, function(y) {
+                       con <- dbConnect(y, drv=SQLite())
+                       evs <- dbReadTable(con, 'Click_Detector_OfflineEvents')
+                       dbDisconnect(con)
+                       # browser()
+                       evs <- evs[, c('UID', 'eventType', 'comment')]
+                       evs$event <- paste0(gsub('\\.sqlite3', '', basename(y)),
+                                              '.OE', as.character(evs$UID))
+                       evs$eventType <- str_trim(evs$eventType)
+                       evs$comment <- gsub('OFF EFF', '', evs$comment)
+                       evs$comment <- gsub("[[:punct:]]", '', evs$comment)
+                       evs$comment <- str_trim(evs$comment)
+                       evs
+                   }))
+                   # events$event <- paste0('OE', as.character(events$UID))
+                   events$species <- 'unid'
+                   goodEvents <- c('BEAK', 'FORG')
+                   events$species[events$eventType %in% goodEvents] <- str_split(events$comment[events$eventType %in% goodEvents],
+                                                                         ' ', simplify=TRUE)[, 1]
+                   events$species <- tolower(events$species)
+                   events$species[events$species %in% c('mmme', 'mm')] <- 'unid'
+                   events
+               }
+               )))
+               specToAssign <- unique(specDf[specDf$event %in% sapply(acev, id), 'species'])
+               if(length(specToAssign) > 0) {
+                   cat('Assigning unique species: ', paste0(specToAssign, collapse = ', '), '.\n', sep = '')
+               }
+               acev <- setSpecies(acev, method = 'manual', type=type, value = specDf)
+           },
            'reassign' = {
                if(missing(value)) {
                    warning('"reassign" mode requires a "value" dataframe.')
