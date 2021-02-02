@@ -113,7 +113,7 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                    hasId <- allIds %in% value$event
                    if(!all(hasId)) {
                        message('No match found for event(s) ',
-                               paste0(allIds[!hasId], collapse=', '),
+                               printN(allIds[!hasId], 6),
                                ' (Event names in "value" must match exactly)')
                    }
                    # cat('Assigning species ids to ', sum(hasId), ' events.\n', sep='')

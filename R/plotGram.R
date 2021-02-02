@@ -31,6 +31,7 @@
 #'
 plotGram <- function(x, start=0, end=NULL, channel=1, wl=512, hop=.25, mode=c('spec', 'ceps'),
                      detections = c('whistle', 'click', 'cepstrum')) {
+    # Needs to be one event at a time
     fileExists <- checkRecordings(x)
     if(hop <=1) {
         hop <- hop * wl
