@@ -1,3 +1,15 @@
+## PAMpal 0.10.5
+
+* `calculateAverageSpectra` doesn't fail on high SNR values anymore
+
+* `plotWaveform` and friends have a length argument and will now attempt to get
+sample rate values from the `AcousticStudy` object if possible
+
+* `getBinaryData` tries to get sample rate better
+
+* `plotGram` added in preliminary form. Plots spectrograms and cepstrograms of events, can
+also overlay WMD detections onto plot. 
+
 ## PAMpal 0.10.4
 
 * `calculateAverageSpectra` - more improvements. Noise shouldnt fail anymore, added SNR

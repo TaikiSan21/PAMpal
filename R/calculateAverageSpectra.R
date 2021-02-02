@@ -174,7 +174,16 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     averageNoise <- 20*log10(apply(noiseMat, 1, function(x) {
         mean(10^(x/20), na.rm=TRUE)
     }))
-
+    if(!any(snrVals >= snr)) {
+        if(is.AcousticEvent(x)) {
+            evId <- id(x)
+        }
+        if(is.AcousticStudy(x)) {
+            evId <- id(x[[evNum]])
+        }
+        warning('No clicks above SNR threshold for event ', evId, call.=FALSE)
+        return(NULL)
+    }
     averageSpec <- 20*log10(apply(specMat[, snrVals >= snr, drop=FALSE], 1, function(x) {
         mean(10^(x/20), na.rm=TRUE)
     }))
@@ -289,6 +298,9 @@ myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
 }
 
 getSr <- function(x) {
+    if(!is.AcousticStudy(x)) {
+        return(NULL)
+    }
     clickFuns <- pps(x)@functions$ClickDetector
     srSettings <- unique(unlist(lapply(clickFuns, function(c) {
         formals(c)[['sr_hz']]

@@ -6,11 +6,11 @@
 \alias{plotWigner}
 \title{Plot Graphical Representations of Waveforms}
 \usage{
-plotWaveform(x, UID)
+plotWaveform(x, UID, length = NULL, sr = NULL)
 
-plotSpectrogram(x, UID, sr = NULL, ...)
+plotSpectrogram(x, UID, length = NULL, sr = NULL, ...)
 
-plotWigner(x, UID, sr = NULL, ...)
+plotWigner(x, UID, length = NULL, sr = NULL, ...)
 }
 \arguments{
 \item{x}{a \linkS4class{AcousticStudy} object, a list of \linkS4class{AcousticEvent}
@@ -18,6 +18,11 @@ objects, or a single \linkS4class{AcousticEvent} object}
 
 \item{UID}{the UID(s) of the individual detections to fetch the binary
 data for}
+
+\item{length}{length of the waveform to use for plotting, in samples. The clip
+used will be centered around the maximum value of the waveform, if \code{length}
+is \code{NULL} (default), the entire waveform will be used. If \code{length} is
+greater than the stored clip, the waveform will be zero-padded to \code{length}}
 
 \item{sr}{if \code{NULL} (default) will try to read sample rate from your
 data. If provided as a value will override sample rate in the data.}
