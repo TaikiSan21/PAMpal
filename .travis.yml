@@ -4,11 +4,11 @@ language: R
 cache: packages
 warnings_are_errors: false
 sudo: required
-before_install:
-  sudo apt-get install -y gdal-bin
+
 addons:
   apt:
     packages:
+    - gdal-bin
     - libnetcdf-dev
     - libgdal-dev
     - libproj-dev
