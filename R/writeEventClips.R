@@ -290,5 +290,8 @@ psxToChar <- function(x) {
     psMilli <- round(as.numeric(x)-floor(as.numeric(x)), 3)
     psMilli <- sprintf('%.3f',psMilli)
     psMilli <- substr(psMilli, 3, 5)
-    paste0(gsub('-| |:', '', psFloor), '_',gsub('^0\\.', '', psMilli))
+    psFloor <- gsub('-| |:', '', psFloor)
+    paste0(substr(psFloor, 1, 8), '_',
+           substr(psFloor, 9, 14), '_',
+           gsub('^0\\.', '', psMilli))
 }

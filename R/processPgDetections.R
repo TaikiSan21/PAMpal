@@ -506,6 +506,7 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                     unlist(recursive = FALSE) %>% unique()
                 binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE, fixed=TRUE), USE.NAMES = FALSE))
                 evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentUID))
+                evComment <- unique(ev[[1]]$comment)
                 ev <- lapply(ev, function(x) {
                     x$BinaryFile <- basename(x$BinaryFile)
                     thisType <- unique(x$callType)
@@ -513,8 +514,10 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                     attr(x, 'calltype') <- thisType
                     x
                 })
-                AcousticEvent(id = evId, detectors = ev, settings = list(sr = thisSr, source=thisSource),
+                acEv <- AcousticEvent(id = evId, detectors = ev, settings = list(sr = thisSr, source=thisSource),
                               files = list(binaries=binariesUsed, db=db, calibration=calibrationUsed))
+                ancillary(acEv)$eventComment <- evComment
+                acEv
             })
             # setTxtProgressBar(pb, value = evNo)
             # evNo <- evNo + 1
@@ -577,7 +580,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
                if(is.null(label)) {
                    label <- 'eventType'
                }
-               eventColumns <- c('UID', label)
+               eventColumns <- c('UID', label, 'comment')
                evName <- 'OE'
            },
            'detGroup' = {

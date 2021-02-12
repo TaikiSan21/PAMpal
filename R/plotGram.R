@@ -4,6 +4,10 @@
 #'   whistle or cepstral contours from the binary files
 #'
 #' @param x an \linkS4class{AcousticStudy} object
+#' @param evNum if \code{x} is a study, the event index number to calculate the average
+#'   spectra for. Note that this is the index in the order that they appear in the
+#'   \linkS4class{AcousticStudy} object, not the actual event number. Alternatively
+#'   full event names can be used
 #' @param start start time of the plot, either POSIXct or seconds from
 #'   the start of the recording
 #' @param end end time of the plot, either POSIXct or seconds from the start
@@ -16,6 +20,7 @@
 #'   or cepstrogram
 #' @param detections vector containing any of \code{'whistle'}, \code{'click'},
 #'   and/or \code{'cepstrum'} indicating which detections to overlay on the plot
+#' @param sr sample rate
 #'
 #' @return nothing, just plots
 #'
@@ -24,15 +29,19 @@
 #' @examples
 #'
 #' @importFrom dplyr bind_rows
-#' @importFrom tuneR readWave
+#' @importFrom tuneR readWave downsample
 #' @importFrom grDevices gray.colors
+#' @importFrom graphics points
 #'
 #' @export
 #'
-plotGram <- function(x, start=0, end=NULL, channel=1, wl=512, hop=.25, mode=c('spec', 'ceps'),
-                     detections = c('whistle', 'click', 'cepstrum')) {
+plotGram <- function(x, evNum=1,  start=0, end=NULL, channel=1, wl=512, hop=.25, mode=c('spec', 'ceps'),
+                     detections = c('whistle', 'click', 'cepstrum'), sr=NULL) {
     # Needs to be one event at a time
+    x <- x[evNum]
     fileExists <- checkRecordings(x)
+    thisRec <- files(x)$recordings
+    thisRec <- thisRec[thisRec$db == files(x[[1]])$db, ]
     if(hop <=1) {
         hop <- hop * wl
     }
@@ -40,20 +49,25 @@ plotGram <- function(x, start=0, end=NULL, channel=1, wl=512, hop=.25, mode=c('s
         list(UTC = d$UTC, UID = d$UID)
     }))
 
-    fileCheck <- checkIn(min(dets$UTC), files(x)$recordings)
+    fileCheck <- checkIn(min(dets$UTC), thisRec)
     if(is.na(fileCheck)) return(x)
     if(is.null(end)) {
-        end <- files(x)$recordings$length[fileCheck]
+        end <-thisRec$length[fileCheck]
     }
     if(inherits(start, 'POSIXct')) {
-        start <- as.numeric(difftime(start, files(x)$recordings$start[fileCheck], units='secs'))
+        start <- as.numeric(difftime(start, thisRec$start[fileCheck], units='secs'))
     }
     if(inherits(end, 'POSIXct')) {
-        end <- as.numeric(difftime(end, files(x)$recordings$start[fileCheck], units='secs'))
+        end <- as.numeric(difftime(end, thisRec$start[fileCheck], units='secs'))
     }
-    wav <- readWave(files(x)$recordings$file[fileCheck], from=start, to=end, units='seconds', toWaveMC = TRUE)
-    sr <- wav@samp.rate
-    timeStart <- files(x)$recordings$start[fileCheck] + start
+    wav <- readWave(thisRec$file[fileCheck], from=start, to=end, units='seconds', toWaveMC = TRUE)
+    if(is.null(sr)) {
+        sr <- wav@samp.rate
+    }
+    if(sr != wav@samp.rate) {
+        wav <- downsample(wav, sr)
+    }
+    timeStart <- thisRec$start[fileCheck] + start
     timeEnd <- timeStart - start + end
 
     if(channel > ncol(wav@.Data)) {
@@ -101,8 +115,11 @@ plotGram <- function(x, start=0, end=NULL, channel=1, wl=512, hop=.25, mode=c('s
     if('cepstrum' %in% detections) {
         plotCeps(x, timeStart, timeEnd)
     }
-    if('whistles' %in% detections) {
+    if('whistle' %in% detections) {
         plotWhistle(x, timeStart, timeEnd)
+    }
+    if('click' %in% detections) {
+        plotClick(x, timeStart, timeEnd, yMin=0, yMax = sr / 2 / 1e3)
     }
     invisible(data)
 }
@@ -146,6 +163,18 @@ plotOneCeps <- function(x, hop, sr, yMin=0, yMax, tMin, tMax) {
     lines(x=xPlot, y=yPlot, col='blue', lwd=2)
 }
 
+plotClick <- function(x, tMin, tMax, yMin, yMax) {
+    clickData <- getClickData(x)[, c('UTC', 'peak')]
+    if(is.null(clickData) ||
+       nrow(clickData) == 0) {
+        return(NULL)
+    }
+    xVals <- clickData$UTC
+    yVals <- clickData$peak
+    xPlot <- scaleToOne(xVals, tMin, tMax)
+    yPlot <- scaleToOne(yVals, yMin, yMax)
+    points(x=xPlot, y=yPlot, pch=1, col='blue')
+}
 scaleToOne <- function(vals, min, max) {
     vals <- as.numeric(vals)
     min <- as.numeric(min)

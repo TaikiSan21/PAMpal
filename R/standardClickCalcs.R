@@ -45,7 +45,11 @@
 standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_khz=10, filterto_khz=NULL, winLen_sec=.0025) {
     # SLOWEST PART BY FAR is bwfilter
     result <- list()
-    paramNames <- c('Channel', 'noiseLevel', 'duration', 'peakTime', 'peak', 'peak2', 'peak3', 'trough',
+    # paramNames <- c('Channel', 'noiseLevel', 'duration', 'peakTime', 'peak', 'peak2', 'peak3', 'trough',
+    #                 'trough2', 'peakToPeak2', 'peakToPeak3', 'peak2ToPeak3', 'dBPP', 'Q_10dB',
+    #                 'fmin_10dB', 'fmax_10dB', 'BW_10dB', 'centerHz_10dB',
+    #                 'Q_3dB', 'fmin_3dB', 'fmax_3dB', 'BW_3dB', 'centerHz_3dB')
+    paramNames <- c('noiseLevel', 'duration', 'peakTime', 'peak', 'peak2', 'peak3', 'trough',
                     'trough2', 'peakToPeak2', 'peakToPeak3', 'peak2ToPeak3', 'dBPP', 'Q_10dB',
                     'fmin_10dB', 'fmax_10dB', 'BW_10dB', 'centerHz_10dB',
                     'Q_3dB', 'fmin_3dB', 'fmax_3dB', 'BW_3dB', 'centerHz_3dB')
@@ -69,14 +73,14 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
     }
     for(chan in 1:ncol(data$wave)) {
         # We store results in 'thisDf', note channels start at 1 not 0
-        thisDf <- list(Channel = chan)
+        # thisDf <- list(Channel = chan)
         thisWave <- data$wave[,chan]
         if(all(thisWave == 0)) {
             # cant return NULL in this case - if other functions compute something useful
             # we need to be able to bind_cols which requires same number of rows
             blanks  <- data.frame(matrix(NA, nrow=1, ncol=length(paramNames)))
             colnames(blanks) <- paramNames
-            blanks[['Channel']] <- chan
+            # blanks[['Channel']] <- chan
             result[[chan]] <- blanks
             next
         }
@@ -133,7 +137,8 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
         if(is.na(noiseLevel)) {
             noiseLevel <- 0
         }
-        thisDf$noiseLevel <- noiseLevel
+        thisDf <- list(noiseLevel = noiseLevel)
+        # thisDf$noiseLevel <- noiseLevel
 
         # duration defined as 100 time above 40% TKE threshold
         noiseThresh <- quantile(thisTk[,2], probs=.4, na.rm=TRUE)*100
@@ -149,7 +154,7 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
         if(any(is.nan(thisSpec[,2]))) {
             blanks  <- data.frame(matrix(NA, nrow=1, ncol=length(paramNames)))
             colnames(blanks) <- paramNames
-            blanks[['Channel']] <- chan
+            # blanks[['Channel']] <- chan
             result[[chan]] <- blanks
             next
         }
@@ -204,13 +209,13 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
     }
     # Combine calcs for all channels
     result <- bind_rows(result)
-    if('channelMap' %in% names(data)) {
-        mapChans <- cmapToChan(data$channelMap)
-        if(length(mapChans) == nrow(result)) {
-            result$Channel <- mapChans
-        }
-    }
-    result$Channel <- as.character(result$Channel)
+    # if('channelMap' %in% names(data)) {
+    #     mapChans <- cmapToChan(data$channelMap)
+    #     if(length(mapChans) == nrow(result)) {
+    #         result$Channel <- mapChans
+    #     }
+    # }
+    # result$Channel <- as.character(result$Channel)
     result
 }
 
