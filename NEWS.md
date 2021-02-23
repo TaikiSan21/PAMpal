@@ -6,6 +6,30 @@ start and end times of wav files used
 * `processPgDetections` will try to auotmatically determine an appropriate `mode` 
 if none specified
 
+## PAMpal 0.10.6
+
+* `processPgDetections` with `mode='db'` now reads in the comment column
+of the database and stores in the `ancillary()` slot of each event
+
+* `addRecordings` reads in an extra format of dates [0-9]{14}_[0-9]{3}
+
+* Channels for clicks are read in separately from `standardClickCalcs`, now
+these will be saved even if no calc functions are present along with UID and UTC
+
+* `checkStudy` behaves better if run on a study with no events
+
+## PAMpal 0.10.5
+
+* `calculateAverageSpectra` doesn't fail on high SNR values anymore
+
+* `plotWaveform` and friends have a length argument and will now attempt to get
+sample rate values from the `AcousticStudy` object if possible
+
+* `getBinaryData` tries to get sample rate better
+
+* `plotGram` added in preliminary form. Plots spectrograms and cepstrograms of events, can
+also overlay WMD detections onto plot. 
+
 ## PAMpal 0.10.4
 
 * `calculateAverageSpectra` - more improvements. Noise shouldnt fail anymore, added SNR

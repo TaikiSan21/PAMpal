@@ -42,6 +42,9 @@ getDetectorData <- function(x) {
         return(getDetectorData(events(x)))
     }
     if(is.list(x)) {
+        if(length(x) == 0) {
+            return(NULL)
+        }
         result <- lapply(x[sapply(x, is.AcousticEvent)], function(e) {
             getDetectorData(e)
         })

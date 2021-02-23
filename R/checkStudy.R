@@ -38,6 +38,10 @@
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
 checkStudy <- function(x, maxLength=Inf, maxSep=60*60*2) {
+    if(length(events(x)) == 0) {
+        warning('No events in AcousticStudy')
+        return(NULL)
+    }
     peak0Msg <- doCheck(checkPeakZero, x)
     timeMsg <- doCheck(checkTime, x, length=maxLength, between=maxSep)
     list(peak0Check = peak0Msg,

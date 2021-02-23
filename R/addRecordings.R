@@ -164,7 +164,7 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
             return(NULL)
         }
         len <- header$samples / header$sample.rate
-        format <- c(FOUNDFORMAT, c('pamguard', 'soundtrap', 'sm3'))
+        format <- c(FOUNDFORMAT, c('pamguard', 'pampal', 'soundtrap', 'sm3'))
         for(f in format) {
             switch(
                 f,
@@ -173,6 +173,16 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
                     posix <- as.POSIXct(substr(date, 1, 15), tz = 'UTC', format = '%Y%m%d_%H%M%S')
                     if(is.na(posix)) next
                     millis <- as.numeric(substr(date, 17, 19)) / 1e3
+                    if(!is.na(posix)) {
+                        FOUNDFORMAT <<- f
+                        break
+                    }
+                },
+                'pampal' = {
+                    date <- gsub('.*([0-9]{14}_[0-9]{3})\\.wav$', '\\1', x)
+                    posix <- as.POSIXct(substr(date, 1, 14), tz = 'UTC', format = '%Y%m%d%H%M%S')
+                    if(is.na(posix)) next
+                    millis <- as.numeric(substr(date, 16, 18)) / 1e3
                     if(!is.na(posix)) {
                         FOUNDFORMAT <<- f
                         break

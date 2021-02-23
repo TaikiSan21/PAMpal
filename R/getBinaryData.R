@@ -79,8 +79,9 @@ getBinaryData <- function(x, UID, quiet=FALSE, ...) {
     # just doing this bec i goofed earlier and some people had data where this
     # never happened in processing. BinaryFile should already be basename
     bins$BinaryFile <- basename(bins$BinaryFile)
-
-    if(length(settings(x)$sr) == 1) {
+    if(!is.null(getSr(x))) {
+        bins$sr <- getSr(x)
+    } else if(length(settings(x)$sr) == 1) {
         bins$sr <- settings(x)$sr
     } else if(length(settings(x)$sr) > 1) {
         trySr <- matchSR(bins, files(x)$db, safe=TRUE)

@@ -6,17 +6,24 @@
 \usage{
 plotGram(
   x,
+  evNum = 1,
   start = 0,
   end = NULL,
   channel = 1,
   wl = 512,
   hop = 0.25,
   mode = c("spec", "ceps"),
-  detections = c("whistle", "click", "cepstrum")
+  detections = c("whistle", "click", "cepstrum"),
+  sr = NULL
 )
 }
 \arguments{
 \item{x}{an \linkS4class{AcousticStudy} object}
+
+\item{evNum}{if \code{x} is a study, the event index number to calculate the average
+spectra for. Note that this is the index in the order that they appear in the
+\linkS4class{AcousticStudy} object, not the actual event number. Alternatively
+full event names can be used}
 
 \item{start}{start time of the plot, either POSIXct or seconds from
 the start of the recording}
@@ -36,6 +43,8 @@ or cepstrogram}
 
 \item{detections}{vector containing any of \code{'whistle'}, \code{'click'},
 and/or \code{'cepstrum'} indicating which detections to overlay on the plot}
+
+\item{sr}{sample rate}
 }
 \value{
 nothing, just plots

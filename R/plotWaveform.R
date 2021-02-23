@@ -8,6 +8,10 @@
 #'   objects, or a single \linkS4class{AcousticEvent} object
 #' @param UID the UID(s) of the individual detections to fetch the binary
 #'   data for
+#' @param length length of the waveform to use for plotting, in samples. The clip
+#'   used will be centered around the maximum value of the waveform, if \code{length}
+#'   is \code{NULL} (default), the entire waveform will be used. If \code{length} is
+#'   greater than the stored clip, the waveform will be zero-padded to \code{length}
 #' @param sr if \code{NULL} (default) will try to read sample rate from your
 #'   data. If provided as a value will override sample rate in the data.
 #' @param \dots other arguments to pass to the spectrogram or wigner functions
@@ -35,31 +39,7 @@
 #' @importFrom graphics plot title
 #' @export
 #'
-plotWaveform <- function(x, UID) {
-    data <- getBinaryData(x, UID)
-    if(is.null(data) ||
-       length(data) == 0) {
-        warning('No data found for provided UID(s).')
-        return(NULL)
-    }
-    data <- unique(data)
-    for(i in seq_along(data)) {
-        if(!('wave' %in% names(data[[i]]))) {
-            warning('No waveform data found for UID ', names(data)[i])
-            next
-        }
-        wav <- data[[i]]$wave
-        for(c in 1:ncol(wav)) {
-            plot(wav[, c], type='l')
-            title(main = paste0('UID ', names(data)[i], ', Channel ', c))
-        }
-    }
-}
-
-#' @export
-#' @rdname plotWaveform
-#'
-plotSpectrogram <- function(x, UID, sr=NULL, ...) {
+plotWaveform <- function(x, UID, length=NULL, sr=NULL) {
     data <- getBinaryData(x, UID)
     if(is.null(data) ||
        length(data) == 0) {
@@ -73,7 +53,9 @@ plotSpectrogram <- function(x, UID, sr=NULL, ...) {
             next
         }
         if(is.null(sr)) {
-            if(!('sr' %in% names(data[[i]]))) {
+            if(!is.null(getSr(x))) {
+                sr <- getSr(x)
+            } else if(!('sr' %in% names(data[[i]]))) {
                 sr <- as.numeric(
                     readline(prompt='Sample rate not found in data, what SR should we use?')
                 )
@@ -83,8 +65,14 @@ plotSpectrogram <- function(x, UID, sr=NULL, ...) {
         }
         wav <- data[[i]]$wave
         for(c in 1:ncol(wav)) {
-            print(specgram(wav[, c], Fs = sr, ...))
-            title(main = paste0('UID ', names(data)[i], ', Channel ', c))
+            if(is.null(length)) {
+                plotWav <- wav[, c]
+            } else {
+                plotWav <- clipAroundPeak(wav[, c], length)
+            }
+
+            plot(y=plotWav, x=(1:length(plotWav))/sr*1e3, type='l', xlab = 'Time (ms)', ylab='Amplitude')
+            title(main = paste0('UID ', data[[i]]$UID, ', Channel ', c))
         }
     }
 }
@@ -92,7 +80,7 @@ plotSpectrogram <- function(x, UID, sr=NULL, ...) {
 #' @export
 #' @rdname plotWaveform
 #'
-plotWigner <- function(x, UID, sr=NULL, ...) {
+plotSpectrogram <- function(x, UID, length=NULL, sr=NULL, ...) {
     data <- getBinaryData(x, UID)
     if(is.null(data) ||
        length(data) == 0) {
@@ -106,7 +94,9 @@ plotWigner <- function(x, UID, sr=NULL, ...) {
             next
         }
         if(is.null(sr)) {
-            if(!('sr' %in% names(data[[i]]))) {
+            if(!is.null(getSr(x))) {
+                sr <- getSr(x)
+            } else if(!('sr' %in% names(data[[i]]))) {
                 sr <- as.numeric(
                     readline(prompt='Sample rate not found in data, what SR should we use?')
                 )
@@ -116,8 +106,53 @@ plotWigner <- function(x, UID, sr=NULL, ...) {
         }
         wav <- data[[i]]$wave
         for(c in 1:ncol(wav)) {
-            wt <- wignerTransform(wav[, c], sr=sr, plot = TRUE)
-            title(main = paste0('UID ', names(data)[i], ', Channel ', c))
+            if(is.null(length)) {
+                plotWav <- wav[, c]
+            } else {
+                plotWav <- clipAroundPeak(wav[, c], length)
+            }
+            print(specgram(plotWav, Fs = sr, ...))
+            title(main = paste0('UID ', data[[i]]$UID, ', Channel ', c))
+        }
+    }
+}
+
+#' @export
+#' @rdname plotWaveform
+#'
+plotWigner <- function(x, UID, length=NULL, sr=NULL, ...) {
+    data <- getBinaryData(x, UID)
+    if(is.null(data) ||
+       length(data) == 0) {
+        warning('No data found for provided UID(s).')
+        return(NULL)
+    }
+    data <- unique(data)
+    for(i in seq_along(data)) {
+        if(!('wave' %in% names(data[[i]]))) {
+            warning('No waveform data found for UID ', names(data)[i])
+            next
+        }
+        if(is.null(sr)) {
+            if(!is.null(getSr(x))) {
+                sr <- getSr(x)
+            } else if(!('sr' %in% names(data[[i]]))) {
+                sr <- as.numeric(
+                    readline(prompt='Sample rate not found in data, what SR should we use?')
+                )
+            } else {
+                sr <- data[[i]]$sr
+            }
+        }
+        wav <- data[[i]]$wave
+        for(c in 1:ncol(wav)) {
+            if(is.null(length)) {
+                plotWav <- wav[, c]
+            } else {
+                plotWav <- clipAroundPeak(wav[, c], length)
+            }
+            wt <- wignerTransform(plotWav, sr=sr, plot = TRUE)
+            title(main = paste0('UID ', data[[i]]$UID, ', Channel ', c))
         }
     }
 }
