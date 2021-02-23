@@ -5,7 +5,8 @@
 #'   in \code{pps}, and will group your data into events by the
 #'   grouping present in the 'OfflineEvents' and 'Detection Group Localiser'
 #'   tables (\code{mode = 'db'}) or by the grouping specified by start and end
-#'   times in the supplied \code{grouping} (\code{mode = 'time'}). Will apply
+#'   times in the supplied \code{grouping} (\code{mode = 'time'}), or by start and
+#'   end of recording files (\code{mode = 'recording'}). Will apply
 #'   all processing functions in \code{pps} to the appropriate modules
 #'
 #' @param pps a \linkS4class{PAMpalSettings} object containing the databases,
@@ -13,8 +14,12 @@
 #'   \code{\link[PAMpal]{PAMpalSettings}}. Can also be an \linkS4class{AcousticStudy}
 #'   object, in which case the \code{pps} slot will be used.
 #' @param mode selector for how to organize your data in to events. \code{db}
-#'   will organize by events based on tables in the databases, and \code{time}
+#'   will organize by events based on tables in the databases. \code{time}
 #'   will organize into events based on timestamps provided in \code{grouping}.
+#'   \code{recording} will organize events by the start and end times of recording
+#'   files found in the database. For \code{time} and \code{recording}, ALL detections
+#'   between the start and end times are included, for \code{db} only selected
+#'   detections are included.
 #' @param id an event name or id for this study, will default to today's date if
 #'   not supplied (recommended to supply your own informative id)
 #' @param grouping For \code{mode = 'db'}, the table to group events by.
@@ -46,6 +51,12 @@
 #' @param verbose logical flag to show messages
 #' @param \dots additional arguments to pass onto to different methods
 #'
+#' @details If \code{mode} is not specified, it will try to be automatically determined
+#'   in the following order. 1) if a \code{grouping} data.frame or CSV is provided, then
+#'   \code{mode='time'} will be used. 2) If there are labelled events present in the 
+#'   database, \code{mode='db'} will be used. 3) \code{mode='recording'} will be used,
+#'   which should be equivalent to loading all possible data. 
+#' 
 #' @return an \linkS4class{AcousticStudy} object with one \linkS4class{AcousticEvent}
 #'   for each event in the \code{events} slot, and the \linkS4class{PAMpalSettings} object
 #'   used stored in the \code{pps} slot.
@@ -72,7 +83,9 @@
 #'                   end = as.POSIXct('2018-03-20 15:25:11', tz='UTC'),
 #'                   id = 'GroupExample')
 #' exStudyTime <- processPgDetections(exPps, mode='time', grouping=grp, id='Time')
-#'
+#' # process events by recording event
+#' exStudyRecording <- processPgDetections(exPps, mode='recording', id='Recording')
+#' 
 #' @importFrom PamBinaries loadPamguardBinaryFile
 #' @importFrom PAMmisc squishList
 #' @importFrom RSQLite dbConnect dbListTables dbReadTable dbDisconnect SQLite
@@ -82,12 +95,14 @@
 #' @import dplyr
 #' @export
 #'
-processPgDetections <- function(pps, mode = c('db', 'time'), id=NULL, grouping=NULL,
+processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NULL, grouping=NULL,
                                 format='%Y-%m-%d %H:%M:%OS', progress=TRUE, verbose=TRUE, ...) {
-    if(identical(mode, c('db', 'time'))) {
-        if(is.data.frame(grouping) ||
-           (is.character(grouping) && file.exists(grouping))) {
-            mode <- 'time'
+    # auto check for mode
+    if(missing(mode)) {
+        mode <- autoMode(pps, grouping)
+        if(verbose) {
+            cat('Processing mode not provided, running with mode="',
+                mode, '"\n', sep='')
         }
     }
     mode <- match.arg(mode)
@@ -111,7 +126,19 @@ processPgDetections <- function(pps, mode = c('db', 'time'), id=NULL, grouping=N
                      'db' = processPgDetectionsDb(pps=pps, grouping=grouping, id=id,
                                                   progress=progress, ...),
                      'time' = processPgDetectionsTime(pps=pps, grouping=grouping, format=format, id=id,
-                                                      progress=progress)
+                                                      progress=progress),
+                     'recording' = {
+                         grouping <- bind_rows(lapply(pps@db, function(x) {
+                             wavToGroup(x)
+                         }))
+                         if(is.null(grouping) ||
+                            nrow(grouping) == 0) {
+                             warning('Unable to load Sound_Acquisition data properly, cannot run mode="recording"', call.=FALSE)
+                             return(NULL)
+                         }
+                         processPgDetectionsTime(pps=pps, grouping=grouping, format=format, id=id,
+                                                 progress=progress)
+                     }
     )
     checkStudy(result)
     result
@@ -632,7 +659,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
     }
 
     eventColumns <- eventColumns[eventColumns %in% colnames(allEvents)]
-    allEvents <- select_(allEvents, .dots=eventColumns)
+    allEvents <- select(allEvents, all_of(eventColumns))
 
     # Do i want all detections in clicks, or only all in events?
     # left_join all det, inner_join ev only
@@ -653,7 +680,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
         mutate(BinaryFile = str_trim(.data$BinaryFile),
                # UTC = as.POSIXct(as.character(UTC), format='%Y-%m-%d %H:%M:%OS', tz='UTC')) %>%
                UTC = pgDateToPosix(.data$UTC)) %>%
-        select_(.dots=unique(c(eventColumns, 'UTC', 'UID', 'parentUID', 'BinaryFile', 'newUID')))
+        select(all_of(unique(c(eventColumns, 'UTC', 'UID', 'parentUID', 'BinaryFile', 'newUID'))))
 
     # rename column to use as label - standardize across event group types
     colnames(allDetections)[which(colnames(allDetections)==label)] <- 'eventLabel'
@@ -824,4 +851,76 @@ parseUTC <- function(x, format) {
         x <- parse_date_time(x, orders=format, tz='UTC', exact=TRUE, truncated=2, quiet=TRUE)
     }
     x
+}
+
+autoMode <- function(pps, grouping) {
+    if(is.data.frame(grouping) ||
+       (is.character(grouping) && file.exists(grouping))) {
+        return('time')
+    }
+    if(!is.null(getDbData(pps@db[1])) &&
+       nrow(getDbData(pps@db[1]))) {
+        return('db')
+    }
+    if(!is.null(suppressWarnings(wavToGroup(pps@db[1])))) {
+        return('recording')
+    }
+    stop('Unable to automatically detect processing mode, please ',
+         'this likely means that "mode = time" is desired and no ',
+         'grouping file was provided.', call.=FALSE)
+}
+
+wavToGroup <- function(db) {
+    if(!file.exists(db)) {
+        warning('Database ', db, ' does not exist.', call.=FALSE)
+        return(NULL)
+    }
+    con <- dbConnect(db, drv=SQLite())
+    on.exit(dbDisconnect(con))
+    if(!('Sound_Acquisition' %in% dbListTables(con))) {
+        warning('No Sound_Acquisition table in database', call.=FALSE)
+        return(NULL)
+    }
+    sa <- dbReadTable(con, 'Sound_Acquisition')
+    sa$Status <- str_trim(sa$Status)
+    sa$UTC <- pgDateToPosix(sa$UTC)
+    sa <- filter(sa, .data$Status != 'Continue')
+    st <- sa$SystemType
+    sn <- sa$SystemName
+    wavCol <- NA
+    if(is.null(sn) &&
+       !all(grepl('^Audio ', st))) {
+        wavCol <- 'SystemType'
+    } 
+    if(!is.null(sn) &&
+       !(all(grepl('Audio ', sn)))) {
+        wavCol <- 'SystemName'
+    }
+    if(is.na(wavCol)) {
+        warning('Wav file names not saved in database, events')
+        saGrp <- select(sa, c('UTC', 'Status', 'SystemType'))
+        saGrp <- distinct(arrange(saGrp, UTC))
+        first <- min(which(saGrp$Status == 'Start'))
+        last <- max(which(saGrp$Status == 'Stop'))
+        saGrp <- saGrp[first:last,]
+        alt <- saGrp$Status[1:(nrow(saGrp)-1)] != saGrp$Status[2:nrow(saGrp)]
+        saGrp <- saGrp[c(TRUE, alt), ]
+        saGrp$id <- rep(1:(nrow(saGrp)/2), each=2)
+        saGrp$id <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', saGrp$id)
+        saGrp <- tidyr::spread(saGrp, 'Status', 'UTC')
+        saGrp <- saGrp[!is.na(saGrp$Start) && !is.na(saGrp$Stop), ]
+        if(nrow(saGrp) == 0) {
+            warning('Could not find appropriate start and stop times in Sound_Acquisition table', call.=FALSE)
+            return(NULL)
+        }
+        return(data.frame(start=saGrp$Start, end=saGrp$Stop, id=saGrp$id))
+    }
+    saGrp <- select(sa, c('UTC', 'Status'))
+    saGrp$id <- sa[[wavCol]]
+    saGrp <- bind_rows(lapply(split(saGrp, saGrp$id), function(x) {
+        list(start = max(x$UTC[grepl('Start', x$Status)]),
+             end = max(x$UTC[grepl('Stop', x$Status)]),
+             id = gsub(' ', '', unique(x$id)))
+    }))
+    saGrp
 }

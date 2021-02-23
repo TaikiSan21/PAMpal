@@ -6,7 +6,7 @@
 \usage{
 processPgDetections(
   pps,
-  mode = c("db", "time"),
+  mode = c("db", "time", "recording"),
   id = NULL,
   grouping = NULL,
   format = "\%Y-\%m-\%d \%H:\%M:\%OS",
@@ -22,8 +22,12 @@ binaries, and functions to use for processing data. See
 object, in which case the \code{pps} slot will be used.}
 
 \item{mode}{selector for how to organize your data in to events. \code{db}
-will organize by events based on tables in the databases, and \code{time}
-will organize into events based on timestamps provided in \code{grouping}.}
+will organize by events based on tables in the databases. \code{time}
+will organize into events based on timestamps provided in \code{grouping}.
+\code{recording} will organize events by the start and end times of recording
+files found in the database. For \code{time} and \code{recording}, ALL detections
+between the start and end times are included, for \code{db} only selected
+detections are included.}
 
 \item{id}{an event name or id for this study, will default to today's date if
 not supplied (recommended to supply your own informative id)}
@@ -72,8 +76,16 @@ Loads and processes acoustic detection data that has been
   in \code{pps}, and will group your data into events by the
   grouping present in the 'OfflineEvents' and 'Detection Group Localiser'
   tables (\code{mode = 'db'}) or by the grouping specified by start and end
-  times in the supplied \code{grouping} (\code{mode = 'time'}). Will apply
+  times in the supplied \code{grouping} (\code{mode = 'time'}), or by start and
+  end of recording files (\code{mode = 'recording'}). Will apply
   all processing functions in \code{pps} to the appropriate modules
+}
+\details{
+If \code{mode} is not specified, it will try to be automatically determined
+  in the following order. 1) if a \code{grouping} data.frame or CSV is provided, then
+  \code{mode='time'} will be used. 2) If there are labelled events present in the 
+  database, \code{mode='db'} will be used. 3) \code{mode='recording'} will be used,
+  which should be equivalent to loading all possible data.
 }
 \examples{
 
@@ -95,6 +107,8 @@ grp <- data.frame(start = as.POSIXct('2018-03-20 15:25:10', tz='UTC'),
                   end = as.POSIXct('2018-03-20 15:25:11', tz='UTC'),
                   id = 'GroupExample')
 exStudyTime <- processPgDetections(exPps, mode='time', grouping=grp, id='Time')
+# process events by recording event
+exStudyRecording <- processPgDetections(exPps, mode='recording', id='Recording')
 
 }
 \author{

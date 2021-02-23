@@ -73,3 +73,24 @@ test_that('Test process time', {
     expect_equal(id(exTime[[1]]), grp$id)
     expect_equal(id(exTime), 'Time')
 })
+
+test_that('Test process recording', {
+    exPps <- new('PAMpalSettings')
+    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'), verbose=FALSE)
+    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'), verbose=FALSE)
+    exClick <- function(data) {
+        standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
+    }
+    exPps <- addFunction(exPps, exClick, module = 'ClickDetector', verbose=FALSE)
+    exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans', verbose=FALSE)
+    exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum', verbose=FALSE)
+    
+    exRec <- processPgDetections(exPps, mode='recording', id='rec', progress=FALSE, verbose = FALSE)
+    allBin <- do.call(rbind, lapply(exPps@binaries$list, function(x) {
+        data.frame(loadPamguardBinaryFile(x, convertDate=TRUE, skipLarge=TRUE))[c('UID', 'date')]
+    }))
+    allDet <- do.call(rbind, lapply(getDetectorData(exRec), function(x) {
+        x[c('UTC', 'UID')]
+    }))
+    expect_true(all(allBin$UID %in% allDet$UID))
+})

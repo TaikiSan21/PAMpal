@@ -63,7 +63,7 @@ matchSR <- function(data, db, extraCols = NULL, safe=FALSE) {
                SystemType = str_trim(.data$SystemType)) %>%
         filter(.data$Status=='Start') %>%
         arrange(.data$UTC) %>%
-        select_(.dots = c('UTC', 'sampleRate', extraCols)) %>%
+        select(all_of(c('UTC', 'sampleRate', extraCols))) %>%
         distinct() %>%
         data.table()
 

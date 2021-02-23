@@ -1,3 +1,11 @@
+## PAMpal 0.11.0
+
+* Added `mode='recording'` to `processPgDetections` that will group events by the 
+start and end times of wav files used
+
+* `processPgDetections` will try to auotmatically determine an appropriate `mode` 
+if none specified
+
 ## PAMpal 0.10.4
 
 * `calculateAverageSpectra` - more improvements. Noise shouldnt fail anymore, added SNR
