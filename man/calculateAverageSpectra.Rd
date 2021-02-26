@@ -17,6 +17,7 @@ calculateAverageSpectra(
   norm = TRUE,
   plot = TRUE,
   noise = FALSE,
+  sort = FALSE,
   ...
 )
 }
@@ -67,6 +68,8 @@ are only a limited number of samples saved in the Pamguard binary files, this
 can be very inaccurate when \code{wl} is a large proportion of the total samples
 saved. In these cases the noise floor will appear nearly identical to the signal,
 reducing \code{wl} can help get a more accurate noise floor.}
+
+\item{sort}{logical flag to sort concatenated spectrogram by peak frequency}
 
 \item{\dots}{optional args}
 }

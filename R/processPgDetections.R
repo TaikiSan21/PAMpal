@@ -232,12 +232,24 @@ processPgDetectionsTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%
     }
 
     # assign each db in grouping to its unique SRs so we dont have to search again later
-    saByDb <- lapply(saList, function(x) unique(x$sampleRate))
-    for(d in 1:nrow(grouping)) {
-        if(is.na(grouping$db[d])) next
-        grouping$sr[d] <- saByDb[grouping$db[d]]
-    }
-
+    # saByDb <- lapply(saList, function(x) unique(x$sampleRate))
+    # for(d in 1:nrow(grouping)) {
+    #     if(is.na(grouping$db[d])) next
+    #     grouping$sr[d] <- saByDb[grouping$db[d]]
+    # }
+    grouping <- bind_rows(lapply(split(grouping, grouping$db), function(d) {
+        thisSa <- saList[[unique(d$db)]]
+        if(is.null(thisSa) ||
+           nrow(thisSa) == 0) {
+            return(d)
+        }
+        d$UTC <- d$end
+        d <- matchSR(d, thisSa)
+        d$UTC <- NULL
+        d$sr <- d$sampleRate
+        d$sampleRate <- NULL
+        d
+    }))
     # were gonna match SR by database, only need manual input if we have any
     # missing DBs
     if(any(is.na(grouping$sr))) {

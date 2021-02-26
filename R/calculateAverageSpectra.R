@@ -38,6 +38,7 @@
 #'   can be very inaccurate when \code{wl} is a large proportion of the total samples
 #'   saved. In these cases the noise floor will appear nearly identical to the signal,
 #'   reducing \code{wl} can help get a more accurate noise floor.
+#' @param sort logical flag to sort concatenated spectrogram by peak frequency
 #' @param \dots optional args
 #'
 #' @return invisibly returns a list with six items: \code{freq} - the frequency,
@@ -68,7 +69,7 @@
 #'
 calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                                     channel = 1:2, filterfrom_khz=0, filterto_khz=NULL,
-                                    sr=NULL, snr=0, norm=TRUE, plot=TRUE, noise=FALSE, ...) {
+                                    sr=NULL, snr=0, norm=TRUE, plot=TRUE, noise=FALSE, sort=FALSE, ...) {
     if(is.AcousticEvent(x)) {
         ev <- x
     } else if(is.AcousticStudy(x)) {
@@ -197,6 +198,10 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
         lim <- mean(plotMat, na.rm=TRUE) + c(-1,1) * 3 * sd(plotMat, na.rm=TRUE)
         plotMat[plotMat < lim[1]] <- lim[1]
         plotMat[plotMat > lim[2]] <- lim[2]
+        if(sort) {
+            sortIx <- sort(apply(plotMat, 2, which.max), index.return=TRUE)$ix
+            plotMat <- plotMat[, sortIx]
+        }
         image(t(plotMat), xaxt='n', yaxt='n', ylab='Frequency (kHz)', xlab='Click Number')
         title('Concatenated Click Spectrogram')
         xPretty <- pretty(1:ncol(plotMat), n=5)

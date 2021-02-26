@@ -57,7 +57,7 @@ matchSR <- function(data, db, extraCols = NULL, safe=FALSE) {
        !inherits(data$UTC, 'POSIXct')) {
         stop('Data must have a column "UTC" in POSIXct format.')
     }
-
+    
     soundAcquisition <- soundAcquisition %>%
         mutate(Status = str_trim(.data$Status),
                SystemType = str_trim(.data$SystemType)) %>%

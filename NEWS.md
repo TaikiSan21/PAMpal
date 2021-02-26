@@ -1,3 +1,11 @@
+## PAMpal 0.11.1
+
+* `calculateAverageSpectra` has a `sort` option to sort clicks by peak frequency
+in the concatenated spectrogram
+
+* `processPgDetections` with `mode='time'` does a better job of parsing sample rates
+from database
+
 ## PAMpal 0.11.0
 
 * Added `mode='recording'` to `processPgDetections` that will group events by the 
