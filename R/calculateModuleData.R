@@ -9,6 +9,7 @@
 #'   Currently supported modules are 'ClickDetector' and 'WhistlesMoans', a
 #'   sample input for binFuns would be list('ClickDetector'=list(clickFun1,
 #'   clickFun2), 'WhistlesMoans'=list(wmFun1))
+#' @param settings a list of settings from a Pamguard XML file
 #'
 #' @return A data frame with one row for each channel of each detection.
 #'   Each row will have the UID, channel number, and name of the detector.
@@ -22,7 +23,7 @@
 #' @import dplyr
 #' @importFrom PamBinaries convertPgDate contourToFreq
 #'
-calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(standardClickCalcs))) {
+calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(standardClickCalcs)), settings=NULL) {
     if(length(binData$data) == 0 ||
        is.null(binData$data[[1]]$UID)) {
         return(NULL)
@@ -45,6 +46,7 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
         moduleType <- 'Cepstrum'
     }
     detName <- gsub(' ', '_', detName)
+    detSettings <- settings$detectors[[detName]]
     # if(!(moduleType %in% names(binFuns)) ||
     #    length(binFuns[[moduleType]])==0) {
     #     # warning("I don't have functions for Module Type ", moduleType)
@@ -99,7 +101,7 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
     result <- switch(
         moduleType,
         'ClickDetector' = {
-            allClicks <- doClickCalcs(binData$data, c(getBasic(moduleType), binFuns[['ClickDetector']]))
+            allClicks <- doClickCalcs(binData$data, c(getBasic(moduleType), binFuns[['ClickDetector']]), detSettings)
             # We want each 'type' of click to be separate 'detector'. This is PG only.
             allNames <- bind_rows(
                 lapply(binData$data[unique(as.character(allClicks$UID))], function(x) {
@@ -119,7 +121,7 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
             allWhistles
         },
         'Cepstrum' = {
-            allCepstrum <- doCepstrumCalcs(binData$data, c(getBasic(moduleType), binFuns[['Cepstrum']]))
+            allCepstrum <- doCepstrumCalcs(binData$data, c(getBasic(moduleType), binFuns[['Cepstrum']]), detSettings)
             allCepstrum$detectorName <- detName
             allCepstrum$callType <- 'cepstrum'
             allCepstrum
@@ -132,9 +134,19 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
 }
 
 # In general just make sure data has $wave and $sr for clicks?
-doClickCalcs <- function(clickData, clickFuns) {
+doClickCalcs <- function(clickData, clickFuns, detSettings=NULL) {
     allClicks <- vector('list', length = length(clickFuns))
     # This just returns a df we will bind to db by UID
+    if(isTRUE(detSettings$decimated)) {
+        for(i in seq_along(clickData)) {
+            clickData[[i]]$sr <- detSettings$sr
+        }
+        for(f in seq_along(clickFuns)) {
+            if('sr_hz' %in% names(formals(clickFuns[[f]]))) {
+                formals(clickFuns[[f]])[['sr_hz']] <- 'auto'
+            }
+        }
+    }
     for(f in seq_along(clickFuns)) {
         # Apply this function to each datapoint in binary
         allClicks[[f]] <- bind_rows(
@@ -163,10 +175,24 @@ doClickCalcs <- function(clickData, clickFuns) {
 
 # PROBLEM right now this is very PG specific. Which is maybe okay, because
 # moduleCalcs is PG-based? Possbly rename these doPgWhistleCalcs or w/e
-doWhistleCalcs <- function(whistleData, whistleFuns) {
+doWhistleCalcs <- function(whistleData, whistleFuns, detSettings=NULL) {
     # Does this die if 1st slice is #1 (or 0, w/e index is)
     # probably, so use next whistle
-    whistleData <- contourToFreq(whistleData)
+    if(is.null(detSettings)) {
+        whistleData <- contourToFreq(whistleData)
+    } else {
+        for (i in seq_along(whistleData)) {
+            # this not perfect for changing SR so we should just not do it for whistles
+            sr <- detSettings$sr
+            fftLen <- detSettings$length
+            fftHop <- detSettings$hop
+            whistleData[[i]]$freq <- whistleData[[i]]$contour * sr/fftLen
+            whistleData[[i]]$allFreq <- do.call(cbind, lapply(whistleData[[i]]$sliceData, 
+                                                       function(x) x$peakData)) * sr/fftLen
+            whistleData[[i]]$time <- sapply(whistleData[[i]]$sliceData, function(x) x$sliceNumber) * 
+                fftHop/sr
+        }
+    }
     # tempData <- whistleData[[1]]
     # if(tempData$sliceData[[1]]$sliceNumber == 0) {
     #     tempData <- whistleData[[2]]
@@ -195,17 +221,26 @@ doWhistleCalcs <- function(whistleData, whistleFuns) {
 }
 
 # ceps. THIS IS ALL TERRIBLE BULLSHIT WHY ARE THEY THE SAME FUCKING FIX IT
-doCepstrumCalcs <- function(cepstrumData, cepstrumFuns) {
+doCepstrumCalcs <- function(cepstrumData, cepstrumFuns, detSettings=NULL) {
     ### RIGHT NOW FFT NOT NEEDED - CANCELS OUT WITH INVERSE AT SAME LENGTH
     ### THIS ISNT GENERALLY TRUE, BUT IS FOR PG IMPLEMENTATION
     ### DOING IT JUST BECAUSE I CAN
-
-    tempData <- cepstrumData[[1]]
-    if(tempData$sliceData[[1]]$sliceNumber == 0) {
-        tempData <- cepstrumData[[2]]
+    if(is.null(detSettings)) {
+        tempData <- cepstrumData[[1]]
+        if(tempData$sliceData[[1]]$sliceNumber == 0) {
+            tempData <- cepstrumData[[2]]
+        }
+        fftHop <- (tempData$startSample + 1)/tempData$sliceData[[1]]$sliceNumber
+        fftLen <- tempData$sampleDuration - (tempData$nSlices - 1) * fftHop
+    } else {
+        fftHop <- detSettings$hop
+        fftLen <- detSettings$length
+        if(isTRUE(detSettings$decimated)) {
+            for(i in seq_along(cepstrumData)) {
+                cepstrumData[[i]]$sr <- source$sr
+            }
+        }
     }
-    fftHop <- (tempData$startSample + 1)/tempData$sliceData[[1]]$sliceNumber
-    fftLen <- tempData$sampleDuration - (tempData$nSlices - 1) * fftHop
 
     allCeps <- vector('list', length=length(cepstrumFuns))
     for(f in seq_along(cepstrumFuns)) {

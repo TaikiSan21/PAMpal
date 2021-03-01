@@ -361,7 +361,7 @@ processPgDetectionsTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%
                 thisBin$data[[i]]$sr <- binTimes$sampleRate[i]
             }
         }
-        thisBinData <- calculateModuleData(thisBin, binFuns)
+        thisBinData <- calculateModuleData(thisBin, binFuns, pps@settings)
         if(progress) {
             setTxtProgressBar(pb, value=which(binList==bin))
         }
@@ -503,7 +503,7 @@ processPgDetectionsDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                             warning('No functions for processing Module Type: ', modType, call.=FALSE)
                         }
                     }
-                    binData <- calculateModuleData(thisBin, binFuns)
+                    binData <- calculateModuleData(thisBin, binFuns, pps@settings)
                     if(!is.null(binData)) {
                         noMatch <- which(!(x$UID %in% binData$UID))
                         x$UID[noMatch] <- x$newUID[noMatch]

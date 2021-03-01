@@ -1,3 +1,17 @@
+## PAMpal 0.12.0
+
+* Added ability to work with Pamguard's XML settings files with functions `addSettings`,
+`removeSettings`, and `loadPamguardXML`. Currently this lets `PAMpal` tell if a decimator
+was in use and adjust the sample rate accordingly, no longer need to manually set the
+`sr_hz` parameter for `standardClickCalcs` if XML settings have been added to the `pps`.
+
+* `PAMpalSettings` objects now have a `@settings` slot to accommodate this addition,
+older objects will need to have this slot manually added or they will give warnings
+of `Not a validObject(), no slot of name "settings" for this object of class "PAMpalsettings"`
+
+* Added `updatePamObject` function to deal with updating S4 classes created in older
+versions of `PAMpal`
+
 ## PAMpal 0.11.1
 
 * `calculateAverageSpectra` has a `sort` option to sort clicks by peak frequency

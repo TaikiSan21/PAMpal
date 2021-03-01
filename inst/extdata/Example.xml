@@ -1,0 +1,848 @@
+<?xml version="1.0" encoding="ISO-8859-1"?><PAMGUARD>
+    <INFO CONFIGURATION="C:\Users\tnsak\Documents\R Projects\Data\JSpec\PamGuard64 2_00_16e J3v3 Dec192k 10kHz 15dB 6xCTC.psfx" JAVA="13" RELEASETYPE="BETA" REVISION="$Rev: 5796 $" TIMESTAMP="February 24, 2021 at 10:16:48 PM UTC" VERSION="2.01.05"/>
+    <MODULES>
+        <MODULE Java.class="Array.ArrayManager" UnitName="Array Manager" UnitType="Array Manager">
+            <PROCESS Name="Array Manager">
+                <Output Channels="0x0" Name="Array Manager, Streamer Data" SampleRate="0.0" Type="Array.StreamerDataUnit"/>
+                <Output Channels="0xFFFFFFFF" Name="Array Manager, Hydrophone Data" SampleRate="0.0" Type="Array.HydrophoneDataUnit"/>
+            </PROCESS>
+            <CONFIGURATION>
+                <SETTINGS Class="Array.ArrayParameters" Name="Array Manager" Type="Array Manager" Version="0">
+                    <arrayName Class="java.lang.String" Value="Basic Linear Array"/>
+                    <streamers Class="java.util.ArrayList">
+                        <streamers Class="Array.Streamer" Index="0">
+                            <coordinateError Class="[D" Value="0.1,0.1,0.1"/>
+                            <streamerName Class="java.lang.String" Value="Unknown Streamer"/>
+                            <streamerIndex Class="int" Value="0"/>
+                            <enableOrientation Class="boolean" Value="false"/>
+                        </streamers>
+                    </streamers>
+                    <arrayLocatorClass Class="java.lang.Class"/>
+                    <hydrophoneInterpolation Class="int" Value="0"/>
+                    <originInterpolation Class="int" Value="0"/>
+                    <hydrophoneArray Class="java.util.ArrayList">
+                        <hydrophoneArray Class="Array.Hydrophone" Index="0">
+                            <sensitivity Class="double" Value="-154.6"/>
+                            <streamerId Class="int" Value="0"/>
+                            <bandwidth Class="[D" Value="0.0,20000.0"/>
+                            <preampGain Class="double" Value="0.0"/>
+                            <type Class="java.lang.String" Value="Unknown"/>
+                            <timeMillis Class="long" Value="0"/>
+                        </hydrophoneArray>
+                        <hydrophoneArray Class="Array.Hydrophone" Index="1">
+                            <sensitivity Class="double" Value="-165.2"/>
+                            <streamerId Class="int" Value="0"/>
+                            <bandwidth Class="[D" Value="0.0,20000.0"/>
+                            <preampGain Class="double" Value="0.0"/>
+                            <type Class="java.lang.String" Value="Unknown"/>
+                            <timeMillis Class="long" Value="0"/>
+                        </hydrophoneArray>
+                        <hydrophoneArray Class="Array.Hydrophone" Index="2">
+                            <sensitivity Class="double" Value="-165.2"/>
+                            <streamerId Class="int" Value="0"/>
+                            <bandwidth Class="[D" Value="0.0,20000.0"/>
+                            <preampGain Class="double" Value="0.0"/>
+                            <type Class="java.lang.String" Value="Unknown"/>
+                            <timeMillis Class="long" Value="0"/>
+                        </hydrophoneArray>
+                    </hydrophoneArray>
+                    <speedOfSound Class="double" Value="1500.0"/>
+                    <arrayShape Class="int" Value="2"/>
+                    <speedOfSoundError Class="double" Value="0.0"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="Acquisition.AcquisitionControl" UnitName="Sound Acquisition" UnitType="Data Acquisition">
+            <PROCESS Name="Sound Acquisition">
+                <Output Channels="0x3" Name="Sound Acquisition, Raw input data from Sound Acquisition" SampleRate="288000.0" Type="PamDetection.RawDataUnit"/>
+                <Output Channels="0x0" Name="Sound Acquisition, Sound Acquisition" SampleRate="288000.0" Type="Acquisition.DaqStatusDataUnit"/>
+            </PROCESS>
+            <CONFIGURATION>
+                <SETTINGS Class="Acquisition.filedate.StandardFileDateSettings" Name="Sound Acquisition" Type="Standard File Date" Version="1">
+                    <additionalOffsetMillis Class="long" Value="0"/>
+                    <forcePCTime Class="boolean" Value="false"/>
+                    <adjustDaylightSaving Class="boolean" Value="false"/>
+                    <timeZoneName Class="java.lang.String" Value="UTC"/>
+                </SETTINGS>
+                <SETTINGS Class="Acquisition.SoundCardParameters" Name="Sound Acquisition" Type="Sound Card System" Version="1">
+                    <deviceNumber Class="int" Value="0"/>
+                </SETTINGS>
+                <SETTINGS Class="Acquisition.SoundCardParameters" Name="Sound Acquisition" Type="ASIO Sound System" Version="1">
+                    <deviceNumber Class="int" Value="0"/>
+                </SETTINGS>
+                <SETTINGS Class="Acquisition.SoundCardParameters" Name="Sound Acquisition" Type="New ASIO Sound System" Version="1">
+                    <deviceNumber Class="int" Value="0"/>
+                </SETTINGS>
+                <SETTINGS Class="Acquisition.FileInputParameters" Name="Sound Acquisition" Type="File Input System" Version="1">
+                    <recentFiles Class="java.util.ArrayList" Value="Q:\BW43 Cruise-2020\Recordings\Drift-5 ST4300\1678016538.201118053848.wav,null,D:\Soundtrap\201883689\201883689.151013114637.wav,D:\Soundtrap\AFFOGATO June2016\67665945.151009151453.wav,C:\Soundtrap\TestData\67665945\67665945.151009151453.wav,C:\PASCAL Analyses\ClassifierTestData\SpermW SM3M-1_0+1_20160827_200806.wav,C:\PASCAL Analyses\ClassifierTestData\Beakers SM3M-1_0+1_20160829_012206.wav,C:\PASCAL Analyses\ClassifierTestData\Dolphins close SM3M-1_0+1_20160828_192606.wav,C:\PASCAL Analyses\ClassifierTestData\Kogia SM3M-1_0+1_20160830_013406.wav,C:\PASCAL Analyses\ClassifierTestData\Beakers SM3M-1_0+1_20160826_231406.wav,F:\PASCAL DASBR Data\Station 7- SM3M-1\Card A\Data\SM3M-1_0+1_20160828_192606.wav,F:\PASCAL DASBR Data\Station 7- SM3M-1\Card A\Data\SM3M-1_0+1_20160827_200806.wav,F:\PASCAL DASBR Data\Station 7- SM3M-1\Card A\Data\SM3M-1_0+1_20160829_012206.wav,F:\PASCAL DASBR Data\Station 7- SM3M-1\Card A\Data\SM3M-1_0+1_20160826_231406.wav,F:\PASCAL DASBR Data\Station 7- SM3M-1\Card A\Data\SM3M-1_0+1_20160825_200806.wav,F:\PASCAL DASBR Data\Station 7- SM3M-1\Card A\Data\SM3M-1_0+1_20160825_210606.wav,F:\PASCAL DASBR Data\Station 7- SM3M-1\Card A\Data\SM3M-1_0+1_20160830_013406.wav,F:\PASCAL DASBR Data\Station 7- SM3M-1\Card A\Data\SM3M-1_0+1_20160824_000606.wav,F:\PASCAL DASBR Data\Station 7- SM3M-1\Card AC\Data\SM3M-1_0+1_20160830_013406.wav,F:\PASCAL DASBR Data\Station 7- SM3M-1\Card A\Data\SM3M-1_0+1_20160826_221406.wav"/>
+                    <bitDepth Class="int" Value="16"/>
+                    <skipStartFileTime Class="long" Value="0"/>
+                    <repeatLoop Class="boolean" Value="false"/>
+                    <realTime Class="boolean" Value="false"/>
+                </SETTINGS>
+                <SETTINGS Class="Acquisition.FolderInputParameters" Name="Sound Acquisition" Type="File Folder Acquisition System" Version="1">
+                    <subFolders Class="boolean" Value="true"/>
+                    <recentFiles Class="java.util.ArrayList" Value="Q:\BW43 Cruise-2020\Recordings\Drift-5 ST4300,null,Q:\BW43 Cruise-2020\Recordings\Drift-6 ST4300,F:\BW43 Cruise-2020\Recordings\Drift-6,E:\BW43 Cruise-2020\Recordings\Drift-6,G:\CCES Recordings\Drift-7,K:\CCES Recordings\Drift-7,J:\Jay\ACOUSTIC\PAMGUARD\Click Templates\BW examples from Jennifer\1544044581.170822120402_BWC.wav,J:\Jay\ACOUSTIC\PAMGUARD\Click Templates\BW examples from Jennifer,E:\PASCAL DASBR Recordings\Drift_12,E:\PASCAL DASBR Recordings\Drift_12\1543540774.160905222146.wav,E:\PASCAL DASBR Recordings\Drift_12\1543540774.160905202146.wav,D:\LaskerTestCruise Mar2019\Recordings\Drift-1 ST4300-K,D:\LaskerTestCruise Mar2019\Recordings\Drift-2 ST4300-O,D:\Test Recordings For New PamGuard\Recordings,D:\Test Recordings For New PamGuard\Recordings\1543540774.160831040146.wav,E:\Test Recordings For New PamGuard\Recordings\1543540774.160831040146.wav,E:\Test Recordings For New PamGuard,F:\Station-12_Soundtrap-H,F:\Station-9_Soundtrap-G"/>
+                    <mergeFiles Class="boolean" Value="true"/>
+                    <bitDepth Class="int" Value="16"/>
+                    <skipStartFileTime Class="long" Value="0"/>
+                    <repeatLoop Class="boolean" Value="false"/>
+                    <realTime Class="boolean" Value="false"/>
+                </SETTINGS>
+                <SETTINGS Class="nidaqdev.NIDaqParams" Name="Sound Acquisition" Type="NI-DAQ Card System" Version="1">
+                    <deviceNumber Class="int" Value="0"/>
+                    <terminalConfiguration Class="int" Value="10106"/>
+                    <enableMultiBoard Class="boolean" Value="false"/>
+                </SETTINGS>
+                <SETTINGS Class="hfDaqCard.SmruDaqParameters" Name="Sound Acquisition" Type="SAIL DAQ Card" Version="1"/>
+                <SETTINGS Class="simulatedAcquisition.SimParameters" Name="Sound Acquisition" Type="Simulated Data DAQ" Version="1">
+                    <deviceNumber Class="int" Value="0"/>
+                    <backgroundNoise Class="double" Value="50.0"/>
+                </SETTINGS>
+                <SETTINGS Class="Acquisition.AcquisitionParameters" Name="Sound Acquisition" Type="Data Acquisition" Version="2">
+                    <preamplifier Class="Array.Preamplifier">
+                        <bandwidth Class="[D" Value="0.0,20000.0"/>
+                        <gain Class="double" Value="0.0"/>
+                    </preamplifier>
+                    <voltsPeak2Peak Class="double" Value="2.83"/>
+                    <ppsParameters Class="Acquisition.gpstiming.PPSParameters">
+                        <gpsPPSThreshold Class="double" Value="0.5"/>
+                        <gpsPPSChannel Class="int" Value="0"/>
+                        <storageInterval Class="int" Value="60"/>
+                        <useGpsPPS Class="boolean" Value="false"/>
+                    </ppsParameters>
+                    <dcTimeConstant Class="double" Value="1.0"/>
+                    <hydrophoneList Class="[I" Value="0,1,2"/>
+                    <subtractDC Class="boolean" Value="false"/>
+                    <daqSystemType Class="java.lang.String" Value="Audio File"/>
+                    <sampleRate Class="float" Value="288000.0"/>
+                    <nChannels Class="int" Value="2"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="clickDetector.ClickControl" UnitName="Click Detector" UnitType="Click Detector">
+            <PROCESS Name="Click Detector">
+                <Input Channels="0x1" Name="Decimator 192k, Decimator 192k Data"/>
+                <Output Channels="0x1" Name="Click Detector, Clicks" SampleRate="192000.0" Type="clickDetector.ClickDetection"/>
+                <Output Channels="0x1" Name="Click Detector, Noise Data Samples" SampleRate="192000.0" Type="clickDetector.ClickDetection"/>
+                <Output Channels="0x1" Name="Click Detector, Click Trigger Function" SampleRate="192000.0" Type="PamDetection.RawDataUnit"/>
+                <Output Channels="0x1" Name="Click Detector, Tracked Clicks" SampleRate="192000.0" Type="clickDetector.ClickDetection"/>
+                <Output Channels="0x1" Name="Click Detector, Tracked Events" SampleRate="192000.0" Type="clickDetector.offlineFuncs.OfflineEventDataUnit"/>
+            </PROCESS>
+            <PROCESS Name="Click Train Detector">
+                <Input Channels="0x1" Name="Click Detector, Clicks"/>
+            </PROCESS>
+            <PROCESS Name="Tracked Click Localiser">
+                <Input Channels="0x1" Name="Click Detector, Tracked Clicks"/>
+            </PROCESS>
+            <PROCESS Name="Click Detector Alarms">
+                <Input Channels="0x1" Name="Click Detector, Clicks"/>
+            </PROCESS>
+            <CONFIGURATION>
+                <SETTINGS Class="angleVetoes.AngleVetoParameters" Name="Click Detector" Type="Detector Vetoes" Version="0"/>
+                <SETTINGS Class="clickDetector.ClickParameters" Name="Click Detector" Type="Click Detector" Version="8">
+                    <preFilter Class="Filters.FilterParams">
+                        <filterType Class="Filters.FilterType" Value="BUTTERWORTH"/>
+                        <highPassFreq Class="float" Value="10000.0"/>
+                        <scaleType Class="int" Value="0"/>
+                        <stopBandRipple Class="double" Value="2.0"/>
+                        <filterOrder Class="int" Value="8"/>
+                        <filterBand Class="Filters.FilterBand" Value="HIGHPASS"/>
+                        <passBandRipple Class="double" Value="2.0"/>
+                        <lowPassFreq Class="float" Value="20000.0"/>
+                        <chebyGamma Class="double" Value="3.0"/>
+                    </preFilter>
+                    <rcAutoNewFile Class="boolean" Value="true"/>
+                    <waveFixedXScale Class="boolean" Value="false"/>
+                    <discardEchoes Class="boolean" Value="false"/>
+                    <longFilter2 Class="double" Value="1.0E-6"/>
+                    <channelBitmap Class="int" Value="1"/>
+                    <showShortTrains Class="int" Value="1"/>
+                    <classifyOnline Class="boolean" Value="true"/>
+                    <triggerFilter Class="Filters.FilterParams">
+                        <filterType Class="Filters.FilterType" Value="BUTTERWORTH"/>
+                        <highPassFreq Class="float" Value="10000.0"/>
+                        <scaleType Class="int" Value="0"/>
+                        <stopBandRipple Class="double" Value="2.0"/>
+                        <filterOrder Class="int" Value="2"/>
+                        <filterBand Class="Filters.FilterBand" Value="HIGHPASS"/>
+                        <passBandRipple Class="double" Value="2.0"/>
+                        <lowPassFreq Class="float" Value="20000.0"/>
+                        <chebyGamma Class="double" Value="3.0"/>
+                    </triggerFilter>
+                    <maxLength Class="int" Value="192"/>
+                    <waveShowEnvelope Class="boolean" Value="false"/>
+                    <noiseSampleInterval Class="double" Value="5.0"/>
+                    <publishTriggerFunction Class="boolean" Value="true"/>
+                    <storageDirectory Class="java.lang.String" Value="C:\clicks"/>
+                    <storeBackground Class="boolean" Value="false"/>
+                    <channelGroups Class="[I" Value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"/>
+                    <singleWavePlot Class="boolean" Value="false"/>
+                    <discardUnclassifiedClicks Class="boolean" Value="false"/>
+                    <dbThreshold Class="double" Name="Detection Threshold" Value="15.0"/>
+                    <minTimeSeparation Class="double" Value="60.0"/>
+                    <sampleNoise Class="boolean" Value="true"/>
+                    <shortFilter Class="double" Value="0.1"/>
+                    <rcFileLength Class="float" Value="1.0"/>
+                    <clickClassifierType Class="int" Value="1"/>
+                    <groupedSourceParameters Class="PamView.GroupedSourceParameters">
+                        <channelGroups Class="[I" Value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"/>
+                        <groupingType Class="int" Value="0"/>
+                        <dataSource Class="java.lang.String" Value="Decimator 192k Data"/>
+                    </groupedSourceParameters>
+                    <triggerBitmap Class="int" Value="1"/>
+                    <spectrogramColour Class="int" Value="0"/>
+                    <postSample Class="int" Value="96"/>
+                    <groupingType Class="int" Value="0"/>
+                    <clickAlarmList Class="java.util.ArrayList">
+                        <clickAlarmList Class="clickDetector.ClickAlarm" Index="0">
+                            <userAlarmFile Class="java.lang.String" Value="/sounds/down_chirp.wav"/>
+                            <name Class="java.lang.String" Value="Alarm 1"/>
+                        </clickAlarmList>
+                    </clickAlarmList>
+                    <preSample Class="int" Value="96"/>
+                    <minBearingSeparation Class="double" Value="5.0"/>
+                    <radarColour Class="int" Value="0"/>
+                    <longFilter Class="double" Value="1.0E-5"/>
+                    <defaultRange Class="double" Value="5000.0"/>
+                    <clickLocParams Class="clickDetector.localisation.ClickLocParams">
+                        <limitLocPoints Class="boolean" Value="false"/>
+                        <maxLocPoints Class="int" Value="30"/>
+                        <maxTime Class="long" Value="200"/>
+                        <maxRange Class="double" Value="20000.0"/>
+                        <maxHeight Class="double" Value="5.0"/>
+                        <minHeight Class="double" Value="-5000.0"/>
+                    </clickLocParams>
+                    <runEchoOnline Class="boolean" Value="false"/>
+                    <storageInitials Class="java.lang.String" Value="RBC"/>
+                    <minTriggerChannels Class="int" Value="1"/>
+                    <viewFilteredWaveform Class="boolean" Value="false"/>
+                    <rawDataSource Class="java.lang.String" Value="Decimator 192k Data"/>
+                    <backgroundIntervalMillis Class="int" Value="0"/>
+                    <plotIndividualBearings Class="boolean" Value="true"/>
+                    <minSep Class="int" Value="192"/>
+                    <overlayMarkDataSelectorParams Class="PamView.paneloverlay.overlaymark.MarkDataSelectorParams"/>
+                    <createRCFile Class="boolean" Value="false"/>
+                </SETTINGS>
+                <SETTINGS Class="clickDetector.clicktrains.ClickTrainIdParams" Name="Click Detector" Type="Click Train Detector" Version="1">
+                    <minTrainClicks Class="int" Value="6"/>
+                    <okAngleError Class="double" Value="1.0"/>
+                    <minUpdateGap Class="int" Value="5"/>
+                    <initialPerpendicularDistance Class="double" Value="100.0"/>
+                    <iciRange Class="[D" Value="0.1,2.0"/>
+                    <minAngleChange Class="double" Value="5.0"/>
+                    <iciUpdateRatio Class="double" Value="0.5"/>
+                    <runClickTrainId Class="boolean" Value="false"/>
+                    <maxIciChange Class="double" Value="1.2"/>
+                </SETTINGS>
+                <SETTINGS Class="clickDetector.echoDetection.SimpleEchoParams" Name="Click Detector" Type="Simple Click Echo system" Version="1">
+                    <maxIntervalSeconds Class="double" Value="0.1"/>
+                </SETTINGS>
+                <SETTINGS Class="clickDetector.BasicClickIdParameters" Name="Click Detector" Type="BasicClickIdParams" Version="1">
+                    <clickTypeParams Class="java.util.ArrayList">
+                        <clickTypeParams Class="clickDetector.ClickTypeParams" Index="0">
+                            <speciesCode Class="int" Value="0"/>
+                            <lengthEnergyFraction Class="double" Value="0.0"/>
+                            <meanSelRange Class="[D" Value="25000.0,45000.0"/>
+                            <prevTime Class="long" Value="0"/>
+                            <bandEnergyDifference Class="double" Value="5.0"/>
+                            <peakFrequencyRange Class="[D" Value="2000.0,15000.0"/>
+                            <peakFrequencySearch Class="[D" Value="2000.0,128000.0"/>
+                            <meanSumRange Class="[D" Value="10000.0,96000.0"/>
+                            <clickLength Class="[D" Value="0.0,0.0"/>
+                            <band2Freq Class="[D" Value="15000.0,30000.0"/>
+                            <peakWidth Class="[D" Value="0.0,0.0"/>
+                            <band1Energy Class="[D" Value="0.0,500.0"/>
+                            <symbol Class="PamView.PamSymbol">
+                                <iconHorizontalAlignment Class="int" Value="0"/>
+                                <iconVerticalAlignment Class="int" Value="1"/>
+                                <iconStyle Class="int" Value="1"/>
+                                <symbolData Class="PamView.symbol.SymbolData">
+                                    <height Class="float" Value="5.0"/>
+                                    <lineThickness Class="float" Value="2.0"/>
+                                    <width Class="float" Value="5.0"/>
+                                    <symbol Class="PamView.PamSymbolType" Value="SYMBOL_CIRCLE"/>
+                                    <lineColor Class="java.awt.Color">
+                                        <Color Class="java.awt.Color" Value="r=0,g=0,b=0,a=255"/>
+                                    </lineColor>
+                                    <fill Class="boolean" Value="true"/>
+                                    <fillColor Class="java.awt.Color"/>
+                                </symbolData>
+                            </symbol>
+                            <alarmEnabled Class="java.lang.Boolean" Value="false"/>
+                            <band1Freq Class="[D" Value="2000.0,15000.0"/>
+                            <maxTime Class="long" Value="0"/>
+                            <widthEnergyFraction Class="double" Value="0.0"/>
+                            <discard Class="java.lang.Boolean" Value="false"/>
+                            <band2Energy Class="[D" Value="0.0,500.0"/>
+                            <whichSelections Class="int" Value="4"/>
+                        </clickTypeParams>
+                    </clickTypeParams>
+                </SETTINGS>
+                <SETTINGS Class="clickDetector.ClickClassifiers.basicSweep.SweepClassifierParameters" Name="Click Detector" Type="ClickSweepClassifier" Version="1">
+                    <checkAllClassifiers Class="boolean" Value="true"/>
+                </SETTINGS>
+                <SETTINGS Class="clickDetector.ClickSpectrumParams" Name="Click Detector" Type="Click Spectrogram Display" Version="1">
+                    <plotSmoothing Class="int" Value="3"/>
+                    <showEventInfo Class="boolean" Value="true"/>
+                    <plotCepstrum Class="boolean" Value="false"/>
+                    <logRange Class="double" Value="30.0"/>
+                    <smoothPlot Class="boolean" Value="false"/>
+                    <channelChoice Class="int" Value="0"/>
+                    <logScale Class="boolean" Value="true"/>
+                </SETTINGS>
+                <SETTINGS Class="clickDetector.WignerPlotOptions" Name="Click Detector" Type="Wigner Plot Options" Version="1">
+                    <limitLength Class="boolean" Value="true"/>
+                    <manualLength Class="int" Value="128"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="fftManager.PamFFTControl" UnitName="FFT (Spectrogram) Engine" UnitType="FFT Engine">
+            <PROCESS Name="FFT - 2048 point, 288000.0 Hz">
+                <Input Channels="0x3" Name="Sound Acquisition, Raw input data from Sound Acquisition"/>
+                <Output Channels="0x1" Name="FFT (Spectrogram) Engine, FFT (Spectrogram) Engine" SampleRate="288000.0" Type="fftManager.FFTDataUnit"/>
+            </PROCESS>
+            <PROCESS Name="FFT (Spectrogram) Engine Noise reduction">
+                <Input Channels="0x1" Name="FFT (Spectrogram) Engine, FFT (Spectrogram) Engine"/>
+                <Output Channels="0x1" Name="FFT (Spectrogram) Engine, FFT (Spectrogram) Engine Noise free FFT data" SampleRate="288000.0" Type="fftManager.FFTDataUnit"/>
+            </PROCESS>
+            <CONFIGURATION>
+                <SETTINGS Class="fftManager.FFTParameters" Name="FFT (Spectrogram) Engine" Type="FFT Engine" Version="2">
+                    <dataSource Class="int" Value="0"/>
+                    <name Class="java.lang.String" Value=""/>
+                    <clickRemoval Class="boolean" Value="false"/>
+                    <fftHop Class="int" Value="2048"/>
+                    <dataSourceName Class="java.lang.String" Value="Sound Acquisition, Raw input data from Sound Acquisition"/>
+                    <spectrogramNoiseSettings Class="spectrogramNoiseReduction.SpectrogramNoiseSettings">
+                        <channelList Class="int" Value="1"/>
+                        <methodSettings Class="java.util.ArrayList">
+                            <methodSettings Class="spectrogramNoiseReduction.medianFilter.MedianFilterParams" Index="0">
+                                <filterLength Class="int" Value="61"/>
+                            </methodSettings>
+                            <methodSettings Class="spectrogramNoiseReduction.averageSubtraction.AverageSubtractionParameters" Index="1">
+                                <updateConstant Class="double" Value="0.02"/>
+                            </methodSettings>
+                            <methodSettings Class="spectrogramNoiseReduction.threshold.ThresholdParams" Index="3">
+                                <finalOutput Class="int" Value="2"/>
+                                <thresholdDB Class="double" Value="8.0"/>
+                            </methodSettings>
+                        </methodSettings>
+                        <dataSource Class="java.lang.String" Value="FFT (Spectrogram) Engine"/>
+                    </spectrogramNoiseSettings>
+                    <clickThreshold Class="double" Value="5.0"/>
+                    <windowFunction Class="int" Value="2"/>
+                    <clickPower Class="int" Value="6"/>
+                    <fftLength Class="int" Name="FFT Length" Value="2048"/>
+                    <channelMap Class="int" Value="1"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="generalDatabase.DBControlUnit" UnitName="Database" UnitType="Pamguard Database">
+            <PROCESS Name="Database"/>
+            <CONFIGURATION>
+                <SETTINGS Class="java.util.ArrayList" Name="Database" Type="Sqlite Database System" Version="0"/>
+                <SETTINGS Class="generalDatabase.MySQLParameters" Name="Database" Type="MySQL Database System" Version="1"/>
+                <SETTINGS Class="java.util.ArrayList" Name="Database" Type="MS Access Database System" Version="0"/>
+                <SETTINGS Class="generalDatabase.DBParameters" Name="Database" Type="Pamguard Database" Version="0">
+                    <databaseSystem Class="int" Value="0"/>
+                    <useAutoCommit Class="java.lang.Boolean" Value="false"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="binaryFileStorage.BinaryStore" UnitName="Binary Store" UnitType="Binary Storage">
+            <PROCESS Name="Binary store file control"/>
+            <CONFIGURATION>
+                <SETTINGS Class="binaryFileStorage.BinaryStoreSettings" Name="Binary Store" Type="Binary Storage" Version="0">
+                    <channelShift Class="int" Value="0"/>
+                    <limitFileSize Class="boolean" Value="false"/>
+                    <fileSeconds Class="int" Value="3600"/>
+                    <autoNewFiles Class="boolean" Value="true"/>
+                    <lastZippedFileDate Class="long" Value="0"/>
+                    <storeLocation Class="java.lang.String" Value="Q:\BW43 Cruise-2020\PAMGuard Analyses\Drift-5 ST4300 1-file-sample HTI92 1msec-Sample Dec192k"/>
+                    <maxFileSize Class="int" Value="100"/>
+                    <datedSubFolders Class="boolean" Value="true"/>
+                </SETTINGS>
+                <SETTINGS Class="dataGram.DatagramSettings" Name="Binary Store" Type="Datagram Settings" Version="1">
+                    <datagramSeconds Class="int" Value="600"/>
+                    <displayMultiplier Class="int" Value="1"/>
+                    <validDatagramSettings Class="boolean" Value="true"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="userDisplay.UserDisplayControl" UnitName="Spectrogram" UnitType="User Display">
+            <CONFIGURATION>
+                <SETTINGS Class="userDisplay.UserDisplayParameters" Name="Spectrogram" Type="User Display" Version="11"/>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="matchedTemplateClassifer.MTClassifierControl" UnitName="Ziphius" UnitType="Match Template Classifer">
+            <PROCESS Name="Ziphius">
+                <Input Channels="0x1" Name="Click Detector, Clicks"/>
+            </PROCESS>
+            <CONFIGURATION>
+                <SETTINGS Class="matchedTemplateClassifer.MatchedTemplateParams" Name="Ziphius" Type="Match Template Classifer" Version="5">
+                    <dataSourceIndex Class="int" Value="0"/>
+                    <channelClassification Class="int" Value="1"/>
+                    <normalisationType Class="int" Value="0"/>
+                    <classifiers Class="java.util.ArrayList">
+                        <classifiers Class="matchedTemplateClassifer.MTClassifier" Index="0">
+                            <waveformReject Class="matchedTemplateClassifer.MatchTemplate">
+                                <waveform Class="[D" Value="3.56E-5,0.00113,-0.00128,4.39E-5,1.17E-4,4.11E-4,-3.05E-4,1.57E-4,-3.45E-4,5.21E-4,-5.18E-4,0.00193,-8.44E-4,-1.62E-4,-8.8E-4,2.74E-4,-4.06E-4,0.00132,-7.23E-4,5.7E-4,-6.91E-4,6.78E-4,-7.04E-4,-0.00136,-4.1E-4,0.00141,-0.00111,0.00136,-9.02E-4,-2.69E-4,-1.49E-4,2.05E-4,-1.53E-4,6.97E-5,-7.78E-4,9.78E-4,-0.00104,-9.0E-5,-8.66E-4,6.78E-5,-0.00106,0.00139,-6.03E-4,3.49E-4,2.8E-4,9.42E-4,-3.65E-4,-5.98E-4,-1.91E-4,4.0E-4,-0.00122,4.52E-4,-0.00135,8.43E-4,-0.0012,5.83E-4,-3.36E-4,0.00126,-2.39E-4,1.63E-4,-0.00131,0.00115,9.6E-4,0.00158,-5.09E-4,0.00116,-0.00115,-2.38E-4,-3.77E-4,1.37E-4,-0.00157,0.0013,-9.01E-4,0.001,-9.13E-6,8.95E-4,-9.26E-4,3.68E-4,-6.05E-5,5.16E-4,-2.56E-4,0.00245,-0.00146,0.0018,-5.76E-4,0.00427,0.0046,0.0162,0.0277,0.0465,-0.0296,-0.17,-0.327,0.198,0.73,-0.169,-0.494,0.0359,0.108,0.027,-0.00951,-0.0252,-0.0119,0.00512,0.00354,0.00935,0.00657,0.00581,-0.00182,-0.00381,-0.0173,-0.00326,0.0166,0.0147,-1.78E-4,-0.0135,-0.00518,0.00596,0.0012,-0.00203,8.27E-4,0.00308,0.00734,0.00249,-0.00853,-0.00358,-0.00446,0.00239,0.0067,0.00208,-0.00154,3.96E-5,-3.75E-4,4.47E-5,9.08E-4,0.00113,-4.51E-4,-0.00116,-0.00238,0.00133,0.00409,-4.09E-5,-0.00257,-7.47E-5,-4.94E-4,-1.12E-4,-2.1E-4,3.48E-4,-1.33E-4,-8.04E-4,-1.28E-4,2.31E-4,0.00163,0.00406,-0.0019,-0.00481,-0.00343,0.00205,0.00264,0.00105,-0.00125,-0.00152,-2.15E-4,5.58E-4,0.00109,-2.92E-4,-7.16E-5,-1.62E-4,-7.08E-4,0.00137,-3.63E-4,-1.01E-4,-9.1E-4,4.76E-4,-4.89E-4,6.0E-4,-0.00197,-3.72E-4,-0.00123,-0.00213,0.0018,0.00172,-4.45E-4,8.07E-4,0.00273,0.00187,-3.51E-4,-0.00179,-4.25E-5,-3.6E-4,-0.00636,-0.0038"/>
+                                <name Class="java.lang.String" Value="Dolphin"/>
+                                <sR Class="float" Value="192000.0"/>
+                            </waveformReject>
+                            <waveformMatch Class="matchedTemplateClassifer.MatchTemplate">
+                                <waveform Class="[D" Value="0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,9.02143918488644E-4,-0.00562513266822331,-0.00843769900233496,-0.012630014858841,-0.0185735512630015,-0.0382615156017831,-0.0438335809806835,-0.0227658671195075,0.0450541286351093,0.116907238378264,0.130120993419656,0.0358204202929314,-0.0997134366376566,-0.169496922097219,-0.10905327955848,0.0178836765018043,0.0981214179579707,0.101040118870728,0.0264805773721078,-0.0522182126936956,-0.119719804712375,-0.102950541286351,0.0182020802377415,0.184780301422203,0.210783273190405,0.0550307790278073,-0.14800466992146,-0.25,-0.151294841859478,0.0419762258543834,0.179367437911271,0.16042241562301,0.0155487157715984,-0.143493950329017,-0.130545531734239,0.040596476331989,0.157344512842284,0.0852791339418383,-0.1042241562301,-0.209828061982594,-0.0714816387178943,0.13797495223944,0.209456590957334,0.0551899808957758,-0.152621524092549,-0.166153682869879,0.0119932073869667,0.140681383994906,0.097643812354065,-0.0576841434939503,-0.138134154107408,-0.0419231585650605,0.0798662704309064,0.087667161961367,-0.00567819995754617,-0.0912757376353216,-0.0613988537465506,0.029876883888771,0.0749310125238803,0.0239864147739333,-0.0249416259817449,-0.0331670558267884,0.00806622797707493,0.0346529399278285,0.00350244109530885,-0.0238802801952876,-0.0165569942687328,0.00355550838463171,-0.00477605603905753,-0.0303014222033539,-0.0307259605179367,-0.00514752706431755,0.0402780725960518,0.0318403735937168,-7.96009339842921E-4,-0.0193695606028444,0.0170345998726385,0.0210146465718531,0.00387391212056888,-0.0186266185523243,-0.0250477605603906,-0.0180959456590957,-0.00971131394608363,4.77605603905752E-4,0.0104011887072808,0.00228189344088304,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0"/>
+                                <name Class="java.lang.String" Value="Imported Waveform"/>
+                                <sR Class="float" Value="256000.0"/>
+                            </waveformMatch>
+                            <currentSr Class="double" Value="-1.0"/>
+                            <thresholdToAccept Class="double" Value="0.06"/>
+                        </classifiers>
+                        <classifiers Class="matchedTemplateClassifer.MTClassifier" Index="1">
+                            <waveformReject Class="matchedTemplateClassifer.MatchTemplate">
+                                <waveform Class="[D" Value="3.56E-5,0.00113,-0.00128,4.39E-5,1.17E-4,4.11E-4,-3.05E-4,1.57E-4,-3.45E-4,5.21E-4,-5.18E-4,0.00193,-8.44E-4,-1.62E-4,-8.8E-4,2.74E-4,-4.06E-4,0.00132,-7.23E-4,5.7E-4,-6.91E-4,6.78E-4,-7.04E-4,-0.00136,-4.1E-4,0.00141,-0.00111,0.00136,-9.02E-4,-2.69E-4,-1.49E-4,2.05E-4,-1.53E-4,6.97E-5,-7.78E-4,9.78E-4,-0.00104,-9.0E-5,-8.66E-4,6.78E-5,-0.00106,0.00139,-6.03E-4,3.49E-4,2.8E-4,9.42E-4,-3.65E-4,-5.98E-4,-1.91E-4,4.0E-4,-0.00122,4.52E-4,-0.00135,8.43E-4,-0.0012,5.83E-4,-3.36E-4,0.00126,-2.39E-4,1.63E-4,-0.00131,0.00115,9.6E-4,0.00158,-5.09E-4,0.00116,-0.00115,-2.38E-4,-3.77E-4,1.37E-4,-0.00157,0.0013,-9.01E-4,0.001,-9.13E-6,8.95E-4,-9.26E-4,3.68E-4,-6.05E-5,5.16E-4,-2.56E-4,0.00245,-0.00146,0.0018,-5.76E-4,0.00427,0.0046,0.0162,0.0277,0.0465,-0.0296,-0.17,-0.327,0.198,0.73,-0.169,-0.494,0.0359,0.108,0.027,-0.00951,-0.0252,-0.0119,0.00512,0.00354,0.00935,0.00657,0.00581,-0.00182,-0.00381,-0.0173,-0.00326,0.0166,0.0147,-1.78E-4,-0.0135,-0.00518,0.00596,0.0012,-0.00203,8.27E-4,0.00308,0.00734,0.00249,-0.00853,-0.00358,-0.00446,0.00239,0.0067,0.00208,-0.00154,3.96E-5,-3.75E-4,4.47E-5,9.08E-4,0.00113,-4.51E-4,-0.00116,-0.00238,0.00133,0.00409,-4.09E-5,-0.00257,-7.47E-5,-4.94E-4,-1.12E-4,-2.1E-4,3.48E-4,-1.33E-4,-8.04E-4,-1.28E-4,2.31E-4,0.00163,0.00406,-0.0019,-0.00481,-0.00343,0.00205,0.00264,0.00105,-0.00125,-0.00152,-2.15E-4,5.58E-4,0.00109,-2.92E-4,-7.16E-5,-1.62E-4,-7.08E-4,0.00137,-3.63E-4,-1.01E-4,-9.1E-4,4.76E-4,-4.89E-4,6.0E-4,-0.00197,-3.72E-4,-0.00123,-0.00213,0.0018,0.00172,-4.45E-4,8.07E-4,0.00273,0.00187,-3.51E-4,-0.00179,-4.25E-5,-3.6E-4,-0.00636,-0.0038"/>
+                                <name Class="java.lang.String" Value="Dolphin"/>
+                                <sR Class="float" Value="192000.0"/>
+                            </waveformReject>
+                            <waveformMatch Class="matchedTemplateClassifer.MatchTemplate">
+                                <waveform Class="[D" Value="0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,8.24519824881834E-4,7.55553458932452E-4,6.17620727033687E-4,4.10721629185541E-4,4.79687995134923E-4,4.79687995134923E-4,6.17620727033687E-4,5.48654361084305E-4,4.79687995134923E-4,2.03822531337394E-4,4.79687995134923E-4,6.58897994386292E-5,5.48654361084305E-4,1.34856165388012E-4,3.41755263236158E-4,3.41755263236158E-4,6.58897994386292E-5,1.34856165388012E-4,2.03822531337394E-4,2.03822531337394E-4,-7.20429324601353E-5,2.03822531337394E-4,-3.07656651075303E-6,3.41755263236158E-4,-7.20429324601353E-5,1.34856165388012E-4,-1.41009298409518E-4,2.03822531337394E-4,6.58897994386292E-5,-2.099756643589E-4,-2.099756643589E-4,2.72788897286776E-4,-2.099756643589E-4,2.72788897286776E-4,-1.41009298409518E-4,-2.78942030308282E-4,6.58897994386292E-5,-2.78942030308282E-4,4.10721629185541E-4,-3.47908396257664E-4,-3.07656651075303E-6,-3.47908396257664E-4,-3.07656651075303E-6,-7.20429324601353E-5,-3.07656651075303E-6,6.58897994386292E-5,-2.78942030308282E-4,-3.47908396257664E-4,-2.78942030308282E-4,2.03822531337394E-4,-2.099756643589E-4,6.58897994386292E-5,-2.78942030308282E-4,6.58897994386292E-5,-2.099756643589E-4,-7.20429324601353E-5,-3.07656651075303E-6,1.34856165388012E-4,-7.20429324601353E-5,6.58897994386292E-5,1.34856165388012E-4,1.34856165388012E-4,2.72788897286776E-4,3.41755263236158E-4,2.03822531337394E-4,3.41755263236158E-4,1.34856165388012E-4,3.41755263236158E-4,6.17620727033687E-4,4.10721629185541E-4,3.41755263236158E-4,4.10721629185541E-4,4.10721629185541E-4,6.8658709298307E-4,5.48654361084305E-4,7.55553458932452E-4,0.00103141892272998,0.00103141892272998,5.48654361084305E-4,2.03822531337394E-4,6.58897994386292E-5,7.55553458932452E-4,0.00116935165462875,0.00110038528867936,6.8658709298307E-4,8.24519824881834E-4,6.17620727033687E-4,4.79687995134923E-4,-4.16874762207047E-4,2.72788897286776E-4,6.8658709298307E-4,-3.07656651075303E-6,-0.00221000027689099,-0.00338242849803048,-0.00283069757043543,0.00268661170551516,0.0155143557721003,0.0148246921126064,-0.00883077140803168,-0.0258654637975291,-0.0160032734667674,0.00323834263311021,0.0113763738151373,0.00889358464095956,0.0124798356703274,0.0171005821889361,-1.41009298409518E-4,-0.030900008511834,-0.0344172931752525,-0.00634798223385392,0.0193764722652657,0.0263420752261533,0.026480007958052,0.0191695731674175,-0.010692863288665,-0.0479347009013314,-0.0507623219052561,-0.0181412308111983,0.0233075551243805,0.0666873993065419,0.0875842081892047,0.0304110908171668,-0.0742798526939955,-0.123935636177551,-0.0791764646764016,0.02447998334552,0.128412296831239,0.148136677492762,0.0354456355314717,-0.123728737079703,-0.181108753549589,-0.0831075475355164,0.107377555216677,0.223585881841387,0.116756980985793,-0.127521887206919,-0.246350935737704,-0.0913145450834929,0.186206111496821,0.25,-0.00779627591879095,-0.247247498495046,-0.123659770713753,0.164274807124918,0.161033387925297,-0.076900574600072,-0.111107892110966,0.0526182606528679,0.0501354714786902,-0.0818661529484275,-0.0404863333787981,0.07806684968819,0.0245489497114693,-0.0709005007624757,-0.024762001942339,0.0378594583397001,0.00916945010475709,-0.0296586139247451,-0.0223481791341106,0.0021348807779201,0.0155833221380496,0.00854875281121265,-0.0160722398327168,-0.0220723136703131,0.00820392098146574,0.0211006314140002,-0.00910663687182921,-0.0202791881556291,0.00703149276032624,0.0137212302574163,-0.00752041045499342,-0.00952043506752551,0.00399697265855342,0.0028935108033633,-0.00165826934929593,6.58897994386292E-5,-0.00186516844714407,-0.00186516844714407,0.00316937626716083,0.0017210825822238,-0.00386519305967616,-0.00207206754499222,0.00275557807146454,5.48654361084305E-4,-0.00283069757043543,-0.00172723571524531,0.00116935165462875,2.72788897286776E-4,-0.00179620208119469,-0.00152033661739716,0.00116935165462875,0.00116935165462875,-6.92740226004576E-4,-0.00103757205575149,-0.0025548321066379,-3.47908396257664E-4,0.00199694804602133,6.17620727033687E-4,-0.0013824038854984,-5.54807494105811E-4,-7.61706591953958E-4,-0.00131343751954902,-0.00165826934929593,2.03822531337394E-4,0.00254867897361639,8.24519824881834E-4,-0.0021410339109416,-0.00234793300878975,0.00103141892272998,6.8658709298307E-4,-7.61706591953958E-4,-4.85841128156429E-4,-7.20429324601353E-5,8.24519824881834E-4,-8.99639323852723E-4,-0.00172723571524531,5.48654361084305E-4,0.00130728438652751,4.10721629185541E-4,-3.47908396257664E-4,-4.85841128156429E-4,-3.47908396257664E-4,8.24519824881834E-4,6.8658709298307E-4,4.10721629185541E-4,1.34856165388012E-4,4.10721629185541E-4,4.10721629185541E-4,6.8658709298307E-4,-3.07656651075303E-6,6.58897994386292E-5,0.00192798168007195,0.00137625075247689,2.03822531337394E-4,-7.61706591953958E-4,6.58897994386292E-5,0.00144521711842627,0.00185901531412257,2.03822531337394E-4,-3.07656651075303E-6,6.8658709298307E-4,0.00103141892272998,0.00103141892272998,5.48654361084305E-4,2.72788897286776E-4,0.00144521711842627,0.00185901531412257,6.17620727033687E-4,6.58897994386292E-5,-7.20429324601353E-5,0.00151418348437566,0.00158314985032504,0.00116935165462875,4.79687995134923E-4,0.00116935165462875,0.00116935165462875,0.00116935165462875,9.62452556780599E-4,4.10721629185541E-4,0.00110038528867936,0.00158314985032504,0.00116935165462875,7.55553458932452E-4,0.00116935165462875,6.17620727033687E-4,0.00103141892272998,8.93486190831216E-4,0.00144521711842627,0.00123831802057813,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0"/>
+                                <name Class="java.lang.String" Value="Imported Waveform"/>
+                                <sR Class="float" Value="288000.0"/>
+                            </waveformMatch>
+                            <currentSr Class="double" Value="-1.0"/>
+                            <thresholdToAccept Class="double" Value="0.15"/>
+                        </classifiers>
+                        <classifiers Class="matchedTemplateClassifer.MTClassifier" Index="2">
+                            <waveformReject Class="matchedTemplateClassifer.MatchTemplate">
+                                <waveform Class="[D" Value="3.56E-5,0.00113,-0.00128,4.39E-5,1.17E-4,4.11E-4,-3.05E-4,1.57E-4,-3.45E-4,5.21E-4,-5.18E-4,0.00193,-8.44E-4,-1.62E-4,-8.8E-4,2.74E-4,-4.06E-4,0.00132,-7.23E-4,5.7E-4,-6.91E-4,6.78E-4,-7.04E-4,-0.00136,-4.1E-4,0.00141,-0.00111,0.00136,-9.02E-4,-2.69E-4,-1.49E-4,2.05E-4,-1.53E-4,6.97E-5,-7.78E-4,9.78E-4,-0.00104,-9.0E-5,-8.66E-4,6.78E-5,-0.00106,0.00139,-6.03E-4,3.49E-4,2.8E-4,9.42E-4,-3.65E-4,-5.98E-4,-1.91E-4,4.0E-4,-0.00122,4.52E-4,-0.00135,8.43E-4,-0.0012,5.83E-4,-3.36E-4,0.00126,-2.39E-4,1.63E-4,-0.00131,0.00115,9.6E-4,0.00158,-5.09E-4,0.00116,-0.00115,-2.38E-4,-3.77E-4,1.37E-4,-0.00157,0.0013,-9.01E-4,0.001,-9.13E-6,8.95E-4,-9.26E-4,3.68E-4,-6.05E-5,5.16E-4,-2.56E-4,0.00245,-0.00146,0.0018,-5.76E-4,0.00427,0.0046,0.0162,0.0277,0.0465,-0.0296,-0.17,-0.327,0.198,0.73,-0.169,-0.494,0.0359,0.108,0.027,-0.00951,-0.0252,-0.0119,0.00512,0.00354,0.00935,0.00657,0.00581,-0.00182,-0.00381,-0.0173,-0.00326,0.0166,0.0147,-1.78E-4,-0.0135,-0.00518,0.00596,0.0012,-0.00203,8.27E-4,0.00308,0.00734,0.00249,-0.00853,-0.00358,-0.00446,0.00239,0.0067,0.00208,-0.00154,3.96E-5,-3.75E-4,4.47E-5,9.08E-4,0.00113,-4.51E-4,-0.00116,-0.00238,0.00133,0.00409,-4.09E-5,-0.00257,-7.47E-5,-4.94E-4,-1.12E-4,-2.1E-4,3.48E-4,-1.33E-4,-8.04E-4,-1.28E-4,2.31E-4,0.00163,0.00406,-0.0019,-0.00481,-0.00343,0.00205,0.00264,0.00105,-0.00125,-0.00152,-2.15E-4,5.58E-4,0.00109,-2.92E-4,-7.16E-5,-1.62E-4,-7.08E-4,0.00137,-3.63E-4,-1.01E-4,-9.1E-4,4.76E-4,-4.89E-4,6.0E-4,-0.00197,-3.72E-4,-0.00123,-0.00213,0.0018,0.00172,-4.45E-4,8.07E-4,0.00273,0.00187,-3.51E-4,-0.00179,-4.25E-5,-3.6E-4,-0.00636,-0.0038"/>
+                                <name Class="java.lang.String" Value="Dolphin"/>
+                                <sR Class="float" Value="192000.0"/>
+                            </waveformReject>
+                            <waveformMatch Class="matchedTemplateClassifer.MatchTemplate">
+                                <waveform Class="[D" Value="0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,-0.0044943345885611,-0.00511744541447846,-0.0044943345885611,-0.00490974180583934,-0.00470203819720022,-0.00428663097992198,-0.00200189128489167,4.90552018777757E-4,0.00329455073540587,0.00256758810516895,-0.00231344669785035,-0.00979077660885864,-0.0118678126952498,-0.00459818639288066,0.00817558553842517,0.0118103986896098,0.00516388321315794,-0.00677907428359141,-0.0140487005859606,-0.0151910704334757,-0.00397507556696331,0.00703321569091001,0.0085909927557034,0.00350225434404498,6.98255627416876E-4,-5.47966024417839E-4,-0.00667522247927186,-0.0155026258464344,-0.020072105236495,-0.0167488474982691,0.00589084584339486,0.0301921680541718,0.0232340971647613,-0.0142564041945997,-0.0392846890356136,-0.0333651361893987,-0.00418277917560243,0.0310229824887283,0.0356963136831085,-0.00563670443607626,-0.0458273527077458,-0.0301457302554923,0.0312306860973674,0.0742253330856651,0.0327884631621608,-0.0758405241560985,-0.138255458552154,-0.0572510511828974,0.125320420810888,0.223668079501511,0.0955149529711748,-0.148952194397068,-0.25,-0.0890297033046826,0.164057143822084,0.213594454482514,0.0101487698204968,-0.176265218933113,-0.0903797767608369,0.137263378307638,0.149310187608707,-0.0837332612843851,-0.184573363278677,0.0151336564278357,0.151179520086459,0.00848714095138385,-0.0594319390736081,0.092399398841588,0.0833642918657863,-0.122158428882622,-0.135970718857124,0.0327884631621608,0.0750561475202216,0.00142521825765379,-0.0131140343470846,0.0173145443185464,0.0226109863388439,-0.00355966834968507,-0.0374153565578615,-0.0249531400395143,0.0284266873807393,0.04005808946453,0.00786403012546649,-0.0050135936101589,0.0106680288420946,0.0144066937975987,-0.00345581654536551,-0.00854455495702393,0.0118103986896098,0.024480318816596,0.0162760262753508,0.00817558553842517,0.00246373630084939,-0.00158648406761343,-0.00283270571944815,-0.00231344669785035,-0.00231344669785035,0.00277529171380807,0.00692936388659045,0.00381380975700366,-4.44114220098279E-4,-0.00231344669785035,-0.00542900082743714,-0.00709062969655009,-0.00729833330518921,-0.00335196474104595,8.02107431736436E-4,8.02107431736436E-4,-0.00127492865465476,-0.00252115030648947,-0.00335196474104595,-0.00574055624039582,-0.00719448150086965,-0.00522129721879802,-0.0011710768503352,-3.4026241577872E-4,-0.00158648406761343,-0.00397507556696331,-0.00397507556696331,-0.00231344669785035,-7.55669633056958E-4,7.51448014995186E-5,-9.63373241696077E-4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0"/>
+                                <name Class="java.lang.String" Value="Imported Waveform"/>
+                                <sR Class="float" Value="288000.0"/>
+                            </waveformMatch>
+                            <currentSr Class="double" Value="-1.0"/>
+                            <thresholdToAccept Class="double" Value="0.15"/>
+                        </classifiers>
+                        <classifiers Class="matchedTemplateClassifer.MTClassifier" Index="3">
+                            <waveformReject Class="matchedTemplateClassifer.MatchTemplate">
+                                <waveform Class="[D" Value="3.56E-5,0.00113,-0.00128,4.39E-5,1.17E-4,4.11E-4,-3.05E-4,1.57E-4,-3.45E-4,5.21E-4,-5.18E-4,0.00193,-8.44E-4,-1.62E-4,-8.8E-4,2.74E-4,-4.06E-4,0.00132,-7.23E-4,5.7E-4,-6.91E-4,6.78E-4,-7.04E-4,-0.00136,-4.1E-4,0.00141,-0.00111,0.00136,-9.02E-4,-2.69E-4,-1.49E-4,2.05E-4,-1.53E-4,6.97E-5,-7.78E-4,9.78E-4,-0.00104,-9.0E-5,-8.66E-4,6.78E-5,-0.00106,0.00139,-6.03E-4,3.49E-4,2.8E-4,9.42E-4,-3.65E-4,-5.98E-4,-1.91E-4,4.0E-4,-0.00122,4.52E-4,-0.00135,8.43E-4,-0.0012,5.83E-4,-3.36E-4,0.00126,-2.39E-4,1.63E-4,-0.00131,0.00115,9.6E-4,0.00158,-5.09E-4,0.00116,-0.00115,-2.38E-4,-3.77E-4,1.37E-4,-0.00157,0.0013,-9.01E-4,0.001,-9.13E-6,8.95E-4,-9.26E-4,3.68E-4,-6.05E-5,5.16E-4,-2.56E-4,0.00245,-0.00146,0.0018,-5.76E-4,0.00427,0.0046,0.0162,0.0277,0.0465,-0.0296,-0.17,-0.327,0.198,0.73,-0.169,-0.494,0.0359,0.108,0.027,-0.00951,-0.0252,-0.0119,0.00512,0.00354,0.00935,0.00657,0.00581,-0.00182,-0.00381,-0.0173,-0.00326,0.0166,0.0147,-1.78E-4,-0.0135,-0.00518,0.00596,0.0012,-0.00203,8.27E-4,0.00308,0.00734,0.00249,-0.00853,-0.00358,-0.00446,0.00239,0.0067,0.00208,-0.00154,3.96E-5,-3.75E-4,4.47E-5,9.08E-4,0.00113,-4.51E-4,-0.00116,-0.00238,0.00133,0.00409,-4.09E-5,-0.00257,-7.47E-5,-4.94E-4,-1.12E-4,-2.1E-4,3.48E-4,-1.33E-4,-8.04E-4,-1.28E-4,2.31E-4,0.00163,0.00406,-0.0019,-0.00481,-0.00343,0.00205,0.00264,0.00105,-0.00125,-0.00152,-2.15E-4,5.58E-4,0.00109,-2.92E-4,-7.16E-5,-1.62E-4,-7.08E-4,0.00137,-3.63E-4,-1.01E-4,-9.1E-4,4.76E-4,-4.89E-4,6.0E-4,-0.00197,-3.72E-4,-0.00123,-0.00213,0.0018,0.00172,-4.45E-4,8.07E-4,0.00273,0.00187,-3.51E-4,-0.00179,-4.25E-5,-3.6E-4,-0.00636,-0.0038"/>
+                                <name Class="java.lang.String" Value="Dolphin"/>
+                                <sR Class="float" Value="192000.0"/>
+                            </waveformReject>
+                            <waveformMatch Class="matchedTemplateClassifer.MatchTemplate">
+                                <waveform Class="[D" Value="0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.00250536352800953,0.00651013110846245,0.0041072705601907,9.03456495828367E-4,-0.00550417163289631,-0.0059046483909416,-0.00390226460071514,0.00370679380214541,0.00811203814064362,0.0093134684147795,0.00210488676996424,-0.00830750893921335,-0.0115113230035757,-0.0107103694874851,-0.00550417163289631,0.00330631704410012,0.00290584028605483,5.02979737783075E-4,-0.00990941597139452,-0.00510369487485101,-0.00270083432657926,0.0041072705601907,-2.97973778307509E-4,0.00250536352800953,0.00370679380214541,0.0133182359952324,0.0177234803337306,0.0153206197854589,0.00250536352800953,-0.00950893921334922,-0.00710607866507747,0.00210488676996424,0.0225292014302741,0.0317401668653158,0.02373063170441,-0.0059046483909416,-0.0251275327771156,-0.0207222884386174,0.00130393325387366,0.0373468414779499,0.0573706793802145,0.0385482717520858,-0.0059046483909416,-0.0455518474374255,-0.0423480333730632,0.00771156138259833,0.0842026221692491,0.113837902264601,0.0605744934445769,-0.0459523241954708,-0.112431466030989,-0.0671775923718713,0.0733897497020262,0.187125148986889,0.141070321811681,-0.0367413587604291,-0.189723480333731,-0.149675804529201,0.0545673420738975,0.238386174016687,0.189928486293206,-0.0551632896305125,-0.249794994040524,-0.166896305125149,0.10542789034565,0.25,0.095015494636472,-0.146872467222884,-0.1753063170441,0.0117163289630512,0.120646007151371,0.0309392133492253,-0.066777115613826,-0.011911799761621,0.0545673420738975,-0.00510369487485101,-0.0847985697258641,-0.0463528009535161,0.0513635280095352,0.0721883194278903,0.00450774731823599,-0.059969010727056,-0.050357568533969,-0.00149940405244339,0.0205268176400477,0.0221287246722288,0.0117163289630512,-0.00910846245530393,-0.0427485101311085,-0.0403456495828367,0.00731108462455304,0.042953516090584,0.0157210965435042,-0.0255280095351609,-0.0319356376638856,-0.00670560190703218,0.00570917759237187,-0.00470321811680572,-0.00990941597139452,-0.00630512514898689,0.00370679380214541,-0.0103098927294398,-0.0211227651966627,-0.0107103694874851,0.0165220500595948,0.0189249106078665,-0.00230035756853397,-0.0175184743742551,-0.0151156138259833,-0.00990941597139452,-0.00870798569725864,-0.00470321811680572,-6.98450536352801E-4,-0.00550417163289631,-0.011911799761621,-0.0175184743742551,-0.011911799761621,-0.00350178784266985,-0.00350178784266985,-0.00870798569725864,-0.0135137067938021,-0.0131132300357569,-0.0111108462455304,-0.00510369487485101,-6.98450536352801E-4,9.03456495828367E-4,1.02502979737783E-4,-0.00350178784266985,-0.00470321811680572,-0.00310131108462455,-2.97973778307509E-4,0.00450774731823599,0.00250536352800953,-0.00230035756853397,-0.00550417163289631,-0.00750655542312277,-0.00350178784266985,-0.00270083432657926,-0.00189988081048868,-0.00390226460071514,-0.0059046483909416,-0.00510369487485101,-0.00350178784266985,1.02502979737783E-4,-0.00189988081048868,-0.00149940405244339,-0.00270083432657926,-0.00230035756853397,9.03456495828367E-4,0.00370679380214541,0.00290584028605483,0.00250536352800953,0.00290584028605483,-6.98450536352801E-4,0.00290584028605483,-2.97973778307509E-4,0.00170441001191895,-0.00510369487485101,-0.00270083432657926,-0.00710607866507747,-0.00470321811680572,-0.00870798569725864,-0.00670560190703218,-0.00350178784266985,-0.00189988081048868,-0.00230035756853397,-0.00550417163289631,-0.00630512514898689,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0"/>
+                                <name Class="java.lang.String" Value="Imported Waveform"/>
+                                <sR Class="float" Value="288000.0"/>
+                            </waveformMatch>
+                            <currentSr Class="double" Value="-1.0"/>
+                            <thresholdToAccept Class="double" Value="0.15"/>
+                        </classifiers>
+                        <classifiers Class="matchedTemplateClassifer.MTClassifier" Index="4">
+                            <waveformReject Class="matchedTemplateClassifer.MatchTemplate">
+                                <waveform Class="[D" Value="3.56E-5,0.00113,-0.00128,4.39E-5,1.17E-4,4.11E-4,-3.05E-4,1.57E-4,-3.45E-4,5.21E-4,-5.18E-4,0.00193,-8.44E-4,-1.62E-4,-8.8E-4,2.74E-4,-4.06E-4,0.00132,-7.23E-4,5.7E-4,-6.91E-4,6.78E-4,-7.04E-4,-0.00136,-4.1E-4,0.00141,-0.00111,0.00136,-9.02E-4,-2.69E-4,-1.49E-4,2.05E-4,-1.53E-4,6.97E-5,-7.78E-4,9.78E-4,-0.00104,-9.0E-5,-8.66E-4,6.78E-5,-0.00106,0.00139,-6.03E-4,3.49E-4,2.8E-4,9.42E-4,-3.65E-4,-5.98E-4,-1.91E-4,4.0E-4,-0.00122,4.52E-4,-0.00135,8.43E-4,-0.0012,5.83E-4,-3.36E-4,0.00126,-2.39E-4,1.63E-4,-0.00131,0.00115,9.6E-4,0.00158,-5.09E-4,0.00116,-0.00115,-2.38E-4,-3.77E-4,1.37E-4,-0.00157,0.0013,-9.01E-4,0.001,-9.13E-6,8.95E-4,-9.26E-4,3.68E-4,-6.05E-5,5.16E-4,-2.56E-4,0.00245,-0.00146,0.0018,-5.76E-4,0.00427,0.0046,0.0162,0.0277,0.0465,-0.0296,-0.17,-0.327,0.198,0.73,-0.169,-0.494,0.0359,0.108,0.027,-0.00951,-0.0252,-0.0119,0.00512,0.00354,0.00935,0.00657,0.00581,-0.00182,-0.00381,-0.0173,-0.00326,0.0166,0.0147,-1.78E-4,-0.0135,-0.00518,0.00596,0.0012,-0.00203,8.27E-4,0.00308,0.00734,0.00249,-0.00853,-0.00358,-0.00446,0.00239,0.0067,0.00208,-0.00154,3.96E-5,-3.75E-4,4.47E-5,9.08E-4,0.00113,-4.51E-4,-0.00116,-0.00238,0.00133,0.00409,-4.09E-5,-0.00257,-7.47E-5,-4.94E-4,-1.12E-4,-2.1E-4,3.48E-4,-1.33E-4,-8.04E-4,-1.28E-4,2.31E-4,0.00163,0.00406,-0.0019,-0.00481,-0.00343,0.00205,0.00264,0.00105,-0.00125,-0.00152,-2.15E-4,5.58E-4,0.00109,-2.92E-4,-7.16E-5,-1.62E-4,-7.08E-4,0.00137,-3.63E-4,-1.01E-4,-9.1E-4,4.76E-4,-4.89E-4,6.0E-4,-0.00197,-3.72E-4,-0.00123,-0.00213,0.0018,0.00172,-4.45E-4,8.07E-4,0.00273,0.00187,-3.51E-4,-0.00179,-4.25E-5,-3.6E-4,-0.00636,-0.0038"/>
+                                <name Class="java.lang.String" Value="Dolphin"/>
+                                <sR Class="float" Value="192000.0"/>
+                            </waveformReject>
+                            <waveformMatch Class="matchedTemplateClassifer.MatchTemplate">
+                                <waveform Class="[D" Value="0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,-8.22740548767945E-6,0.00146447817680694,0.00919618248385372,0.0169278867909005,0.0202414743510634,0.00919618248385372,0.00477806573696985,0.0051462421325435,0.0150870048130322,0.0239232383068,0.0180324159776215,0.00698712411041178,-0.00295363857007693,0.00661894771483813,0.0165597103953268,0.0213460035377844,0.00440988934139619,-0.0195215763708914,-0.0290941626558065,-0.0202579291620388,-0.0121580484594183,-0.0379303961495742,-0.105306676539553,-0.171578427742811,-0.181151014027726,-0.0868978567608705,0.0636862890287548,0.197702497017566,0.23341560738821,0.157939446295611,0.0478547040190876,-0.0309350446336748,-0.032775926611543,-0.012526224854992,-0.022098811139907,-0.079902505244971,-0.141387963305772,-0.115615615615616,-0.00111275659220865,0.160148504669053,0.249247192397877,0.212061376444938,0.0754679336871118,-0.0666481550043194,-0.128501789460694,-0.114511086428895,-0.0740116829157925,-0.0729071537290715,-0.108252087704143,-0.121874614340368,-0.0699617425644823,0.0419638816899091,0.140635155703649,0.164566621415937,0.090194989510058,-0.00700357892138714,-0.0776934468715291,-0.0784297996626764,-0.0475029824344893,-0.034984984984985,-0.0475029824344893,-0.0537619811592414,-0.00958081369040273,0.0894586367189107,0.173771031305278,0.182975441194619,0.0721543461269489,-0.091684149903328,-0.227173063474433,-0.25,-0.161269488666749,-0.0158398124151549,0.108971985684314,0.177452795261014,0.190338969106092,0.182239088403472,0.160148504669053,0.124803570693982,0.054850055534987,-0.0438212184787527,-0.139547081327903,-0.194405364268378,-0.186305483565758,-0.117824673989058,-0.0382985725451479,0.0283413550536838,0.0427002344810564,0.0209778271422107,-0.0250442223044963,-0.0662799786087457,-0.0868978567608705,-0.0806388580361183,-0.0489756880167839,0.00256900736352791,0.0555864083261344,0.110444691266609,0.136585215352339,0.13768974453906,0.104185692541857,0.0438047636677774,-0.011421695668271,-0.0556028631371097,-0.0530256283680941,-0.0313032210292484,0.011037064461722,0.0342321773828623,0.034600353778436,0.00845982969270641,-0.0213624583487597,-0.0434530420831791,-0.0489756880167839,-0.0408758073141635,-0.0316713974248221,-0.0213624583487597,-0.0143671068328603,-0.0106853428771237,-0.01031716648155,-0.0136307540417129,-0.022098811139907,-0.023203340326628,-0.0169443416018758,0.00809165329713275,0.033495824591715,0.0585318194907236,0.0581636430951499,0.0427002344810564,0.0114052408572957,-0.0151034596240076,-0.032775926611543,-0.0261487514912172,-0.0073717553169608,0.0191369451643424,0.0412275288987618,0.0449092928544983,0.0305504134271258,-0.00111275659220865,-0.0309350446336748,-0.0530256283680941,-0.0482393352256366,-0.0357213377761323,-0.0154716360195812,-0.00994899008597639,-0.00773993171253445,-0.0154716360195812,-0.00589904973466617,0.00367353655024888,0.0301822370315521,0.0449092928544983,0.0485910568102349,0.0445411164589247,0.0206096507466371,0.00367353655024888,-0.0209942819531861,-0.036089514171706,-0.0368258669628533,-0.0276214570735119,-0.00221728577892961,0.0180324159776215,0.0250277674935209,0.0154551812086059,-0.012526224854992,-0.034984984984985,-0.0449257476654737,-0.0386667489407215,-0.0173125179974495,0.00367353655024888,0.0184005923731951,0.0261322966802419,0.0265004730758155,0.0276050022625365,0.0246595910979473,0.0220823563289317,0.0128779464395903,0.00440988934139619,-0.00442634415237155,-0.00921263729482908,-0.00810810810810811,-0.00921263729482908,-0.00368999136122424,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0"/>
+                                <name Class="java.lang.String" Value="Imported Waveform"/>
+                                <sR Class="float" Value="288000.0"/>
+                            </waveformMatch>
+                            <currentSr Class="double" Value="-1.0"/>
+                            <thresholdToAccept Class="double" Value="0.15"/>
+                        </classifiers>
+                        <classifiers Class="matchedTemplateClassifer.MTClassifier" Index="5">
+                            <waveformReject Class="matchedTemplateClassifer.MatchTemplate">
+                                <waveform Class="[D" Value="3.56E-5,0.00113,-0.00128,4.39E-5,1.17E-4,4.11E-4,-3.05E-4,1.57E-4,-3.45E-4,5.21E-4,-5.18E-4,0.00193,-8.44E-4,-1.62E-4,-8.8E-4,2.74E-4,-4.06E-4,0.00132,-7.23E-4,5.7E-4,-6.91E-4,6.78E-4,-7.04E-4,-0.00136,-4.1E-4,0.00141,-0.00111,0.00136,-9.02E-4,-2.69E-4,-1.49E-4,2.05E-4,-1.53E-4,6.97E-5,-7.78E-4,9.78E-4,-0.00104,-9.0E-5,-8.66E-4,6.78E-5,-0.00106,0.00139,-6.03E-4,3.49E-4,2.8E-4,9.42E-4,-3.65E-4,-5.98E-4,-1.91E-4,4.0E-4,-0.00122,4.52E-4,-0.00135,8.43E-4,-0.0012,5.83E-4,-3.36E-4,0.00126,-2.39E-4,1.63E-4,-0.00131,0.00115,9.6E-4,0.00158,-5.09E-4,0.00116,-0.00115,-2.38E-4,-3.77E-4,1.37E-4,-0.00157,0.0013,-9.01E-4,0.001,-9.13E-6,8.95E-4,-9.26E-4,3.68E-4,-6.05E-5,5.16E-4,-2.56E-4,0.00245,-0.00146,0.0018,-5.76E-4,0.00427,0.0046,0.0162,0.0277,0.0465,-0.0296,-0.17,-0.327,0.198,0.73,-0.169,-0.494,0.0359,0.108,0.027,-0.00951,-0.0252,-0.0119,0.00512,0.00354,0.00935,0.00657,0.00581,-0.00182,-0.00381,-0.0173,-0.00326,0.0166,0.0147,-1.78E-4,-0.0135,-0.00518,0.00596,0.0012,-0.00203,8.27E-4,0.00308,0.00734,0.00249,-0.00853,-0.00358,-0.00446,0.00239,0.0067,0.00208,-0.00154,3.96E-5,-3.75E-4,4.47E-5,9.08E-4,0.00113,-4.51E-4,-0.00116,-0.00238,0.00133,0.00409,-4.09E-5,-0.00257,-7.47E-5,-4.94E-4,-1.12E-4,-2.1E-4,3.48E-4,-1.33E-4,-8.04E-4,-1.28E-4,2.31E-4,0.00163,0.00406,-0.0019,-0.00481,-0.00343,0.00205,0.00264,0.00105,-0.00125,-0.00152,-2.15E-4,5.58E-4,0.00109,-2.92E-4,-7.16E-5,-1.62E-4,-7.08E-4,0.00137,-3.63E-4,-1.01E-4,-9.1E-4,4.76E-4,-4.89E-4,6.0E-4,-0.00197,-3.72E-4,-0.00123,-0.00213,0.0018,0.00172,-4.45E-4,8.07E-4,0.00273,0.00187,-3.51E-4,-0.00179,-4.25E-5,-3.6E-4,-0.00636,-0.0038"/>
+                                <name Class="java.lang.String" Value="Dolphin"/>
+                                <sR Class="float" Value="192000.0"/>
+                            </waveformReject>
+                            <waveformMatch Class="matchedTemplateClassifer.MatchTemplate">
+                                <waveform Class="[D" Value="0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0114396297182986,-0.00702657409624132,0.00140052669379938,-0.00578166147953076,0.0178716782379698,-0.0227795068230788,0.0086625169579443,0.00724203974144123,-0.00150426941185859,-0.0233381214587822,0.0325552629478892,-0.00715425744154497,-0.0276155135264544,0.027224483281462,0.0110885005187136,-0.0358670497167026,0.00582156252493815,0.0441425265341952,-0.0412137898012928,-0.02667384885484,0.0771805921315138,-0.0388995291676642,-0.0493855239007262,0.0787127922751576,-0.00408985715425744,-0.0939948926661879,0.0943859229111803,0.0215266139972867,-0.139210757321842,0.127312265581358,0.0154935759316894,-0.154357194158487,0.152992578405554,-0.00645199904237491,-0.160278509296944,0.201288803766659,-0.0748264304524779,-0.127623493735536,0.25,-0.207680951240923,0.0427060888995292,0.12499800494773,-0.200690288085548,0.167883648551592,-0.0796464767376905,-7.06248503710797E-4,0.0407269970473226,-0.0494334051552151,0.0482443540020749,-0.0486034634107414,0.0447011411698987,-0.0316056180671934,0.0100191525017955,0.0120940068629798,-0.0282858510892985,0.0331138775835927,-0.0288763865613279,0.0194517596361025,-0.0144960497965047,0.0179674407469476,-0.0228114276594047,0.0211435639613758,-0.0144641289601788,0.00871039821243317,-0.00659564280584151,0.00821562524938153,-0.0138097518154976,0.0202178597079243,-0.0244553507301891,0.0227555661958343,-0.0177360146835847,0.0125728194078685,-0.0105378660920916,0.0102585587742399,-0.0091333492937515,0.0059492458702418,-0.00289282579203575,0.00124092251216982,-0.0017915569387918,0.00301252892825792,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0"/>
+                                <name Class="java.lang.String" Value="Imported Waveform"/>
+                                <sR Class="float" Value="200000.0"/>
+                            </waveformMatch>
+                            <currentSr Class="double" Value="-1.0"/>
+                            <thresholdToAccept Class="double" Value="0.15"/>
+                        </classifiers>
+                    </classifiers>
+                    <dataSourceName Class="java.lang.String" Value="Clicks"/>
+                    <peakSearch Class="boolean" Value="true"/>
+                    <restrictedBins Class="int" Value="256"/>
+                    <pamSymbol Class="PamView.symbol.SymbolData">
+                        <height Class="float" Value="5.0"/>
+                        <lineThickness Class="float" Value="2.0"/>
+                        <width Class="float" Value="5.0"/>
+                        <symbol Class="PamView.PamSymbolType" Value="SYMBOL_SQUARE"/>
+                        <lineColor Class="java.awt.Color">
+                            <Color Class="java.awt.Color" Value="r=255,g=175,b=175,a=255"/>
+                        </lineColor>
+                        <fill Class="boolean" Value="true"/>
+                        <fillColor Class="java.awt.Color"/>
+                    </pamSymbol>
+                    <type Class="byte" Value="101"/>
+                    <lengthdB Class="double" Value="6.0"/>
+                    <enableFFTFilter Class="boolean" Value="false"/>
+                    <peakSmoothing Class="int" Value="5"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="ltsa.LtsaControl" UnitName="Long Term Spectral Average" UnitType="LTSA">
+            <PROCESS Name="Long Term Spectral Average">
+                <Input Channels="0x1" Name="FFT (Spectrogram) Engine, FFT (Spectrogram) Engine"/>
+                <Output Channels="0x1" Name="Long Term Spectral Average, Long Term Spectral Average" SampleRate="288000.0" Type="fftManager.FFTDataUnit"/>
+            </PROCESS>
+            <CONFIGURATION>
+                <SETTINGS Class="ltsa.LtsaParameters" Name="Long Term Spectral Average" Type="LTSA" Version="1">
+                    <channelMap Class="int" Value="1"/>
+                    <longerFactor Class="int" Value="10"/>
+                    <dataSource Class="java.lang.String" Value="FFT (Spectrogram) Engine"/>
+                    <intervalSeconds Class="int" Value="5"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="userDisplay.UserDisplayControl" UnitName="LTSA" UnitType="User Display">
+            <CONFIGURATION>
+                <SETTINGS Class="userDisplay.UserDisplayParameters" Name="LTSA" Type="User Display" Version="11"/>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="decimator.DecimatorControl" UnitName="Decimator 192k" UnitType="Decimator">
+            <PROCESS Name="Decimator 192k">
+                <Input Channels="0x3" Name="Sound Acquisition, Raw input data from Sound Acquisition"/>
+                <Output Channels="0x1" Name="Decimator 192k, Decimator 192k Data" SampleRate="192000.0" Type="PamDetection.RawDataUnit"/>
+            </PROCESS>
+            <CONFIGURATION>
+                <SETTINGS Class="decimator.DecimatorParams" Name="Decimator 192k" Type="Decimator" Version="1">
+                    <channelMap Class="int" Value="1"/>
+                    <filterParams Class="Filters.FilterParams">
+                        <filterType Class="Filters.FilterType" Value="BUTTERWORTH"/>
+                        <highPassFreq Class="float" Value="2000.0"/>
+                        <scaleType Class="int" Value="0"/>
+                        <stopBandRipple Class="double" Value="2.0"/>
+                        <filterOrder Class="int" Value="4"/>
+                        <filterBand Class="Filters.FilterBand" Value="LOWPASS"/>
+                        <passBandRipple Class="double" Value="2.0"/>
+                        <lowPassFreq Class="float" Value="96000.0"/>
+                        <chebyGamma Class="double" Value="3.0"/>
+                    </filterParams>
+                    <rawDataSource Class="java.lang.String" Value="Raw input data from Sound Acquisition"/>
+                    <newSampleRate Class="float" Value="192000.0"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="clickDetector.ClickControl" UnitName="Click Detector 2oo" UnitType="Click Detector">
+            <PROCESS Name="Click Detector 2oo">
+                <Input Channels="0x3" Name="Sound Acquisition, Raw input data from Sound Acquisition"/>
+                <Output Channels="0x3" Name="Click Detector 2oo, Click Detector 2oo_Clicks" SampleRate="288000.0" Type="clickDetector.ClickDetection"/>
+                <Output Channels="0x3" Name="Click Detector 2oo, Click Detector 2oo_Noise Data Samples" SampleRate="288000.0" Type="clickDetector.ClickDetection"/>
+                <Output Channels="0x3" Name="Click Detector 2oo, Click Detector 2oo_Click Trigger Function" SampleRate="288000.0" Type="PamDetection.RawDataUnit"/>
+                <Output Channels="0x3" Name="Click Detector 2oo, Click Detector 2oo_Tracked Clicks" SampleRate="288000.0" Type="clickDetector.ClickDetection"/>
+                <Output Channels="0x3" Name="Click Detector 2oo, Tracked Events" SampleRate="288000.0" Type="clickDetector.offlineFuncs.OfflineEventDataUnit"/>
+                <Output Channels="0x3" Name="Click Detector 2oo, Trigger Background" SampleRate="288000.0" Type="clickDetector.basicalgorithm.TriggerBackgroundDataUnit"/>
+            </PROCESS>
+            <PROCESS Name="Click Train Detector">
+                <Input Channels="0x3" Name="Click Detector 2oo, Click Detector 2oo_Clicks"/>
+            </PROCESS>
+            <PROCESS Name="Tracked Click Localiser">
+                <Input Channels="0x3" Name="Click Detector 2oo, Click Detector 2oo_Tracked Clicks"/>
+            </PROCESS>
+            <PROCESS Name="Click Detector 2oo Alarms">
+                <Input Channels="0x3" Name="Click Detector 2oo, Click Detector 2oo_Clicks"/>
+            </PROCESS>
+            <CONFIGURATION>
+                <SETTINGS Class="angleVetoes.AngleVetoParameters" Name="Click Detector 2oo" Type="Detector Vetoes" Version="0"/>
+                <SETTINGS Class="clickDetector.ClickParameters" Name="Click Detector 2oo" Type="Click Detector" Version="8">
+                    <preFilter Class="Filters.FilterParams">
+                        <filterType Class="Filters.FilterType" Value="BUTTERWORTH"/>
+                        <highPassFreq Class="float" Value="500.0"/>
+                        <scaleType Class="int" Value="0"/>
+                        <stopBandRipple Class="double" Value="2.0"/>
+                        <filterOrder Class="int" Value="4"/>
+                        <filterBand Class="Filters.FilterBand" Value="HIGHPASS"/>
+                        <passBandRipple Class="double" Value="2.0"/>
+                        <lowPassFreq Class="float" Value="20000.0"/>
+                        <chebyGamma Class="double" Value="3.0"/>
+                    </preFilter>
+                    <rcAutoNewFile Class="boolean" Value="true"/>
+                    <waveFixedXScale Class="boolean" Value="false"/>
+                    <discardEchoes Class="boolean" Value="false"/>
+                    <longFilter2 Class="double" Value="1.0E-6"/>
+                    <channelBitmap Class="int" Value="3"/>
+                    <showShortTrains Class="int" Value="1"/>
+                    <classifyOnline Class="boolean" Value="true"/>
+                    <triggerFilter Class="Filters.FilterParams">
+                        <filterType Class="Filters.FilterType" Value="BUTTERWORTH"/>
+                        <highPassFreq Class="float" Value="2000.0"/>
+                        <scaleType Class="int" Value="0"/>
+                        <stopBandRipple Class="double" Value="2.0"/>
+                        <filterOrder Class="int" Value="2"/>
+                        <filterBand Class="Filters.FilterBand" Value="HIGHPASS"/>
+                        <passBandRipple Class="double" Value="2.0"/>
+                        <lowPassFreq Class="float" Value="20000.0"/>
+                        <chebyGamma Class="double" Value="3.0"/>
+                    </triggerFilter>
+                    <maxLength Class="int" Value="1024"/>
+                    <waveShowEnvelope Class="boolean" Value="false"/>
+                    <noiseSampleInterval Class="double" Value="5.0"/>
+                    <publishTriggerFunction Class="boolean" Value="true"/>
+                    <storageDirectory Class="java.lang.String" Value="C:\clicks"/>
+                    <storeBackground Class="boolean" Value="true"/>
+                    <channelGroups Class="[I" Value="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"/>
+                    <singleWavePlot Class="boolean" Value="false"/>
+                    <discardUnclassifiedClicks Class="boolean" Value="false"/>
+                    <dbThreshold Class="double" Name="Detection Threshold" Value="10.0"/>
+                    <minTimeSeparation Class="double" Value="60.0"/>
+                    <sampleNoise Class="boolean" Value="true"/>
+                    <shortFilter Class="double" Value="0.1"/>
+                    <rcFileLength Class="float" Value="1.0"/>
+                    <clickClassifierType Class="int" Value="0"/>
+                    <groupedSourceParameters Class="PamView.GroupedSourceParameters">
+                        <channelGroups Class="[I" Value="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"/>
+                        <groupingType Class="int" Value="1"/>
+                        <dataSource Class="java.lang.String" Value="Raw input data from Sound Acquisition"/>
+                    </groupedSourceParameters>
+                    <triggerBitmap Class="int" Value="3"/>
+                    <spectrogramColour Class="int" Value="0"/>
+                    <postSample Class="int" Value="40"/>
+                    <groupingType Class="int" Value="1"/>
+                    <clickAlarmList Class="java.util.ArrayList">
+                        <clickAlarmList Class="clickDetector.ClickAlarm" Index="0">
+                            <userAlarmFile Class="java.lang.String" Value="/sounds/down_chirp.wav"/>
+                            <name Class="java.lang.String" Value="Alarm 1"/>
+                        </clickAlarmList>
+                    </clickAlarmList>
+                    <preSample Class="int" Value="40"/>
+                    <minBearingSeparation Class="double" Value="5.0"/>
+                    <radarColour Class="int" Value="0"/>
+                    <longFilter Class="double" Value="1.0E-5"/>
+                    <defaultRange Class="double" Value="5000.0"/>
+                    <clickLocParams Class="clickDetector.localisation.ClickLocParams">
+                        <limitLocPoints Class="boolean" Value="false"/>
+                        <maxLocPoints Class="int" Value="30"/>
+                        <maxTime Class="long" Value="200"/>
+                        <maxRange Class="double" Value="20000.0"/>
+                        <maxHeight Class="double" Value="5.0"/>
+                        <minHeight Class="double" Value="-5000.0"/>
+                    </clickLocParams>
+                    <runEchoOnline Class="boolean" Value="false"/>
+                    <storageInitials Class="java.lang.String" Value="RBC"/>
+                    <minTriggerChannels Class="int" Value="1"/>
+                    <viewFilteredWaveform Class="boolean" Value="false"/>
+                    <rawDataSource Class="java.lang.String" Value="Raw input data from Sound Acquisition"/>
+                    <backgroundIntervalMillis Class="int" Value="5000"/>
+                    <plotIndividualBearings Class="boolean" Value="false"/>
+                    <minSep Class="int" Value="100"/>
+                    <overlayMarkDataSelectorParams Class="PamView.paneloverlay.overlaymark.MarkDataSelectorParams"/>
+                    <createRCFile Class="boolean" Value="false"/>
+                </SETTINGS>
+                <SETTINGS Class="clickDetector.clicktrains.ClickTrainIdParams" Name="Click Detector 2oo" Type="Click Train Detector" Version="1">
+                    <minTrainClicks Class="int" Value="6"/>
+                    <okAngleError Class="double" Value="1.0"/>
+                    <minUpdateGap Class="int" Value="5"/>
+                    <initialPerpendicularDistance Class="double" Value="100.0"/>
+                    <iciRange Class="[D" Value="0.1,2.0"/>
+                    <minAngleChange Class="double" Value="5.0"/>
+                    <iciUpdateRatio Class="double" Value="0.5"/>
+                    <runClickTrainId Class="boolean" Value="false"/>
+                    <maxIciChange Class="double" Value="1.2"/>
+                </SETTINGS>
+                <SETTINGS Class="clickDetector.echoDetection.SimpleEchoParams" Name="Click Detector 2oo" Type="Simple Click Echo system" Version="1">
+                    <maxIntervalSeconds Class="double" Value="0.1"/>
+                </SETTINGS>
+                <SETTINGS Class="clickDetector.BasicClickIdParameters" Name="Click Detector 2oo" Type="BasicClickIdParams" Version="1">
+                    <clickTypeParams Class="java.util.ArrayList">
+                        <clickTypeParams Class="clickDetector.ClickTypeParams" Index="0">
+                            <speciesCode Class="int" Value="1"/>
+                            <lengthEnergyFraction Class="double" Value="0.0"/>
+                            <meanSelRange Class="[D" Value="0.0,0.0"/>
+                            <prevTime Class="long" Value="0"/>
+                            <bandEnergyDifference Class="double" Value="0.0"/>
+                            <peakFrequencyRange Class="[D" Value="0.0,0.0"/>
+                            <peakFrequencySearch Class="[D" Value="0.0,0.0"/>
+                            <meanSumRange Class="[D" Value="0.0,0.0"/>
+                            <clickLength Class="[D" Value="0.0,0.0"/>
+                            <band2Freq Class="[D" Value="0.0,0.0"/>
+                            <peakWidth Class="[D" Value="0.0,0.0"/>
+                            <band1Energy Class="[D" Value="0.0,0.0"/>
+                            <symbol Class="PamView.PamSymbol">
+                                <iconHorizontalAlignment Class="int" Value="0"/>
+                                <iconVerticalAlignment Class="int" Value="1"/>
+                                <iconStyle Class="int" Value="1"/>
+                                <symbolData Class="PamView.symbol.SymbolData">
+                                    <height Class="float" Value="5.0"/>
+                                    <lineThickness Class="float" Value="2.0"/>
+                                    <width Class="float" Value="5.0"/>
+                                    <symbol Class="PamView.PamSymbolType" Value="SYMBOL_CIRCLE"/>
+                                    <lineColor Class="java.awt.Color">
+                                        <Color Class="java.awt.Color" Value="r=0,g=0,b=0,a=255"/>
+                                    </lineColor>
+                                    <fill Class="boolean" Value="true"/>
+                                    <fillColor Class="java.awt.Color"/>
+                                </symbolData>
+                            </symbol>
+                            <alarmEnabled Class="java.lang.Boolean" Value="false"/>
+                            <band1Freq Class="[D" Value="0.0,0.0"/>
+                            <maxTime Class="long" Value="0"/>
+                            <widthEnergyFraction Class="double" Value="0.0"/>
+                            <discard Class="java.lang.Boolean" Value="false"/>
+                            <band2Energy Class="[D" Value="0.0,0.0"/>
+                            <whichSelections Class="int" Value="5"/>
+                            <name Class="java.lang.String" Value="oh"/>
+                        </clickTypeParams>
+                        <clickTypeParams Class="clickDetector.ClickTypeParams" Index="1">
+                            <speciesCode Class="int" Value="2"/>
+                            <lengthEnergyFraction Class="double" Value="0.0"/>
+                            <meanSelRange Class="[D" Value="0.0,0.0"/>
+                            <prevTime Class="long" Value="0"/>
+                            <bandEnergyDifference Class="double" Value="0.0"/>
+                            <peakFrequencyRange Class="[D" Value="0.0,0.0"/>
+                            <peakFrequencySearch Class="[D" Value="0.0,0.0"/>
+                            <meanSumRange Class="[D" Value="0.0,0.0"/>
+                            <clickLength Class="[D" Value="0.0,0.0"/>
+                            <band2Freq Class="[D" Value="0.0,0.0"/>
+                            <peakWidth Class="[D" Value="0.0,0.0"/>
+                            <band1Energy Class="[D" Value="0.0,0.0"/>
+                            <symbol Class="PamView.PamSymbol">
+                                <iconHorizontalAlignment Class="int" Value="0"/>
+                                <iconVerticalAlignment Class="int" Value="1"/>
+                                <iconStyle Class="int" Value="1"/>
+                                <symbolData Class="PamView.symbol.SymbolData">
+                                    <height Class="float" Value="5.0"/>
+                                    <lineThickness Class="float" Value="2.0"/>
+                                    <width Class="float" Value="5.0"/>
+                                    <symbol Class="PamView.PamSymbolType" Value="SYMBOL_CIRCLE"/>
+                                    <lineColor Class="java.awt.Color"/>
+                                    <fill Class="boolean" Value="true"/>
+                                    <fillColor Class="java.awt.Color"/>
+                                </symbolData>
+                            </symbol>
+                            <alarmEnabled Class="java.lang.Boolean" Value="false"/>
+                            <band1Freq Class="[D" Value="0.0,0.0"/>
+                            <maxTime Class="long" Value="0"/>
+                            <widthEnergyFraction Class="double" Value="0.0"/>
+                            <discard Class="java.lang.Boolean" Value="false"/>
+                            <band2Energy Class="[D" Value="0.0,0.0"/>
+                            <whichSelections Class="int" Value="5"/>
+                            <name Class="java.lang.String" Value="no"/>
+                        </clickTypeParams>
+                    </clickTypeParams>
+                </SETTINGS>
+                <SETTINGS Class="clickDetector.ClickClassifiers.basicSweep.SweepClassifierParameters" Name="Click Detector 2oo" Type="ClickSweepClassifier" Version="1">
+                    <checkAllClassifiers Class="boolean" Value="false"/>
+                </SETTINGS>
+                <SETTINGS Class="clickDetector.ClickSpectrumParams" Name="Click Detector 2oo" Type="Click Spectrogram Display" Version="1">
+                    <plotSmoothing Class="int" Value="5"/>
+                    <showEventInfo Class="boolean" Value="true"/>
+                    <plotCepstrum Class="boolean" Value="false"/>
+                    <logRange Class="double" Value="30.0"/>
+                    <smoothPlot Class="boolean" Value="false"/>
+                    <channelChoice Class="int" Value="0"/>
+                    <logScale Class="boolean" Value="false"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="cepstrum.CepstrumControl" UnitName="Cepstrum" UnitType="Cepstrum">
+            <PROCESS Name="Cepstrum">
+                <Input Channels="0x1" Name="FFT (Spectrogram) Engine, FFT (Spectrogram) Engine"/>
+                <Output Channels="0x1" Name="Cepstrum, Cepstrum Data" SampleRate="288000.0" Type="fftManager.FFTDataUnit"/>
+            </PROCESS>
+            <CONFIGURATION>
+                <SETTINGS Class="cepstrum.CepstrumParams" Name="Cepstrum" Type="Cepstrum" Version="1">
+                    <channelMap Class="int" Value="1"/>
+                    <sourceDataBlock Class="java.lang.String" Value="FFT (Spectrogram) Engine, FFT (Spectrogram) Engine"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="whistlesAndMoans.WhistleMoanControl" UnitName="Whistle and Moan Detector" UnitType="WhistlesMoans">
+            <PROCESS Name="Whistle and Moan Detector Noise reduction">
+                <Input Channels="0x1" Name="FFT (Spectrogram) Engine, FFT (Spectrogram) Engine"/>
+                <Output Channels="0x1" Name="Whistle and Moan Detector, Whistle and Moan Detector Noise free FFT data" SampleRate="288000.0" Type="fftManager.FFTDataUnit"/>
+            </PROCESS>
+            <PROCESS Name="Whistle and Moan Detector">
+                <Input Channels="0x1" Name="Whistle and Moan Detector, Whistle and Moan Detector Noise free FFT data"/>
+                <Output Channels="0x1" Name="Whistle and Moan Detector, Contours" SampleRate="288000.0" Type="whistlesAndMoans.ConnectedRegionDataUnit"/>
+                <Output Channels="0x1" Name="Whistle and Moan Detector, Localised Contours" SampleRate="288000.0" Type="whistlesAndMoans.WhistleToneGroupedDetection"/>
+            </PROCESS>
+            <CONFIGURATION>
+                <SETTINGS Class="whistlesAndMoans.WhistleToneParameters" Name="Whistle and Moan Detector" Type="WhistlesMoans" Version="1">
+                    <dataSource Class="java.lang.String" Value="FFT (Spectrogram) Engine, FFT (Spectrogram) Engine"/>
+                    <channelGroups Class="[I" Value="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"/>
+                    <groupingType Class="int" Value="1"/>
+                    <minFrequency Class="double" Value="0.0"/>
+                    <minLength Class="int" Value="10"/>
+                    <maxCrossLength Class="int" Value="5"/>
+                    <specNoiseSettings Class="spectrogramNoiseReduction.SpectrogramNoiseSettings">
+                        <channelList Class="int" Value="1"/>
+                        <methodSettings Class="java.util.ArrayList">
+                            <methodSettings Class="spectrogramNoiseReduction.medianFilter.MedianFilterParams" Index="0">
+                                <filterLength Class="int" Value="61"/>
+                            </methodSettings>
+                            <methodSettings Class="spectrogramNoiseReduction.averageSubtraction.AverageSubtractionParameters" Index="1">
+                                <updateConstant Class="double" Value="0.02"/>
+                            </methodSettings>
+                            <methodSettings Class="spectrogramNoiseReduction.threshold.ThresholdParams" Index="3">
+                                <finalOutput Class="int" Value="2"/>
+                                <thresholdDB Class="double" Value="8.0"/>
+                            </methodSettings>
+                        </methodSettings>
+                        <dataSource Class="java.lang.String" Value="FFT (Spectrogram) Engine, FFT (Spectrogram) Engine"/>
+                    </specNoiseSettings>
+                    <shortShowPolicy Class="int" Value="0"/>
+                    <fragmentationMethod Class="int" Value="3"/>
+                    <shortLength Class="int" Value="0"/>
+                    <minPixels Class="int" Value="20"/>
+                    <connectType Class="int" Value="8"/>
+                    <stretchContours Class="boolean" Value="false"/>
+                    <showContourOutline Class="boolean" Value="false"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+        <MODULE Java.class="whistlesAndMoans.WhistleMoanControl" UnitName="Whistle and Moan Detec cepstrum" UnitType="WhistlesMoans">
+            <PROCESS Name="Whistle and Moan Detec cepstrum Noise reduction">
+                <Input Channels="0x1" Name="Cepstrum, Cepstrum Data"/>
+                <Output Channels="0x1" Name="Whistle and Moan Detec cepstrum, Whistle and Moan Detec cepstrum Noise free FFT data" SampleRate="288000.0" Type="fftManager.FFTDataUnit"/>
+            </PROCESS>
+            <PROCESS Name="Whistle and Moan Detec cepstrum">
+                <Input Channels="0x1" Name="Whistle and Moan Detec cepstrum, Whistle and Moan Detec cepstrum Noise free FFT data"/>
+                <Output Channels="0x1" Name="Whistle and Moan Detec cepstrum, Contours" SampleRate="288000.0" Type="whistlesAndMoans.ConnectedRegionDataUnit"/>
+                <Output Channels="0x1" Name="Whistle and Moan Detec cepstrum, Localised Contours" SampleRate="288000.0" Type="whistlesAndMoans.WhistleToneGroupedDetection"/>
+            </PROCESS>
+            <CONFIGURATION>
+                <SETTINGS Class="whistlesAndMoans.WhistleToneParameters" Name="Whistle and Moan Detec cepstrum" Type="WhistlesMoans" Version="1">
+                    <dataSource Class="java.lang.String" Value="Cepstrum, Cepstrum Data"/>
+                    <channelGroups Class="[I" Value="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"/>
+                    <groupingType Class="int" Value="1"/>
+                    <minFrequency Class="double" Value="0.0"/>
+                    <minLength Class="int" Value="10"/>
+                    <maxCrossLength Class="int" Value="5"/>
+                    <specNoiseSettings Class="spectrogramNoiseReduction.SpectrogramNoiseSettings">
+                        <channelList Class="int" Value="1"/>
+                        <methodSettings Class="java.util.ArrayList">
+                            <methodSettings Class="spectrogramNoiseReduction.medianFilter.MedianFilterParams" Index="0">
+                                <filterLength Class="int" Value="61"/>
+                            </methodSettings>
+                            <methodSettings Class="spectrogramNoiseReduction.averageSubtraction.AverageSubtractionParameters" Index="1">
+                                <updateConstant Class="double" Value="0.02"/>
+                            </methodSettings>
+                            <methodSettings Class="spectrogramNoiseReduction.threshold.ThresholdParams" Index="3">
+                                <finalOutput Class="int" Value="2"/>
+                                <thresholdDB Class="double" Value="8.0"/>
+                            </methodSettings>
+                        </methodSettings>
+                        <dataSource Class="java.lang.String" Value="Cepstrum, Cepstrum Data"/>
+                    </specNoiseSettings>
+                    <shortShowPolicy Class="int" Value="0"/>
+                    <fragmentationMethod Class="int" Value="3"/>
+                    <shortLength Class="int" Value="0"/>
+                    <minPixels Class="int" Value="20"/>
+                    <connectType Class="int" Value="8"/>
+                    <stretchContours Class="boolean" Value="false"/>
+                    <showContourOutline Class="boolean" Value="false"/>
+                </SETTINGS>
+            </CONFIGURATION>
+        </MODULE>
+    </MODULES>
+</PAMGUARD>

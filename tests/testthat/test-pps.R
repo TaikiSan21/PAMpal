@@ -39,4 +39,14 @@ test_that('Create and modify PPS', {
     exPps <- applyCalibration(exPps, all=TRUE)
     expect_equal(formals(exPps@functions$ClickDetector[[1]])$calibration,
                  calFile)
+    
+    # settings
+    xmlFile <- system.file('extdata', 'Example.xml', package='PAMpal')
+    xmlList <- loadPamguardXML(xmlFile)
+    xmlAdd <- addSettings(exPps, xmlFile, type='xml', verbose=FALSE)
+    listAdd <- addSettings(exPps, xmlList, type='list', verbose=FALSE)
+    expect_identical(xmlAdd@settings[1:2], listAdd@settings[1:2])
+    expect_identical(xmlList[1:2], xmlAdd@settings[1:2])
+    expect_true(all(c('sources', 'detectors', 'raw') %in% names(xmlAdd@settings)))
+    expect_equal(xmlList$detectors[['Click_Detector']]$sr, 192000)
 })
