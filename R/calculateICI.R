@@ -79,13 +79,14 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
     names(iciList) <- c(detNames, 'All')
     time <- match.arg(time)
     for(d in detNames) {
-        iciList[[d]] <- data.frame(name=d,
-                                   ici=dfICI(detData[detData$detectorName == d, ], time),
-                                   stringsAsFactors = FALSE)
+        thisIci <- dfICI(detData[detData$detectorName == d, ], time)
+        thisIci$name <- d
+        iciList[[d]] <- thisIci
     }
-    iciList[['All']] <- data.frame(name='All',
-                                   ici=dfICI(detData, time),
-                                   stringsAsFactors = FALSE)
+    allIci <- dfICI(detData, time)
+    allIci$name <- 'All'
+    iciList[['All']] <- allIci
+
     oldIci <- ancillary(x)$ici
     if(!is.null(oldIci)) {
         iciList <- safeListAdd(oldIci, iciList)
@@ -119,7 +120,7 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
     x
 })
 
-dfICI <- function(x, time='UTC', plot=FALSE) {
+dfICI <- function(x, time='UTC') {
     # check if peakTime is full time or just time within the waveform
     # 1e4 arbitrary, but UTC as numeric will be ~ 1e9
     if(time == 'peakTime' &&
@@ -128,20 +129,27 @@ dfICI <- function(x, time='UTC', plot=FALSE) {
         x$peakTime <- as.numeric(x$UTC) + x$peakTime
     }
     if('Channel' %in% colnames(x)) {
-        unlist(lapply(unique(x$Channel), function(c) {
-            calcICI(x[x$Channel == c, time])
+        bind_rows(lapply(unique(x$Channel), function(c) {
+            calcICI(x[x$Channel == c, c('UID', 'Channel', time)], time)
         }))
     } else {
-        calcICI(x[, time])
+        calcICI(x[, c('UID', time)], time)
     }
 }
 
 
-calcICI <- function(x) {
-    if(length(x) == 1) return(0)
-    time <- sort(as.numeric(x))
-    ici <- time - c(time[1], time[1:(length(time)-1)])
-    ici
+calcICI <- function(x, time) {
+    # x <- x[, c('UID', time)]
+    if(nrow(x) == 1) {
+        x$ici <- 0
+        return(x)
+    }
+    x$sort <- as.numeric(x[[time]])
+    x <- arrange(x, .data$sort)
+    ici <- x$sort - c(x$sort[1], x$sort[1:(nrow(x)-1)])
+    x$ici <- ici
+    x$sort <- NULL
+    x
 }
 
 #' @export

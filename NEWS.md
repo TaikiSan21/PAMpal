@@ -1,3 +1,7 @@
+## PAMpal 0.11.2
+
+* `calculateICI` keeps UID info with the data
+
 ## PAMpal 0.11.1
 
 * `calculateAverageSpectra` has a `sort` option to sort clicks by peak frequency
