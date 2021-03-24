@@ -118,6 +118,7 @@ addRecordings <- function(x, folder=NULL, log=NULL, progress=TRUE) {
     # }
     files(x)$recordings$numStart <- as.numeric(files(x)$recordings$start)
     files(x)$recordings$numEnd <- as.numeric(files(x)$recordings$end)
+    x <- .addPamWarning(x)
     x
 }
 
@@ -130,13 +131,13 @@ mapWavFolder <- function(wavFolder=NULL, log=NULL, progress=TRUE) {
         return(FALSE)
     }
     if(!dir.exists(wavFolder)) {
-        warning('Provided folder ', wavFolder, ' does not exist.')
+        pamWarning('Provided folder ', wavFolder, ' does not exist.')
         return(FALSE)
     }
 
     wavs <- list.files(wavFolder, full.names=TRUE, pattern = '\\.wav$', recursive=TRUE)
     if(length(wavs) == 0) {
-        warning('No wav files found in folder ', wavFolder, call.=FALSE)
+        pamWarning('No wav files found in folder ', wavFolder)
         return(FALSE)
     }
     wavMap <- wavsToRanges(wavs, log, progress)
@@ -213,8 +214,8 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
             wix <<- wix + 1
         }
         if(is.na(posix)) {
-            warning('Could not convert the name of the wav file ',
-                    x, ' to time properly.', call. = FALSE)
+            pamWarning('Could not convert the name of the wav file ',
+                    x, ' to time properly.')
             return(NULL)
         }
         if(FOUNDFORMAT == 'soundtrap') {
@@ -231,7 +232,7 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
         list(start=rng[1], end=rng[2], file=x, length=len)
     }))
     if(length(badWav) > 0) {
-        warning('Unable to read wav files ', printN(badWav, 6), ' these are possibly corrupt.')
+        pamWarning('Unable to read wav files ', badWav, ' these are possibly corrupt.', n=6)
     }
     wavMap
 }
@@ -247,7 +248,7 @@ getSoundtrapLog <- function(log) {
         return(data.frame(gap=0, sample=1, file='DNE'))
     }
     if(!dir.exists(log)) {
-        warning('Log folder ', log, ' does not exist.', call.=FALSE)
+        pamWarning('Log folder ', log, ' does not exist.')
         return(data.frame(gap=0, sample=1, file='DNE'))
     }
 

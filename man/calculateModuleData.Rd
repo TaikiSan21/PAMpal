@@ -6,7 +6,8 @@
 \usage{
 calculateModuleData(
   binData,
-  binFuns = list(ClickDetector = list(standardClickCalcs))
+  binFuns = list(ClickDetector = list(standardClickCalcs)),
+  settings = NULL
 )
 }
 \arguments{
@@ -17,6 +18,8 @@ calculateModuleData(
 Currently supported modules are 'ClickDetector' and 'WhistlesMoans', a
 sample input for binFuns would be list('ClickDetector'=list(clickFun1,
 clickFun2), 'WhistlesMoans'=list(wmFun1))}
+
+\item{settings}{a list of settings from a Pamguard XML file}
 }
 \value{
 A data frame with one row for each channel of each detection.

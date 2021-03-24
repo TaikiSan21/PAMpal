@@ -67,7 +67,7 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
     }
     missingVals <- neededVals[!(neededVals %in% names(data))]
     if(length(missingVals) > 0) {
-        warning('Values for ', paste(missingVals, collapse=', '), ' are missing.',
+        pamWarning('Values for ', paste(missingVals, collapse=', '), ' are missing.',
                 'These are required for Click Calculations, please fix.')
         return(NULL)
     }

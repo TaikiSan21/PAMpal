@@ -117,6 +117,7 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
     })
     names(iciMode) <- paste0(names(iciMode), '_ici')
     ancillary(x)$measures <- safeListAdd(ancillary(x)$measures, iciMode)
+    x <- .addPamWarning(x)
     x
 })
 
@@ -161,14 +162,14 @@ calcICI <- function(x, time) {
 getICI <- function(x, type=c('value', 'data')) {
     type <- match.arg(type)
     if(is.AcousticStudy(x)) {
-        result <- suppressWarnings(lapply(events(x), function(e) getICI(e, type)))
+        result <- suppressPamWarnings(lapply(events(x), function(e) getICI(e, type)))
         noICI <- sapply(result, function(r) is.null(r))
         if(all(noICI)) {
-            warning('No ICI data found, run "calculateICI" first')
+            pamWarning('No ICI data found, run "calculateICI" first')
             return(NULL)
         }
         if(any(noICI)) {
-            warning('No ICI data found in event(s) ', printN(names(result)[noICI], 6))
+            pamWarning('No ICI data found in event(s) ', names(result)[noICI], n=6)
         }
         return(result)
     }
@@ -179,14 +180,14 @@ getICI <- function(x, type=c('value', 'data')) {
            'value' = {
                isIci <- grep('_ici$', names(ancillary(x)$measures), value=TRUE)
                if(length(isIci) == 0) {
-                   warning('No ICI data found in event ', id(x), ' run "calculateICI" first.')
+                   pamWarning('No ICI data found in event ', id(x), ' run "calculateICI" first.')
                    return(NULL)
                }
                ancillary(x)$measures[isIci]
            },
            'data' = {
                if(is.null(ancillary(x)$ici)) {
-                   warning('No ICI data found in event ', id(x), ' run "calculateICI" first.')
+                   pamWarning('No ICI data found in event ', id(x), ' run "calculateICI" first.')
                    return(NULL)
                }
                ancillary(x)$ici

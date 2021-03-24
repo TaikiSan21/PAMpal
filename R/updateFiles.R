@@ -113,6 +113,7 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
             events(x)[[e]] <- updateFiles(events(x)[[e]], bin=bin, db=db, recording=recording, verbose=FALSE)
         }
     }
+    x <- .addPamWarning(x)
     x
 }
 
@@ -167,6 +168,6 @@ fileLister <- function(x, label, pattern, verbose=TRUE) {
     if(!any(DNE)) {
         return(x)
     }
-    warning('Files ', paste0(x[DNE], collapse = ', '), ' could not be located.', call.=FALSE)
+    pamWarning('Files ', paste0(x[DNE], collapse = ', '), ' could not be located.')
     x[!DNE]
 }

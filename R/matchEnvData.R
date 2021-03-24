@@ -91,6 +91,7 @@ setMethod('matchEnvData',
               for(e in seq_along(events(data))) {
                   events(data)[[e]] <- addEnvToEvent(events(data)[[e]], envData)
               }
+              data <- .addPamWarning(data)
               data
           }
 )
@@ -124,7 +125,7 @@ getEventStart <- function(data) {
     }
     dets <- dets[hasDets]
     if(!all(c('UTC', 'Longitude', 'Latitude') %in% colnames(dets[[1]]))) {
-        warning(paste0('Event ', id(data), ' does not have GPS data added.'))
+        pamWarning('Event ', id(data), ' does not have GPS data added.')
         return(NULL)
     }
     coordsOnly <- do.call(rbind, lapply(dets, function(x) {

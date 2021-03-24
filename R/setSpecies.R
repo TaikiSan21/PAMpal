@@ -60,7 +60,7 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
     if(length(method) > 1) {
         methodPick <- menu(title='Please select a single assignment method.', choices = method)
         if(methodPick == 0) {
-            warning('No assignment method chosen, species cannot be assigned.')
+            pamWarning('No assignment method chosen, species cannot be assigned.')
             return(x)
         }
         method <- method[methodPick]
@@ -90,7 +90,7 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                                                    id(acev[[i]]), ', select one to assign:'),
                                     choices = sp)
                        if(spix == 0) {
-                           warning('No species selected, assigning NA. Please fix later.')
+                           pamWarning('No species selected, assigning NA. Please fix later.')
                            sp <- NA_character_
                        } else {
                            sp <- sp[spix]
@@ -101,12 +101,12 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
            },
            'manual' = {
                if(missing(value)) {
-                   warning('Manual mode requires a "value" to set."')
+                   pamWarning('Manual mode requires a "value" to set."')
                    return(x)
                }
                if(inherits(value, 'data.frame')) {
                    if(!all(c('species', 'event') %in% colnames(value))) {
-                       warning('If "value" is a dataframe it must contain columns species and event.')
+                       pamWarning('If "value" is a dataframe it must contain columns species and event.')
                        return(x)
                    }
                    allIds <- sapply(acev, id)
@@ -124,7 +124,7 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                } else {
                    if(length(value) != 1 &&
                       length(value) != length(acev)) {
-                       warning('Length of "value" must be either 1 or the number of events.')
+                       pamWarning('Length of "value" must be either 1 or the number of events.')
                        return(x)
                    }
                    if(length(value) == 1) {
@@ -170,12 +170,12 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
            },
            'reassign' = {
                if(missing(value)) {
-                   warning('"reassign" mode requires a "value" dataframe.')
+                   pamWarning('"reassign" mode requires a "value" dataframe.')
                    return(x)
                }
                colnames(value) <- tolower(colnames(value))
                if(!all(c('old', 'new') %in% colnames(value))) {
-                   warning('Data frame must have columns "old" and "new" to reassign.')
+                   pamWarning('Data frame must have columns "old" and "new" to reassign.')
                    return(x)
                }
                unchanged <- vector('character', length=0)
@@ -194,10 +194,11 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                        'were not in reassignment dataframe, they have not been changed.', sep='')
                }
            },
-           warning('Method ', method, ' not supported.')
+           pamWarning('Method ', method, ' not supported.')
     )
     if(is.AcousticStudy(x)) {
         events(x) <- acev
+        x <- .addPamWarning(x)
         return(x)
     }
     if(is.AcousticEvent(x)) {

@@ -25,6 +25,9 @@ Currently supports "ClickDetector", "WhistlesMoans", and "Cepstrum".}
 \item{\code{calibration}}{a named list of calibration functions to apply while
 applying functions from the "functions" slot. Should named by the
 PamGuard module, same as the "functions"}
+
+\item{\code{settings}}{a named list of settings, usually imported from Pamguard's
+"Export XML Configuration"}
 }}
 
 \author{

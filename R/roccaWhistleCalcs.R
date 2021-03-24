@@ -31,7 +31,7 @@ roccaWhistleCalcs <- function(data) {
     neededVals <- c('freq', 'time')
     missingVals <- neededVals[!(neededVals %in% names(data))]
     if(length(missingVals) > 0) {
-        warning('Values for ', paste(missingVals, collapse=', '),  'are missing.',
+        pamWarning('Values for ', paste(missingVals, collapse=', '),  'are missing.',
              'These are required for Rocca Whistle Calculations, please fix.')
         return(NULL)
     }

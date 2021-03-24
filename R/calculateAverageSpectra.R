@@ -206,7 +206,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
         title('Concatenated Click Spectrogram')
         xPretty <- pretty(1:ncol(plotMat), n=5)
         axis(1, at = xPretty/ncol(plotMat), labels = xPretty)
-        freqPretty <- pretty(0:max(freq/1e3), n=5)
+        freqPretty <- pretty(seq(from=0, to=max(freq/1e3), length.out=5), n=5)
         axis(2, at = freqPretty/max(freq/1e3), labels = freqPretty)
         ylab <- ifelse(norm, 'Normalized Magnitude (dB)', 'Magnitude (dB)')
         plot(x=freq, averageSpec, type='l',
