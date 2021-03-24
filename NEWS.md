@@ -12,6 +12,12 @@ of `Not a validObject(), no slot of name "settings" for this object of class "PA
 * Added `updatePamObject` function to deal with updating S4 classes created in older
 versions of `PAMpal`
 
+* Added message on load to warn about updating objects
+
+* Added new warning system that captures warnings during processing and function calls
+and stores them in the `ancillary` slot of the `AcousticStudy` object. These can be
+accessed with the new `getWarnings` function
+
 ## PAMpal 0.11.1
 
 * `calculateAverageSpectra` has a `sort` option to sort clicks by peak frequency

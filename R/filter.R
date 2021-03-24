@@ -35,7 +35,7 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
     dotChars <- sapply(quos(...), as_label)
     notFilt <- names(dotChars) != ''
     if(any(notFilt)) {
-        warning('Did you put "=" when you meant "=="? This filter will not be applied.')
+        pamWarning('Did you put "=" when you meant "=="? This filter will not be applied.')
     }
     # do event level filters first
     isSpecies <- grepl('^species|^Species', dotChars)
@@ -43,7 +43,7 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
         # do species filtering first
         naSp <- sapply(events(.data), function(x) is.na(species(x)$id))
         if(any(naSp)) {
-            warning('Attempting to filter by species, but ', sum(naSp),
+            pamWarning('Attempting to filter by species, but ', sum(naSp),
                     ' species have not been set. These will be removed from',
                     ' the filtered results.')
         }
@@ -106,6 +106,7 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
     })
     isNull <- sapply(events(.data), is.null)
     events(.data) <- events(.data)[!isNull]
+    .data <- .addPamWarning(.data)
     .data
 }
 

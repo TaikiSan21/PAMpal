@@ -25,7 +25,7 @@ standardCepstrumCalcs <- function(data) {
     neededVals <- c('quefrency', 'time', 'sr')
     missingVals <- neededVals[!(neededVals %in% names(data))]
     if(length(missingVals) > 0) {
-        warning('Values for', paste(missingVals, collapse=', '), 'are missing.',
+        pamWarning('Values for', paste(missingVals, collapse=', '), 'are missing.',
              'These are required for Cepstrum Calculations, please fix.')
         return(NULL)
     }

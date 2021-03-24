@@ -79,7 +79,7 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
                    result$Channel <- as.character(chan)
                    angs <- x$angles
                    if(length(angs) == 2) {
-                       warning('More than one angle for click UID' , result$UID[1],
+                       pamWarning('More than one angle for click UID' , result$UID[1],
                                ', only using first.')
                    }
                    result$angle <- angs[1]
@@ -126,7 +126,7 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
             allCepstrum$callType <- 'cepstrum'
             allCepstrum
         },
-        warning("I don't know how to deal with Module Type ", moduleType)
+        pamWarning("I don't know how to deal with Module Type ", moduleType)
     )
     result$BinaryFile <- binData$fileInfo$fileName
     result$UTC <- convertPgDate(result$UTC)

@@ -65,11 +65,11 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, ...) {
     needCols <- c('UTC', 'Latitude', 'Longitude')
     missingCols <- needCols[!(needCols %in% colnames(gps))]
     if(length(missingCols) > 0) {
-        warning('Gps data needs column(s) named ', paste(missingCols, collapse = ', '))
+        pamWarning('Gps data needs column(s) named ', paste(missingCols, collapse = ', '))
         return(x)
     }
     if(!('UTC' %in% colnames(x))) {
-        warning('Data needs column UTC.')
+        pamWarning('Data needs column UTC.')
         return(x)
     }
     if(!('POSIXct' %in% class(x$UTC))) x$UTC <- pgDateToPosix(x$UTC)
@@ -116,7 +116,7 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, ...) {
     result$UTC <- result$dataTime
     result[, c('gpsTime', 'dataTime') := NULL]
     if(any(is.na(result$Longitude))) {
-        warning('Some GPS coordinate matches exceeded time threshold, setting',
+        pamWarning('Some GPS coordinate matches exceeded time threshold, setting',
                 'value to NA.')
     }
     attr(result, 'calltype') <- thisType
@@ -134,7 +134,7 @@ setMethod('addGps', signature(x='AcousticEvent'), function(x, gps=NULL, thresh =
     }
     if(is.null(gps) ||
        nrow(gps) == 0) {
-        warning('No gps data found for event ', id(x))
+        pamWarning('No gps data found for event ', id(x))
         return(x)
     }
     x@detectors <- addGps(x@detectors, gps, thresh, ...)
@@ -168,7 +168,7 @@ setMethod('addGps', 'AcousticStudy', function(x, gps=NULL, thresh = 3600, ...) {
         }))
         if(is.null(gps) ||
            nrow(gps) == 0) {
-            warning('No gps data found in any databases.')
+            pamWarning('No gps data found in any databases.')
             return(x)
         }
         gps <- checkGpsKey(gps)
@@ -190,6 +190,7 @@ setMethod('addGps', 'AcousticStudy', function(x, gps=NULL, thresh = 3600, ...) {
             })
     }
     gps(x) <- gps
+    x <- .addPamWarning(x)
     x
 })
 

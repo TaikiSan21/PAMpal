@@ -55,6 +55,12 @@ Plots either a spectrogram or cepstrogram and also overlays
 }
 \examples{
 
+data(exStudy)
+recs <- system.file('extdata', 'Recordings', package='PAMpal')
+exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
+# No detections will appear on plot because included recordings are heavily decimated
+plotGram(exStudy)
+
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

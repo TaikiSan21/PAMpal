@@ -106,13 +106,13 @@ test_that('Test filter', {
     data(exStudy)
     # test filtering
     filterNone <- filter(exStudy, VARDNE == 'DNE')
-    expect_identical(exStudy, filterNone)
+    expect_identical(events(exStudy), events(filterNone))
     exStudy <- setSpecies(exStudy, method='manual', value=letters[1:2])
     spFilter <- filter(exStudy, species == 'a')
     expect_equal(length(events(spFilter)), 1)
     expect_equal(species(spFilter[[1]])$id, 'a')
     spFilter <- filter(exStudy, species %in% letters[1:3])
-    expect_identical(spFilter, exStudy)
+    expect_identical(events(spFilter), events(exStudy))
     peakFilter <- filter(exStudy, peak < 20)
     expect_true(all(detectors(peakFilter)$click$peak < 20))
     peakFilter <- filter(exStudy, peak < 2000)
@@ -130,10 +130,10 @@ test_that('Test filter', {
         })
         x
     })
-    expect_identical(peakFilter, exStudy)
+    expect_identical(events(peakFilter), events(exStudy))
 
     dbFilter <- filter(exStudy, database == files(exStudy)$db)
-    expect_identical(exStudy, dbFilter)
+    expect_identical(events(exStudy), events(dbFilter))
     dbNone <- filter(exStudy, database == 'NODB.sqlite3')
     expect_equal(length(events(dbNone)), 0)
 })

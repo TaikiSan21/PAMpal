@@ -27,7 +27,7 @@ whereUID <- function(study, UID, quiet=FALSE) {
     }, USE.NAMES=TRUE, simplify=FALSE)
     whereNA <- is.na(where)
     if(!quiet && any(whereNA)) {
-        warning('UID(s) ', paste0(UID[whereNA], collapse=', '),
+        pamWarning('UID(s) ', paste0(UID[whereNA], collapse=', '),
                 ' not found in any events.')
     }
     where

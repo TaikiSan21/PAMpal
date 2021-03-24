@@ -27,7 +27,13 @@
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
 #' @examples
-#'
+#' 
+#' data(exStudy)
+#' recs <- system.file('extdata', 'Recordings', package='PAMpal')
+#' exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
+#' # No detections will appear on plot because included recordings are heavily decimated
+#' plotGram(exStudy)
+#' 
 #' @importFrom dplyr bind_rows
 #' @importFrom tuneR readWave downsample
 #' @importFrom grDevices gray.colors
