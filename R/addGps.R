@@ -121,6 +121,7 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, ...) {
     }
     attr(result, 'calltype') <- thisType
     setDF(result)
+    result
 })
 
 #' @rdname addGps

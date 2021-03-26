@@ -205,3 +205,8 @@ getPamFft <- function(data) {
         max(unlist(lapply(tempData$sliceData, function(x) x$peakData)))
     list(sr=sr, hop=fftHop, wl=fftLen)
 }
+
+ppVars <- function() {
+    list(nonModelVars = c('UID', 'Id', 'parentUID', 'sampleRate', 'Channel',
+                          'angle', 'angleError', 'peakTime', 'depth', 'sr'))
+}

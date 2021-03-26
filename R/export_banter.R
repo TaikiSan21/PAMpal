@@ -170,8 +170,9 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
             if('Channel' %in% colnames(thisDet)) {
                 thisDet$call.id <- paste0('C', thisDet$Channel, thisDet$call.id)
             }
-            colsToDrop <- c('UID', 'Id', 'parentUID', 'sampleRate', 'Channel',
-                            'angle', 'angleError', 'peakTime')
+            # colsToDrop <- c('UID', 'Id', 'parentUID', 'sampleRate', 'Channel',
+            #                 'angle', 'angleError', 'peakTime')
+            colsToDrop <- ppVars()$nonModelVars
             colsToDrop <- unique(c(colsToDrop, dropVars))
             useCols <- lapply(thisDet, class) %in% c('numeric', 'integer', 'factor', 'logical') &
                 !(colnames(thisDet) %in% colsToDrop) |
