@@ -384,7 +384,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     acousticEvents <- vector('list', length = nrow(grouping))
     evName <- as.character(grouping$id)
 
-    colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentUID',
+    colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentID',
                     'sr', 'callType', 'newUID')
     names(acousticEvents) <- evName
     noDetEvent <- character(0)
@@ -539,20 +539,20 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             # Split into events, then swap from Detector(Events) to Event(Detectors)
             # .names necessary to make sure we have all event numbers
             dbData <- transpose(
-                lapply(dbData, function(x) split(x, x$parentUID)),
-                .names = unique(unlist(sapply(dbData, function(x) x$parentUID)))
+                lapply(dbData, function(x) split(x, x$parentID)),
+                .names = unique(unlist(sapply(dbData, function(x) x$parentID)))
             )
 
             # Should this function store the event ID? Right now its just the name
             # in the list, but is this reliable? Probably not
-            colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentUID',
+            colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentID',
                             'sr', 'callType', 'newUID')
             acousticEvents <- lapply(dbData, function(ev) {
                 ev <- ev[sapply(ev, function(x) !is.null(x))]
                 binariesUsed <- sapply(ev, function(x) unique(x$BinaryFile)) %>%
                     unlist(recursive = FALSE) %>% unique()
                 binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE, fixed=TRUE), USE.NAMES = FALSE))
-                evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentUID))
+                evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentID))
                 evComment <- unique(ev[[1]]$comment)
                 ev <- lapply(ev, function(x) {
                     x$BinaryFile <- basename(x$BinaryFile)
@@ -629,7 +629,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
                if(is.null(label)) {
                    label <- 'eventType'
                }
-               eventColumns <- c('UID', label, 'comment')
+               eventColumns <- c('Id', label, 'comment')
                evName <- 'OE'
            },
            'detGroup' = {
@@ -647,7 +647,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
                if(is.null(label)) {
                    label <- 'Text_Annotation'
                }
-               eventColumns <- c('UID', label)
+               eventColumns <- c('Id', label)
                evName <- 'DGL'
            },
            {
@@ -688,15 +688,15 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
 
     # Do i want all detections in clicks, or only all in events?
     # left_join all det, inner_join ev only
-    if(!('UID' %in% names(allEvents)) ||
-       !('parentUID' %in% names(allDetections))) {
-        message('UID and parentUID columns not found in database ', basename(db),
-                ', these are required to process data. Please upgrade to Pamguard 2.0+.')
+    if(!('Id' %in% names(allEvents)) ||
+       !('parentID' %in% names(allDetections))) {
+        message('Id and parentID columns not found in database ', basename(db),
+                ', these are required to process data.')
         return(NULL)
     }
 
     allDetections <- inner_join(
-        allDetections, allEvents, by=c('parentUID'='UID')
+        allDetections, allEvents, by=c('parentID'='Id')
     )
     if(!('newUID' %in% colnames(allDetections))) {
         allDetections$newUID <- -1
@@ -705,7 +705,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
         mutate(BinaryFile = str_trim(.data$BinaryFile),
                # UTC = as.POSIXct(as.character(UTC), format='%Y-%m-%d %H:%M:%OS', tz='UTC')) %>%
                UTC = pgDateToPosix(.data$UTC)) %>%
-        select(all_of(unique(c(eventColumns, 'UTC', 'UID', 'parentUID', 'BinaryFile', 'newUID'))))
+        select(all_of(unique(c(eventColumns, 'UTC', 'UID', 'parentID', 'BinaryFile', 'newUID'))))
 
     # rename column to use as label - standardize across event group types
     colnames(allDetections)[which(colnames(allDetections)==label)] <- 'eventLabel'
@@ -720,7 +720,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
     allDetections <- select(allDetections, -.data$UTC)
     allDetections$UID <- as.character(allDetections$UID)
     allDetections$newUID <- as.character(allDetections$newUID)
-    allDetections$parentUID <- paste0(evName, allDetections$parentUID)
+    allDetections$parentID <- paste0(evName, allDetections$parentID)
     allDetections
 }
 

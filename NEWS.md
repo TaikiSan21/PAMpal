@@ -4,6 +4,8 @@
 
 * `export_banter` reports names of event level measures it finds
 
+* Switching from using eventUID to event ID for all labeling and `id()` purposes
+
 ## PAMpal 0.12.0
 
 * Added ability to work with Pamguard's XML settings files with functions `addSettings`,

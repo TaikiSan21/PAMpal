@@ -207,6 +207,6 @@ getPamFft <- function(data) {
 }
 
 ppVars <- function() {
-    list(nonModelVars = c('UID', 'Id', 'parentUID', 'sampleRate', 'Channel',
+    list(nonModelVars = c('UID', 'Id', 'parentID', 'sampleRate', 'Channel',
                           'angle', 'angleError', 'peakTime', 'depth', 'sr'))
 }
