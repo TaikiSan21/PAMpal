@@ -1,3 +1,9 @@
+## PAMpal 0.12.1
+
+* `calculateICI` error fixed when exactly two detections were present for a detector
+
+* `export_banter` reports names of event level measures it finds
+
 ## PAMpal 0.12.0
 
 * Added ability to work with Pamguard's XML settings files with functions `addSettings`,

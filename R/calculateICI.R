@@ -93,10 +93,14 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
     }
     ancillary(x)$ici <- iciList
     # browser()
+    # filter outliers before mode calc
     iciMode <- lapply(iciList, function(i) {
         ici <- i$ici[i$ici > 0]
         if(length(ici) == 0) {
             return(0)
+        }
+        if(length(ici) == 1) {
+            return(ici)
         }
         if(!is.na(sd(ici)) &&
            sd(ici) != 0) {
@@ -108,6 +112,9 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
             }
             if(length(ici) == 0) {
                 return(0)
+            }
+            if(length(ici) == 1) {
+                return(ici)
             }
         }
         den <- density(ici)

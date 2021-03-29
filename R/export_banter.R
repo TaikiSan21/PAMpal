@@ -154,8 +154,8 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
         }))
         events <- cbind(events, measureData)
         if(verbose) {
-            cat('Found ', length(allMeasures), ' event level measures that were present',
-                ' in all events, adding these to your event data.\n', sep='')
+            cat('Found ', length(allMeasures), ' event level measures (', printN(allMeasures, 10),
+            ') that were present in all events, adding these to your event data.\n', sep='')
         }
     }
 
