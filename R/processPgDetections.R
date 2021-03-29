@@ -464,6 +464,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
     binNo <- 1
     modList <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum')
     modWarn <- c(FALSE, FALSE, FALSE)
+    tarMoCols <- ppVars()$tarMoCols
     names(modWarn) <- modList
     allAcEv <- lapply(allDb, function(db) {
         tryCatch({
@@ -471,7 +472,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             failBin <- 'No file processed'
             binList <- pps@binaries$list
             binFuns <- pps@functions
-            dbData <- getDbData(db, grouping, ...)
+            dbData <- getDbData(db, grouping, extraCols=tarMoCols)
             if(is.null(dbData) ||
                nrow(dbData) == 0) {
                 pamWarning('No detections found in database ',
@@ -546,13 +547,14 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             # Should this function store the event ID? Right now its just the name
             # in the list, but is this reliable? Probably not
             colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentUID',
-                            'sr', 'callType', 'newUID')
+                            'sr', 'callType', 'newUID', tarMoCols)
             acousticEvents <- lapply(dbData, function(ev) {
                 ev <- ev[sapply(ev, function(x) !is.null(x))]
                 binariesUsed <- sapply(ev, function(x) unique(x$BinaryFile)) %>%
                     unlist(recursive = FALSE) %>% unique()
                 binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE, fixed=TRUE), USE.NAMES = FALSE))
                 evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentUID))
+                evTarMo <- ev[[1]][1, tarMoCols]
                 evComment <- unique(ev[[1]]$comment)
                 ev <- lapply(ev, function(x) {
                     x$BinaryFile <- basename(x$BinaryFile)
@@ -562,7 +564,8 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                     x
                 })
                 acEv <- AcousticEvent(id = evId, detectors = ev, settings = list(sr = thisSr, source=thisSource),
-                              files = list(binaries=binariesUsed, db=db, calibration=calibrationUsed))
+                              files = list(binaries=binariesUsed, db=db, calibration=calibrationUsed),
+                              localizations = list(PGTargetMotion = evTarMo))
                 ancillary(acEv)$eventComment <- evComment
                 acEv
             })
@@ -599,7 +602,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
 }
 
 # ---- not exported helpers ----
-getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
+getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols = NULL) {
     # Combine all click/event tables, even by diff detector. Binary will have det name
     con <- dbConnect(SQLite(), db)
     on.exit(dbDisconnect(con))
@@ -616,7 +619,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
             suppressPamWarnings(
                 bind_rows(
                     lapply(grouping, function(x) {
-                        getDbData(db, x)
+                        getDbData(db, x, label, extraCols)
                     }))
             )
         )
@@ -684,7 +687,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
     }
 
     eventColumns <- eventColumns[eventColumns %in% colnames(allEvents)]
-    allEvents <- select(allEvents, all_of(eventColumns))
+    allEvents <- select(allEvents, any_of(c(eventColumns, extraCols)))
 
     # Do i want all detections in clicks, or only all in events?
     # left_join all det, inner_join ev only
@@ -705,7 +708,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL) {
         mutate(BinaryFile = str_trim(.data$BinaryFile),
                # UTC = as.POSIXct(as.character(UTC), format='%Y-%m-%d %H:%M:%OS', tz='UTC')) %>%
                UTC = pgDateToPosix(.data$UTC)) %>%
-        select(all_of(unique(c(eventColumns, 'UTC', 'UID', 'parentUID', 'BinaryFile', 'newUID'))))
+        select(any_of(unique(c(eventColumns, 'UTC', 'UID', 'parentUID', 'BinaryFile', 'newUID', extraCols))))
 
     # rename column to use as label - standardize across event group types
     colnames(allDetections)[which(colnames(allDetections)==label)] <- 'eventLabel'
