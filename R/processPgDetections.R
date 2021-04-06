@@ -977,5 +977,6 @@ wavToGroup <- function(db) {
                        ' they will be removed (check for missing values in Sound_Acquisition table to fix).')
         saGrp <- saGrp[isNa,]
     }
+    saGrp$db <- db
     saGrp
 }

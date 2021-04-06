@@ -43,7 +43,7 @@ a list with three items, \code{events}, \code{detectors}, and
   one list for each unique detector type found in the \code{detectors} slots
   of \code{x}. The data frames will only have columns with class
   \code{numeric}, \code{integer}, \code{factor}, or \code{logical}, and
-  will also have columns named \code{UID}, \code{Id}, \code{parentUID},
+  will also have columns named \code{UID}, \code{Id}, \code{parentID},
   \code{sampleRate}, \code{Channel}, \code{angle}, and \code{angleError},
   removed so that these are not treated as parameters for the banter random
   forest model. The dataframes will also have columns \code{event.id} and
