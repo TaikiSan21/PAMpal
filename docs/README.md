@@ -201,15 +201,20 @@ can't find, or if there's anything else you want PAMpal to do!
 
 To learn more about what PAMpal can do for you, click on the links below
 
-- [More about the PAMpalSettings object][pampalsettings] - Topics include adding and
-removing data / functions from your PPS, adding a hydrophone calibration, 
-and more details about what exactly is stored here. 
 - [Data processing: Next steps][next-steps-processing] Adding GPS data, assigning
 species ID, and more info on how to access
 and manipulate your data
 - [Case Studies][case-studies] Some tutorials of working through a specific problem,
 great for examples of manipulating `AcousticStudy` objects and seeing how to program
 with your data
+
+## More information
+
+- [More about the PAMpalSettings object][pampalsettings] - Topics include adding and
+removing data / functions from your PPS, adding a hydrophone calibration, 
+and more details about what exactly is stored here. 
+- [Parameter calculation details][standard-calcs] - Details on how the parameters
+from the included processing functions are calculated
 
 *Sections below are still under construction*
 
@@ -221,7 +226,7 @@ to add to your PPS. We don't claim to have all the answers in our provided
 - [Common error messages][errors] A (probably incomplete) list of some warning
 and error messages you might encounter, why they are happening, and what to
 do about them
-- [Currently in development][testavg] See what is currently in development, as well as
+- [Currently in development][in-development] See what is currently in development, as well as
 some possible future ideas that we hope to get to
 
 ## Contact
