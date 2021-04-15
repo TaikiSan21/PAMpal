@@ -22,12 +22,14 @@ Clicks may also have parameters **angle** and **angleError**, but these are read
 
 
 Griffiths, E. T. et al (2020) “Detection and classification of narrow-band high frequency echolocation clicks from drifting recorders” J. Acoust. Soc. Am. 147 3511-3522
+
 Soldevilla, M. et al (2008) “Classification of Risso’s and Pacific white-sided dolphins using spectral properties of echolocation clicks” J. Acoust. Soc. Am. 124 609-624
 
 ## roccaWhistleCalcs
 
 Whistle calculations are a reimplementation of the ROCCA calculations currently present in Pamguard with
 permission from Julie and Michael Oswald. More details can be found in:
+
 Oswald et al (2007) "A tool for real-time acoustic species identification of delphinid whistles", J. Acoust. Soc. Am. 122 587
 
 ## standardCepstrumCalcs
