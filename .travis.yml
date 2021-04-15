@@ -12,3 +12,4 @@ addons:
     - libnetcdf-dev
     - libgdal-dev
     - libproj-dev
+    - libudunits2-dev
