@@ -8,7 +8,7 @@ First a Butterworth filter is applied, either a highpass filter starting at *fil
 **peakTime** is the time (seconds) after the start of the click clip where the maximum value of the waveform is located.
 
 After **peakTime** is calculated, the signal is shortened to be of size equal to that specified by *winLen_sec*. The windowed clip is created by centering the window around the maximum value of the waveform, so if the original clip was 1000 samples with a peak at 250 samples, a 300 sample clip would be created from samples 100 to 399. This shortened clip is used for all further calculations.
-Next the Teager Kaiser energy of the signal is calculated. The **noiseLevel** is the median of the TK energy (reported in dB, 10*Log10(TKEnergy). duration is defined by counting the number of samples above 100 times the 40th Percentile of the TKenergy level, duration is reported in microseconds. TK energy calculations follow methods in Soldevilla et al 2008
+Next the Teager Kaiser energy of the signal is calculated. The **noiseLevel** is the median of the TK energy (reported in dB, 10\*Log10(TKEnergy). **duration** is defined by counting the number of samples above 100 times the 40th Percentile of the TKenergy level, **duration** is reported in microseconds. TK energy calculations follow methods in Soldevilla et al 2008
 
 **dBPP** is calculated as 20 * log10 of the difference between the maximum and minimum value of the waveform. If a calibration function has been supplied, then the calibration value at the peak frequency will also be added to this value.
 

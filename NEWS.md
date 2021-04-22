@@ -1,3 +1,9 @@
+## PAMpal 0.12.2
+
+* `addRecordings` tries to use to get start sample data from database
+
+* Fixed bug where `processPgDetections` would crash if no comment field was present
+
 ## PAMpal 0.12.1
 
 * `calculateICI` error fixed when exactly two detections were present for a detector

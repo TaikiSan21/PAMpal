@@ -93,6 +93,27 @@ addRecordings <- function(x, folder=NULL, log=NULL, progress=TRUE) {
             wavMap <- dbMap[[min(which(folder == folder[d]))]]
         } else {
             wavMap <- mapWavFolder(folder[d], log=logList[[as.character(log[d])]], progress)
+            if(!is.null(wavMap)) {
+                if(!file.exists(names(dbMap)[d])) {
+                    pamWarning('Database ', names(dbMap)[d], ' could not be found, "startSample"',
+                               ' data may not be accurate.')
+                    wavMap$startSample <- 0
+                } else {
+                    sa <- readSa(names(dbMap)[d])
+                    wavCol <- findWavCol(sa)
+                    wavMap$startSample <- 0
+                    if(!is.na(wavCol)) {
+                        for(w in seq_along(wavMap$file)) {
+                            thisWav <- grep(substr(basename(wavMap$file[w]), 1, 49), sa[[wavCol]])
+                            if(length(thisWav) == 0) next
+                            thisSa <- sa[thisWav, ]
+                            startSa <- which.min(thisSa$UTC)
+                            wavMap$startSample[w] <- thisSa$GigaSamples[startSa] * 1e9 + thisSa$Samples[startSa]
+                        }
+                    }
+                }
+            }
+            
             isMapped <- c(isMapped, folder[d])
         }
         dbMap[[d]] <- wavMap
@@ -128,22 +149,22 @@ mapWavFolder <- function(wavFolder=NULL, log=NULL, progress=TRUE) {
                                    default = getwd())
     }
     if(is.na(wavFolder)) {
-        return(FALSE)
+        return(NULL)
     }
     if(!dir.exists(wavFolder)) {
         pamWarning('Provided folder ', wavFolder, ' does not exist.')
-        return(FALSE)
+        return(NULL)
     }
 
     wavs <- list.files(wavFolder, full.names=TRUE, pattern = '\\.wav$', recursive=TRUE)
     if(length(wavs) == 0) {
         pamWarning('No wav files found in folder ', wavFolder)
-        return(FALSE)
+        return(NULL)
     }
     wavMap <- wavsToRanges(wavs, log, progress)
     if(is.null(wavMap) ||
        nrow(wavMap) == 0) {
-        return(FALSE)
+        return(NULL)
     }
     wavMap <- checkConsecutive(wavMap)
     wavMap <- arrange(wavMap, .data$start)

@@ -119,6 +119,9 @@ inInterval <- function(bounds, sa) {
 
 # add list without replacing old one, only replace matching names
 safeListAdd <- function(x, value) {
+    if(is.null(value)) {
+        return(x)
+    }
     if(!is.list(value) ||
        is.null(names(value))) {
         stop('Can only add named lists ')
@@ -209,4 +212,20 @@ getPamFft <- function(data) {
 ppVars <- function() {
     list(nonModelVars = c('UID', 'Id', 'parentID', 'sampleRate', 'Channel',
                           'angle', 'angleError', 'peakTime', 'depth', 'sr'))
+}
+
+# logic to see whether Type or Name is holding wav files
+findWavCol <- function(sa) {
+    st <- sa$SystemType
+    sn <- sa$SystemName
+    wavCol <- NA
+    if((all(is.na(sn)) || is.null(sn)) &&
+       !all(grepl('^Audio ', st))) {
+        wavCol <- 'SystemType'
+    } 
+    if(!(all(is.na(sn)) || is.null(sn)) &&
+       !(all(grepl('Audio ', sn)))) {
+        wavCol <- 'SystemName'
+    }
+    wavCol
 }

@@ -554,6 +554,9 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                 binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE, fixed=TRUE), USE.NAMES = FALSE))
                 evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentID))
                 evComment <- unique(ev[[1]]$comment)
+                if(is.null(evComment)) {
+                    evComment <- NA
+                }
                 ev <- lapply(ev, function(x) {
                     x$BinaryFile <- basename(x$BinaryFile)
                     thisType <- unique(x$callType)
@@ -910,17 +913,7 @@ wavToGroup <- function(db) {
     sa$Status <- str_trim(sa$Status)
     sa$UTC <- pgDateToPosix(sa$UTC)
     # sa <- filter(sa, .data$Status != 'Continue')
-    st <- sa$SystemType
-    sn <- sa$SystemName
-    wavCol <- NA
-    if((all(is.na(sn)) || is.null(sn)) &&
-       !all(grepl('^Audio ', st))) {
-        wavCol <- 'SystemType'
-    } 
-    if(!(all(is.na(sn)) || is.null(sn)) &&
-       !(all(grepl('Audio ', sn)))) {
-        wavCol <- 'SystemName'
-    }
+    wavCol <- findWavCol(sa)
     if(is.na(wavCol)) {
         pamWarning('Wav file names not saved in database, events will be labelled')
         saGrp <- select(sa, c('UTC', 'Status', 'SystemType'))
