@@ -10,6 +10,9 @@
 #' @param mode either \code{'event'} or \code{'detection'} specifying whether to create
 #'   wav clips of entire events or individual detections
 #' @param channel channel(s) of clips to write
+#' @param useSample logical flag to use startSample information in binaries instead of UTC
+#'   time for start of detections. This can be slightly more accurate (~1ms) but will take 
+#'   longer
 #' @param progress logical flag to show progress bar
 #' @param verbose logical flag to show summary messages
 #'
@@ -17,7 +20,7 @@
 #'   created, any that were not able to be written will be \code{NA}. Note
 #'   that currently this can only write clips with up to 2 channels. File names
 #'   will be formatted as
-#'   [Event or Detection]_[EventId]CH[ChannelNumber(s)]_[YYYYMMDDHHMMSS]_[mmm].wav
+#'   [Event or Detection]_[EventId]CH[ChannelNumber(s)]_[YYYYMMDD]_[HHMMSS]_[mmm].wav
 #'   (the last numbers are the start time of the file in UTC, accurate to milliseconds)
 #'
 #' @examples
@@ -39,7 +42,7 @@
 #' @export
 #'
 writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event', 'detection'),
-                            channel = 1, progress=TRUE, verbose=TRUE) {
+                            channel = 1, useSample=FALSE, progress=TRUE, verbose=TRUE) {
     if(!is.AcousticStudy(x)) {
         stop('"x" must be an AcousticStudy object.')
     }
@@ -108,7 +111,7 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
         thisDbData <- x[which(evDbs == names(dbMap)[d])]
         if(length(events(thisDbData)) == 0) next
         wavMap <- dbMap[[d]]
-        allTimes <- getTimeRange(thisDbData, mode=mode)
+        allTimes <- getTimeRange(thisDbData, mode=mode, sample=useSample)
         allFiles <- vector('character', length = length(allTimes))
         names(allFiles) <- names(allTimes)
         if(progress) {
@@ -118,7 +121,7 @@ writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event'
         }
         for(i in seq_along(allFiles)) {
             # browser()
-            timeRange <- allTimes[[i]] + buffer
+            timeRange <- c(allTimes[[i]]$start, allTimes[[i]]$end) + buffer
             # for start and end check if in range. if we buffered, try undoing that first.
             # so like if buffer put us before first file, start and beginning of first file instead.
             startIx <- checkIn(timeRange[1], wavMap)
@@ -249,8 +252,8 @@ checkIn <- function(time, map) {
     which(possible)
 }
 
-# named vector for AcEv, or named list of named vectors for AcSt
-getTimeRange <- function(x, mode=c('event', 'detection')) {
+# returns named vector for AcEv, or named list of named vectors for AcSt
+getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
     mode <- match.arg(mode)
     # if(is.AcousticStudy(x)) {
     #     return(lapply(events(x), function(e) {
@@ -264,13 +267,57 @@ getTimeRange <- function(x, mode=c('event', 'detection')) {
             }))
         )
         if(mode == 'event') {
-            return(c(start=min(dets$UTC), end=max(dets$UTC)))
+            if(sample) {
+                minUID <- dets$UID[which.min(dets$UTC)[1]]
+                maxUID <- dets$UID[which.max(dets$UTC)[1]]
+                minUTC <- min(dets$UTC)
+                maxUTC <- max(dets$UTC)
+                recMap <- files(x)$recordings
+                minIx <- checkIn(minUTC, recMap)
+                if(is.na(minIx) ||
+                   (length(minIx) != 1) ||
+                   is.na(recMap$startSample[minIx])) {
+                    evResult <- list(start = minUTC)
+                } else {
+                    evResult <- list(start = recMap$start[minIx] + 
+                                         (getBinaryData(x, minUID)[[1]]$startSample - recMap$startSample[minIx]) / recMap$sr[minIx])
+                }
+                maxIx <- checkIn(maxUTC, recMap)
+                if(is.na(maxIx) ||
+                   (length(maxIx) != 1) ||
+                   is.na(recMap$startSample[maxIx])) {
+                    evResult$end <- maxUTC
+                } else {
+                    evResult$end <- recMap$start[maxIx] + 
+                        (getBinaryData(x, maxUID)[[1]]$startSample - recMap$startSample[maxIx]) / recMap$sr[maxIx]
+                }
+                return(evResult)
+            }
+            return(list(start=min(dets$UTC), end=max(dets$UTC)))
         }
         if(mode == 'detection') {
-            result <- lapply(dets$UTC, function(d) {
-                c(start = d, end = d)
-            })
-            names(result) <- dets$UID
+            if(sample) {
+                recMap <- files(x)$recordings
+                result <- lapply(getBinaryData(x, dets$UID), function(b) {
+                    thisDate <- b$date
+                    wavIx <- checkIn(thisDate, recMap)
+                    if(is.na(wavIx) ||
+                       (length(wavIx) != 1) ||
+                       is.na(recMap$startSample[wavIx])) {
+                        return(list(start=thisDate, end=thisDate))
+                    }
+                    list(start=recMap$start[wavIx] + 
+                             (b$startSample - recMap$startSample[wavIx]) / recMap$sr[wavIx],
+                         end = recMap$start[wavIx] + 
+                             (b$startSample - recMap$startSample[wavIx]) / recMap$sr[wavIx])
+                })
+                
+            } else {
+                result <- lapply(dets$UTC, function(d) {
+                    list(start = d, end = d)
+                })
+                names(result) <- dets$UID
+            }
             return(result)
         }
     })

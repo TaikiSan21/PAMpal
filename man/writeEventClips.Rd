@@ -10,6 +10,7 @@ writeEventClips(
   outDir = ".",
   mode = c("event", "detection"),
   channel = 1,
+  useSample = FALSE,
   progress = TRUE,
   verbose = TRUE
 )
@@ -28,6 +29,10 @@ wav clips of entire events or individual detections}
 
 \item{channel}{channel(s) of clips to write}
 
+\item{useSample}{logical flag to use startSample information in binaries instead of UTC
+time for start of detections. This can be slightly more accurate (~1ms) but will take 
+longer}
+
 \item{progress}{logical flag to show progress bar}
 
 \item{verbose}{logical flag to show summary messages}
@@ -37,7 +42,7 @@ A vector of file names for the wav clips that were successfully
   created, any that were not able to be written will be \code{NA}. Note
   that currently this can only write clips with up to 2 channels. File names
   will be formatted as
-  [Event or Detection]_[EventId]CH[ChannelNumber(s)]_[YYYYMMDDHHMMSS]_[mmm].wav
+  [Event or Detection]_[EventId]CH[ChannelNumber(s)]_[YYYYMMDD]_[HHMMSS]_[mmm].wav
   (the last numbers are the start time of the file in UTC, accurate to milliseconds)
 }
 \description{

@@ -93,22 +93,24 @@ addRecordings <- function(x, folder=NULL, log=NULL, progress=TRUE) {
             wavMap <- dbMap[[min(which(folder == folder[d]))]]
         } else {
             wavMap <- mapWavFolder(folder[d], log=logList[[as.character(log[d])]], progress)
+            # Try to do start sample
             if(!is.null(wavMap)) {
                 if(!file.exists(names(dbMap)[d])) {
                     pamWarning('Database ', names(dbMap)[d], ' could not be found, "startSample"',
-                               ' data may not be accurate.')
-                    wavMap$startSample <- 0
+                               ' cannot be set.')
+                    wavMap$startSample <- NA
                 } else {
                     sa <- readSa(names(dbMap)[d])
                     wavCol <- findWavCol(sa)
-                    wavMap$startSample <- 0
+                    wavMap$startSample <- NA
                     if(!is.na(wavCol)) {
                         for(w in seq_along(wavMap$file)) {
                             thisWav <- grep(substr(basename(wavMap$file[w]), 1, 49), sa[[wavCol]])
                             if(length(thisWav) == 0) next
                             thisSa <- sa[thisWav, ]
-                            startSa <- which.min(thisSa$UTC)
-                            wavMap$startSample[w] <- thisSa$GigaSamples[startSa] * 1e9 + thisSa$Samples[startSa]
+                            if(any(thisSa$Status == 'Start')) {
+                                wavMap$startSample[w] <- 1
+                            }
                         }
                     }
                 }
@@ -125,6 +127,13 @@ addRecordings <- function(x, folder=NULL, log=NULL, progress=TRUE) {
     allFiles <- bind_rows(files(x)$recordings, allFiles)
     allFiles <- bind_rows(lapply(split(allFiles, allFiles$db), function(x) {
         checkConsecutive(x)
+    }))
+    allFiles <- bind_rows(lapply(split(allFiles, allFiles$fileGroup), function(x) {
+        if(!is.na(x$startSample[1]) &&
+           nrow(x) > 1) {
+            x$startSample[2:nrow(x)] <- cumsum(x$sampleLength[1:(nrow(x)-1)])
+        }
+        x
     }))
     files(x)$recordings <- allFiles
     # for(e in seq_along(events(x))) {
@@ -186,6 +195,7 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
             return(NULL)
         }
         len <- header$samples / header$sample.rate
+        sampleLength <- header$samples
         format <- c(FOUNDFORMAT, c('pamguard', 'pampal', 'soundtrap', 'sm3'))
         for(f in format) {
             switch(
@@ -243,6 +253,7 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
             hasLog <- which(gsub('\\.wav$', '', basename(x)) == log$file)
             if(length(hasLog) == 1) {
                 len <- len + log$gap[hasLog]
+                sampleLength <- sampleLength + log$gap[hasLog] * header$sample.rate
             }
         }
         rng <- c(0, len) + posix + millis
@@ -250,7 +261,7 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
             return(NULL)
         }
 
-        list(start=rng[1], end=rng[2], file=x, length=len)
+        list(start=rng[1], end=rng[2], file=x, length=len, sampleLength = sampleLength, sr=header$sample.rate)
     }))
     if(length(badWav) > 0) {
         pamWarning('Unable to read wav files ', badWav, ' these are possibly corrupt.', n=6)

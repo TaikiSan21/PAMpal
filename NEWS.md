@@ -1,3 +1,10 @@
+## PAMpal 0.12.3
+
+* `addRecordings` stores some sample number and samplerate data
+
+* `writeEventClips` has new option `useSample` to try and use the 
+startSample values stored in binary files instead of just UTC times
+
 ## PAMpal 0.12.2
 
 * `addRecordings` tries to use to get start sample data from database
