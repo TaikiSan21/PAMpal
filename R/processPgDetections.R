@@ -547,7 +547,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             # Should this function store the event ID? Right now its just the name
             # in the list, but is this reliable? Probably not
 
-            colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentUID',
+            colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentID',
                             'sr', 'callType', 'newUID', tarMoCols)
 
             acousticEvents <- lapply(dbData, function(ev) {
@@ -556,7 +556,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                     unlist(recursive = FALSE) %>% unique()
                 binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE, fixed=TRUE), USE.NAMES = FALSE))
 
-                evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentUID))
+                evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentID))
                 evTarMo <- ev[[1]][1, tarMoCols]
 
                 evComment <- unique(ev[[1]]$comment)
@@ -716,7 +716,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
                # UTC = as.POSIXct(as.character(UTC), format='%Y-%m-%d %H:%M:%OS', tz='UTC')) %>%
                UTC = pgDateToPosix(.data$UTC)) %>%
 
-        select(any_of(unique(c(eventColumns, 'UTC', 'UID', 'parentUID', 'BinaryFile', 'newUID', extraCols))))
+        select(any_of(unique(c(eventColumns, 'UTC', 'UID', 'parentID', 'BinaryFile', 'newUID', extraCols))))
 
     # rename column to use as label - standardize across event group types
     colnames(allDetections)[which(colnames(allDetections)==label)] <- 'eventLabel'
