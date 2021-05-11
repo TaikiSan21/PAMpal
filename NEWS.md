@@ -1,3 +1,10 @@
+## PAMpal 0.12.4
+
+* `addHydrophoneDepth` function added that will try to read depth data from a database
+
+* `processPgDetections` for `mode='db'` now adds target motion localizations if they are
+present and stores in the `localizations` slot of events
+
 ## PAMpal 0.12.3
 
 * `addRecordings` stores some sample number and samplerate data
