@@ -110,7 +110,10 @@ depthToDf <- function(x, depth, thresh) {
   x <- dropCols(x, 'depth')
   x <- as.data.table(x)
   x$dataTime <- x$UTC
-  depth <- checkGpsKey(depth)
+  # depth <- checkGpsKey(depth)
+  if(!inherits(depth, 'data.table')) {
+    setDT(depth)
+  }
   depth$depthTime <- depth$UTC
  
   setkeyv(x, 'UTC')
