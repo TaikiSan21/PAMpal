@@ -1,3 +1,9 @@
+## PAMpal 0.12.5
+
+* `getBinaryData` can now select for detection type, other functions updated to use this
+
+* `filter` works better with species, in particular can do `is.na(species)` now
+
 ## PAMpal 0.12.4
 
 * `addHydrophoneDepth` function added that will try to read depth data from a database

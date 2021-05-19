@@ -7,6 +7,7 @@
 #'   objects, or a single \linkS4class{AcousticEvent} object
 #' @param UID the UID(s) of the individual detections to fetch the binary
 #'   data for
+#' @param type detection type 
 #' @param quiet logical flag to quiet some warnings, used internally and should generally
 #'   not be changed from default \code{FALSE}
 #' @param \dots additional arguments to pass to
@@ -27,7 +28,7 @@
 #' @importFrom PamBinaries loadPamguardBinaryFile
 #' @export
 #'
-getBinaryData <- function(x, UID, quiet=FALSE, ...) {
+getBinaryData <- function(x, UID, type=c('click', 'whistle'), quiet=FALSE, ...) {
     if(is.AcousticStudy(x)) {
         x <- events(x)
     }
@@ -62,12 +63,22 @@ getBinaryData <- function(x, UID, quiet=FALSE, ...) {
         return(NULL)
     }
     # from here we know its an AcEv
+    
     allBinaries <- files(x)$binaries
     # find matching UID from dets
     bins <- bind_rows(
         lapply(detectors(x), function(df) {
             df[df[['UID']] %in% UID, c('UTC', 'UID', 'BinaryFile')]
         }))
+    typeMatch <- vector('character', length=length(type))
+    for(t in seq_along(type)) {
+        typeMatch[t] <- switch(type[t],
+                            'click' = '^Click_Detector_',
+                            'whistle' = '^WhistlesMoans_'
+        )
+    }
+    typeMatch <- paste0(typeMatch, collapse='|')
+    bins <- bins[grepl(typeMatch, bins$BinaryFile), ]
     if(is.null(bins) ||
        nrow(bins) == 0) {
         if(!quiet) {

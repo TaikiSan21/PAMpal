@@ -4,7 +4,7 @@
 \alias{getBinaryData}
 \title{Get Raw Binary Data for Detections}
 \usage{
-getBinaryData(x, UID, quiet = FALSE, ...)
+getBinaryData(x, UID, type = c("click", "whistle"), quiet = FALSE, ...)
 }
 \arguments{
 \item{x}{a \linkS4class{AcousticStudy} object, a list of \linkS4class{AcousticEvent}
@@ -12,6 +12,8 @@ objects, or a single \linkS4class{AcousticEvent} object}
 
 \item{UID}{the UID(s) of the individual detections to fetch the binary
 data for}
+
+\item{type}{detection type}
 
 \item{quiet}{logical flag to quiet some warnings, used internally and should generally
 not be changed from default \code{FALSE}}

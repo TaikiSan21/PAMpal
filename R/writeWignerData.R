@@ -147,7 +147,7 @@ writeWignerData <- function(x, n=256, t=300, outDir='.', mode='nparray', progres
             }
             next
         }
-        binData <- getBinaryData(thisEv, UID = thisDet$UID)
+        binData <- getBinaryData(thisEv, UID = thisDet$UID, type='click')
         if(is.null(binData) ||
            length(binData) == 0) {
             noBin <- c(noBin, id(thisEv))

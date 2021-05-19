@@ -18,6 +18,7 @@ calculateAverageSpectra(
   plot = TRUE,
   noise = FALSE,
   sort = FALSE,
+  mode = "spec",
   ...
 )
 }
@@ -70,6 +71,8 @@ saved. In these cases the noise floor will appear nearly identical to the signal
 reducing \code{wl} can help get a more accurate noise floor.}
 
 \item{sort}{logical flag to sort concatenated spectrogram by peak frequency}
+
+\item{mode}{one of \code{'spec'} or \code{'ceps'} to plot the spectrum or cepstrum}
 
 \item{\dots}{optional args}
 }

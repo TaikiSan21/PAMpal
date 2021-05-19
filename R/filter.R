@@ -38,7 +38,9 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
         pamWarning('Did you put "=" when you meant "=="? This filter will not be applied.')
     }
     # do event level filters first
-    isSpecies <- grepl('^species|^Species', dotChars)
+    # browser()
+    # isSpecies <- grepl('^species|^Species', dotChars)
+    isSpecies <- grepl('species|Species', dotChars)
     if(any(isSpecies)) {
         # do species filtering first
         naSp <- sapply(events(.data), function(x) is.na(species(x)$id))
@@ -48,7 +50,8 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
                     ' the filtered results.')
         }
         spKeep <- rep(TRUE, length(events(.data)))
-        exprText <- gsub('(^species|^Species)', 'species(x)$id', dotChars[isSpecies])
+        # exprText <- gsub('(^species|^Species)', 'species(x)$id', dotChars[isSpecies])
+        exprText <- gsub('^(.*?)Species|species(.*)', '\\1species(x)$id\\2', dotChars[isSpecies])
         for(s in seq_along(exprText)) {
             thisKeep <- sapply(events(.data), function(x) eval(parse_expr(exprText[s])))
             thisKeep[is.na(thisKeep)] <- FALSE

@@ -40,7 +40,7 @@
 #' @export
 #'
 plotWaveform <- function(x, UID, length=NULL, sr=NULL) {
-    data <- getBinaryData(x, UID)
+    data <- getBinaryData(x,  UID, type='click')
     if(is.null(data) ||
        length(data) == 0) {
         warning('No data found for provided UID(s).')
@@ -81,7 +81,7 @@ plotWaveform <- function(x, UID, length=NULL, sr=NULL) {
 #' @rdname plotWaveform
 #'
 plotSpectrogram <- function(x, UID, length=NULL, sr=NULL, ...) {
-    data <- getBinaryData(x, UID)
+    data <- getBinaryData(x, UID, type='click')
     if(is.null(data) ||
        length(data) == 0) {
         warning('No data found for provided UID(s).')
@@ -121,7 +121,7 @@ plotSpectrogram <- function(x, UID, length=NULL, sr=NULL, ...) {
 #' @rdname plotWaveform
 #'
 plotWigner <- function(x, UID, length=NULL, sr=NULL, ...) {
-    data <- getBinaryData(x, UID)
+    data <- getBinaryData(x, UID, type='click')
     if(is.null(data) ||
        length(data) == 0) {
         warning('No data found for provided UID(s).')

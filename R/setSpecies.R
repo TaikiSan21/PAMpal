@@ -118,7 +118,8 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                    }
                    # cat('Assigning species ids to ', sum(hasId), ' events.\n', sep='')
                    for(i in which(hasId)) {
-                       species(acev[[i]])[[type]] <- value[value$event == id(acev[[i]]), 'species']
+                       # species(acev[[i]])[[type]] <- value[value$event == id(acev[[i]]), 'species', drop=TRUE]
+                       species(acev[[i]])[[type]] <- value[['species']][value$event == id(acev[[i]])]
                    }
                 # case when no a data frame
                } else {

@@ -220,8 +220,17 @@ ppVars <- function() {
              "BeamLatitude2","BeamLongitude2","BeamTime2","TMSide2", "TMChi22","TMAIC2",                       
              "TMProbability2", "TMDegsFreedom2", "TMPerpendicularDistance2", "TMPerpendicularDistanceError2",
              "TMDepth2" ,"TMDepthError2", "TMHydrophones2","TMError2","TMComment2"),
-         bftHeight = data.frame(bftMax=c(1, 2.4, 2.9, 3.4, 3.9, 4.4, 4.9, 5.4, 6, 12),
-                                waveHeight=c(0, 0.05, 0.1, 0.2, 0.5, 0.6, 1.25, 1.3, 2.5, 2.5))
+         bftHeight = data.table(bftMax=c(1, 2.4, 2.9, 3.4, 3.9, 4.4, 4.9, 5.4, 6, 12),
+                                waveHeight=c(0, 0.05, 0.1, 0.2, 0.5, 0.6, 1.25, 1.3, 2.5, 2.5),
+                                key='bftMax'),
+         specMap = data.frame(comment = c('cuviers', 'cuvier', 'gervais', 'gervai', 
+                                          'sowerbys', 'sowerby', 'trues', 'true', 
+                                          'blainvilles', 'blainville',
+                                          'unid mesoplodon', 'mmme', 'undi mesoplodon'),
+                              id = c('Cuviers', 'Cuviers', 'Gervais', 'Gervais', 
+                                     'Sowerbys', 'Sowerbys', 'Trues', 'Trues', 
+                                     'Blainvilles', 'Blainvilles',
+                                     'MmMe', 'MmMe', 'MmMe'))
     )
 }
 
