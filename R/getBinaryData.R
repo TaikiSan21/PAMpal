@@ -43,7 +43,7 @@ getBinaryData <- function(x, UID, type=c('click', 'whistle'), quiet=FALSE, ...) 
             warning('Not all inputs were AcousticEvent objects.')
         }
         result <- lapply(x[isAcev], function(y) {
-            getBinaryData(y, UID, quiet=TRUE, ...)
+            getBinaryData(y, UID, type=type, quiet=TRUE, ...)
         })
         names(result) <- NULL
         result <- unlist(result, recursive = FALSE)

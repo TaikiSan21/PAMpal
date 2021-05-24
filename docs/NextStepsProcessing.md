@@ -127,19 +127,22 @@ iciData[[1]]$All
 ## Filtering Data
 
 AcousticStudy objects can be filtered with syntax similar to the `dplyr` package
-using the function `filter`. There are currently four ways data can be filtered:
-by database, species, environmental data values, and function parameter values.
+using the function `filter`. There are currently five ways data can be filtered:
+by database, species, environmental data values, detector name, and function parameter values.
 
 Filtering by database leaves only events with databases in `files(event)$db` matching
 the criteria provided, but database names must exactly match the full file path to the
 database. Criteria are specified using either `database` or `Database`, the best way to provide
-the full names is typically by indexing from `files(myStudy)$db`.
+the full names is typically by indexing from `files(myStudy)$db`. Alternatively, functions
+like `basename` can be used 
 
 ```r
 # This won't work because it needs the full file name and path
 oneDb <- filter(myStudy, database == 'FirstDb.sqlite3')
-# This is best, events from only first database
+# This works instead, events from only first database
 oneDb <- filter(myStudy, database == files(myStudy)$db[1])
+# This also works
+oneDb <- filter(myStudy, basename(database) == 'FirstDb.sqlite3')
 # Events from all databases other than first
 notFirstDb <- filter(myStudy, database != files(myStudy)$db[1])
 # To specify multiple, use %in%
@@ -175,7 +178,22 @@ shallowOnly <- filter(myStudy, sea_floor_depth > -500)
 shallowOnly <- filter(myStudy, sea_floor_depth_mean > -500)
 ```
 
-Filtering by function parameters works slightly differently than the above three methods.
+Filtering by detector name leaves only detections from detectors matching the criteria
+provided, and the names of the criteria must exactly match the names of detectors. Note
+that Click Detectors typically have a number appended to their name, and all detectors
+use underscores instead of spaces. Note that these also take their names from the names
+given in Pamguard, which may not always be the default. It is best to check exact names using 
+`names(detectors(myStudy[[1]]))` before filtering. Any events left with no detections
+will be removed from the study.
+
+```r
+# Remove Click_Detector_0
+noZero <- filter(myStudy, detector != 'Click_Detector_0')
+# Just 1 or 2
+justOneTwo <- filter(myStudy, detector %in% c('Click_Detector_1', 'Click_Detector_2'))
+```
+
+Filtering by function parameters works slightly differently than the above four methods.
 The interface is the same, but instead of removing entire events it will remove all detections
 that do not match the criteria supplied. Parameter names must exactly match the names of parameters
 calculated by some of the processing functions. If a name provided does not match the name of a parameter

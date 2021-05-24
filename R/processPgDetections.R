@@ -960,15 +960,26 @@ wavToGroup <- function(db) {
         saGrp <- select(sa, c('UTC', 'Status'))
         saGrp$id <- sa[[wavCol]]
         saGrp <- bind_rows(lapply(split(saGrp, saGrp$id), function(x) {
-            thisStart <- max(x$UTC[grepl('Start', x$Status)])
-            thisEnd <- max(x$UTC[grepl('Stop', x$Status)])
+            thisStart <- x$UTC[grepl('Start', x$Status)]
+            if(length(thisStart) == 0) {
+                thisStart <- NA
+            } else {
+                thisStart <- max(thisStart)
+            }
+            thisEnd <- x$UTC[grepl('Stop', x$Status)]
+            if(length(thisEnd) == 0) {
+                thisEnd <- NA
+            } else {
+                thisEnd <- max(thisEnd)
+            }
             thisId <- gsub(' ', '', unique(x$id))
             list(start = thisStart,
                  end = thisEnd,
                  id = thisId)
         }))
     }
-    isNa <- is.na(saGrp$start) | is.na(saGrp$end)
+    isNa <- is.na(saGrp$start) | is.na(saGrp$end) | 
+        is.infinite(saGrp$start) | is.infinite(saGrp$end)
     if(all(isNa)) {
         pamWarning('Could not find appropriate start and stop times in Sound_Acquisition table')
         return(NULL)
@@ -976,7 +987,7 @@ wavToGroup <- function(db) {
     if(any(isNa)) {
         pamWarning('Event id(s) ', saGrp$id[isNa], ' could not get start and end times,',
                        ' they will be removed (check for missing values in Sound_Acquisition table to fix).')
-        saGrp <- saGrp[isNa,]
+        saGrp <- saGrp[!isNa,]
     }
     saGrp$db <- db
     saGrp

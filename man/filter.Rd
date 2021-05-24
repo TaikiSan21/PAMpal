@@ -10,10 +10,8 @@
 \item{.data}{\linkS4class{AcousticStudy} or \linkS4class{AcousticEvent} to filter}
 
 \item{\dots}{Logical expressions, syntax is identical to \link[dplyr]{filter}.
-There is a special case if \code{.data} is an AcousticStudy object where a
-logical expression using \code{species} or \code{Species} will filter by the
-species present in the \code{$id} of the \code{species} slot within each
-AcousticEvent}
+There are special cases to filter by environmental variables, species ID, 
+database, or detector name. See details.}
 
 \item{.preserve}{not used}
 }
@@ -24,6 +22,26 @@ The original \code{.data} object, filtered by the given logical expressions
 Apply dplyr-like filtering to the detecitons of an
   AcousticStudy or AcousticEvent object, with a special case for
   filtering by species for an AcousticStudy
+}
+\details{
+Most expression provided will be used to filter out detections based on
+  calculated parameters. 
+  
+  If the name of an environmental variable added using
+  \link{matchEnvData} is provided, will filter to only events with environmental
+  variables matching those conditions. 
+  
+  If a provided logical expression uses
+  \code{"species"} or \code{"Species"}, then events will be filtered using the
+  species present in the \code{$id} of the \code{species} slot of each event.
+  
+  If a provided logical expression uses \code{"database"} or \code{"Database"}, 
+  then only events with databases matching the expression in \code{files(.data)$db}
+  will remain
+  
+  If a provided logical expression uses \code{"detector"} or \code{"Detector"}, then
+  only detections from detectors with names matching the expression will remain in
+  events. Any events left with no detections will be removed.
 }
 \examples{
 

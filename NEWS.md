@@ -1,3 +1,10 @@
+## PAMpal 0.12.6
+
+* `filter` has new special case to filter by detector names
+
+* `processPgDetections` rare bug fix with processing bad event grouping files for
+`mode='time'` and `mode='recording'`
+
 ## PAMpal 0.12.5
 
 * `getBinaryData` can now select for detection type, other functions updated to use this

@@ -1,7 +1,7 @@
 Package: PAMpal
 Type: Package
 Title: Load and Process Passive Acoustic Data
-Version: 0.12.4
+Version: 0.12.6
 Authors@R: c(
   TS = person("Taiki", "Sakai", email = "taiki.sakai@noaa.gov", role = c("aut", "cre")),
   JB = person("Jay", "Barlow", role = c("ctb")),
