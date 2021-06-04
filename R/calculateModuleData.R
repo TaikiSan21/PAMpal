@@ -237,7 +237,7 @@ doCepstrumCalcs <- function(cepstrumData, cepstrumFuns, detSettings=NULL) {
         fftLen <- detSettings$length
         if(isTRUE(detSettings$decimated)) {
             for(i in seq_along(cepstrumData)) {
-                cepstrumData[[i]]$sr <- source$sr
+                cepstrumData[[i]]$sr <- detSettings$sr
             }
         }
     }
