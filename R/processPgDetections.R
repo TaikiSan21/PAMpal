@@ -661,9 +661,12 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
                eventTables <- detTables[!grepl('Children', detTables)]
                detTables <- detTables[grepl('Children', detTables)]
                # eventColumns <- c('UID', 'Text_Annotation')
-               
-               dglCols <- dbListFields(con, eventTables[1])
-               label <- parseDglLabel(label, dglCols)
+               if(is.character(eventTables)) {
+                   dglCols <- dbListFields(con, eventTables[1])
+                   label <- parseDglLabel(label, dglCols)
+               } else {
+                   label <- NA
+               }
                
                eventColumns <- c('Id', label)
                evName <- 'DGL'
