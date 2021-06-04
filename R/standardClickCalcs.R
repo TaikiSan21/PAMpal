@@ -51,8 +51,8 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
     #                 'Q_3dB', 'fmin_3dB', 'fmax_3dB', 'BW_3dB', 'centerHz_3dB')
     paramNames <- c('noiseLevel', 'duration', 'peakTime', 'peak', 'peak2', 'peak3', 'trough',
                     'trough2', 'peakToPeak2', 'peakToPeak3', 'peak2ToPeak3', 'dBPP', 'Q_10dB',
-                    'fmin_10dB', 'fmax_10dB', 'BW_10dB', 'centerHz_10dB',
-                    'Q_3dB', 'fmin_3dB', 'fmax_3dB', 'BW_3dB', 'centerHz_3dB')
+                    'fmin_10dB', 'fmax_10dB', 'BW_10dB', 'centerkHz_10dB',
+                    'Q_3dB', 'fmin_3dB', 'fmax_3dB', 'BW_3dB', 'centerkHz_3dB')
     # Do for each channel
     if(inherits(data, 'Wave')) {
         data <- WaveMC(data)
@@ -197,11 +197,11 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
         # Finding 10/3 dB bandwidth - modified 'Q' function from seewave package
         dbBW10 <- Qfast(calibratedClick, f=sr, level=-10, plot=FALSE)
         names(dbBW10) <- c('Q_10dB', 'fmin_10dB', 'fmax_10dB', 'BW_10dB')
-        dbBW10$centerHz_10dB <- dbBW10$fmax_10dB - (dbBW10$BW_10dB/2)
+        dbBW10$centerkHz_10dB <- dbBW10$fmax_10dB - (dbBW10$BW_10dB/2)
 
         dbBW3 <- Qfast(calibratedClick, f=sr, level=-3, plot=FALSE)
         names(dbBW3) <- c('Q_3dB', 'fmin_3dB', 'fmax_3dB', 'BW_3dB')
-        dbBW3$centerHz_3dB <- dbBW3$fmax_3dB - (dbBW3$BW_3dB/2)
+        dbBW3$centerkHz_3dB <- dbBW3$fmax_3dB - (dbBW3$BW_3dB/2)
 
         thisDf <- c(thisDf, dbBW10, dbBW3)
 

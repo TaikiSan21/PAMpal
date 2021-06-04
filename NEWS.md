@@ -1,3 +1,22 @@
+## PAMpal 0.12.7
+
+* `standardClickCalcs` incorrectly had outputs labelled `centerHz_3dB` and `centerHz_10dB`
+when units were actually in kilohertz. Names have been changed to `centerkHz_3dB` and
+`centerkHz_10dB` 
+
+* `calculateAverageSpectra` has a few new features. `plot` can be a vector of lenght two
+specifying which of the two plots to create, useful when only one is desired. New parameters
+`mode` and `decimate` added. `mode` allows users to specify `'spec'`(default) or `'ceps'` to
+calculate either spectrum or cepstrum of signal. `decimate` reduces the samplerate of the 
+signal by an integer factor before calculations, this can be especially useful for 
+cepstrum data.
+
+* Fixed bug in `processPgDetetions` for detection group localiser data crashing with an error
+related to `tarMoCols`, and also updated code to automatically check for event labels. Will look
+for (in order) `Text_Annotation` column, column with `species` in the name, column with `label`
+in the name, or column with `id` in the name. If none of these exist, defaults to the first 
+non-standard column present in the database.
+
 ## PAMpal 0.12.6
 
 * `filter` has new special case to filter by detector names

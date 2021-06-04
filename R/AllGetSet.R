@@ -517,6 +517,9 @@ setMethod('models<-', 'AcousticStudy', function(x, value) {
 #'
 setMethod('[', 'AcousticStudy', function(x, i) {
     x@events <- x@events[i]
+    x@events <- x@events[sapply(x@events, function(e) {
+        !is.null(e)
+    })]
     x
 })
 

@@ -17,8 +17,10 @@ calculateAverageSpectra(
   norm = TRUE,
   plot = TRUE,
   noise = FALSE,
+  decimate = 1,
   sort = FALSE,
   mode = "spec",
+  label = NULL,
   ...
 )
 }
@@ -60,8 +62,8 @@ issues with noise calculations)}
 \item{plot}{logical flag whether or not to plot the result. This will create two
 plots, the first is a concatenated spectrogram where the y-axis is
 frequency and the x-axis is click number. The second plot is the average
-spectrogram of all clicks, the y-axis is dB, x-axis
-is frequency.}
+spectrogram of all clicks, the y-axis is dB, x-axis is frequency. Can be a
+vector of length two to create only one of the two plots}
 
 \item{noise}{logical flag to plot an average noise spectrum. This is estimated
 by taking a window of length \code{wl} immediately before click. Since there
@@ -70,9 +72,13 @@ can be very inaccurate when \code{wl} is a large proportion of the total samples
 saved. In these cases the noise floor will appear nearly identical to the signal,
 reducing \code{wl} can help get a more accurate noise floor.}
 
+\item{decimate}{integer factor to reduce sample rate by}
+
 \item{sort}{logical flag to sort concatenated spectrogram by peak frequency}
 
 \item{mode}{one of \code{'spec'} or \code{'ceps'} to plot the spectrum or cepstrum}
+
+\item{label}{optional label before plot titles}
 
 \item{\dots}{optional args}
 }

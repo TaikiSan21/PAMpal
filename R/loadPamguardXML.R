@@ -149,6 +149,7 @@ xml_getWMD <- function(pgxml) {
   for(i in seq_along(wmdNodes)) {
     wmdList[[i]] <- list(
       source = wmdInputs[i],
+      type = ifelse(grepl('Cepstrum', wmdInputs[i]), 'cepstrum', 'whistle'),
       minFrequency = wmdMinFreq[i],
       minLength = wmdMinLength[i],
       minPixels = wmdMinPixels[i],
@@ -202,6 +203,7 @@ xml_getClick <- function(pgxml) {
                    shortFilter=shortFilter[i],
                    threshold=threshold[i])
     result$source <- input
+    result$type <- 'click'
     result$basicClass <- basicId[[i]]
     clickList[[i]] <- result
   }

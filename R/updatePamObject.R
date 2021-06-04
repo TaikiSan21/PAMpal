@@ -39,7 +39,10 @@ updatePamObject <- function(x) {
   }
   if(is.PAMpalSettings(x)) {
     if(is.null(attr(x, 'settings'))) {
-      x@settings <- list()
+      x@settings <- list(file=NA_character_,
+                         sources=list(),
+                         detectors=list(),
+                         raw=NA_character_)
     }
     return(x)
   }

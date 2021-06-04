@@ -230,7 +230,9 @@ ppVars <- function() {
                               id = c('Cuviers', 'Cuviers', 'Gervais', 'Gervais', 
                                      'Sowerbys', 'Sowerbys', 'Trues', 'Trues', 
                                      'Blainvilles', 'Blainvilles',
-                                     'MmMe', 'MmMe', 'MmMe'))
+                                     'MmMe', 'MmMe', 'MmMe')),
+         dglCols = c('Id', 'UID', 'UTC', 'UTCMilliseconds', 'PCLocalTime', 'PCTime', 
+                      'ChannelBitmap', 'SequenceBitmap', 'EndTime', 'DataCount')
     )
 }
 

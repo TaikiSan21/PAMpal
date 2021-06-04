@@ -88,7 +88,7 @@
 #' 
 #' @importFrom PamBinaries loadPamguardBinaryFile
 #' @importFrom PAMmisc squishList
-#' @importFrom RSQLite dbConnect dbListTables dbReadTable dbDisconnect SQLite
+#' @importFrom RSQLite dbConnect dbListTables dbReadTable dbDisconnect SQLite dbListFields
 #' @importFrom stringr str_trim
 #' @importFrom tcltk tk_choose.files
 #' @importFrom purrr transpose
@@ -438,6 +438,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     })))
     study <- AcousticStudy(id=id, events = acousticEvents, pps = pps,
                            files = list(db=allDbs, binaries=allBins))
+    settings(study)$detectors <- pps@settings$detectors
     # events(study) <- acousticEvents
     # files(study) <- list(db=allDbs, binaries=allBins)
     ancillary(study)$grouping <- grouping
@@ -472,7 +473,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             failBin <- 'No file processed'
             binList <- pps@binaries$list
             binFuns <- pps@functions
-            dbData <- getDbData(db, grouping, extraCols=tarMoCols)
+            dbData <- getDbData(db=db, grouping=grouping, extraCols=tarMoCols, ...)
             if(is.null(dbData) ||
                nrow(dbData) == 0) {
                 pamWarning('No detections found in database ',
@@ -557,7 +558,12 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                 binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE, fixed=TRUE), USE.NAMES = FALSE))
 
                 evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentID))
-                evTarMo <- ev[[1]][1, tarMoCols]
+                if(all(tarMoCols %in% colnames(ev[[1]]))) {
+                    evTarMo <- ev[[1]][1, tarMoCols]
+                } else {
+                    evTarMo <- data.frame(matrix(NA, nrow=1, ncol=length(tarMoCols)))
+                    colnames(evTarMo) <- tarMoCols
+                }
 
                 evComment <- unique(ev[[1]]$comment)
                 if(is.null(evComment)) {
@@ -605,6 +611,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
     study <- AcousticStudy(id=id, events = allAcEv, pps = pps,
                   files = list(db=allDbs, binaries=allBins))
     study <- .addPamWarning(study)
+    settings(study)$detectors <- pps@settings$detectors
     study
 }
 
@@ -654,9 +661,10 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
                eventTables <- detTables[!grepl('Children', detTables)]
                detTables <- detTables[grepl('Children', detTables)]
                # eventColumns <- c('UID', 'Text_Annotation')
-               if(is.null(label)) {
-                   label <- 'Text_Annotation'
-               }
+               
+               dglCols <- dbListFields(con, eventTables[1])
+               label <- parseDglLabel(label, dglCols)
+               
                eventColumns <- c('Id', label)
                evName <- 'DGL'
            },
@@ -720,7 +728,9 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
 
     # rename column to use as label - standardize across event group types
     colnames(allDetections)[which(colnames(allDetections)==label)] <- 'eventLabel'
-
+    if(!('eventLabel' %in% colnames(allDetections))) {
+        allDetections$eventLabel <- NA
+    }
     allDetections <- matchSR(allDetections, db, extraCols=c('SystemType'))
 
     # apply str_trim to all character columns
@@ -991,4 +1001,35 @@ wavToGroup <- function(db) {
     }
     saGrp$db <- db
     saGrp
+}
+
+parseDglLabel <- function(x, colnames) {
+    standardCols <- ppVars()$dglCols
+    newCols <- colnames[!(colnames %in% standardCols)]
+    if(length(newCols) == 0) {
+        return(NA)
+    }
+    if(!is.null(x) && 
+       x %in% newCols) {
+        return(x)
+    }
+    if(length(newCols) == 1) {
+        return(newCols)
+    }
+    if('Text_Annotation' %in% newCols) {
+        return('Text_Annotation')
+    }
+    isSpec <- grepl('species', newCols, ignore.case = TRUE)
+    if(sum(isSpec) == 1) {
+        return(newCols[isSpec])
+    }
+    isLabel <- grepl('label', newCols, ignore.case=TRUE)
+    if(sum(isLabel) == 1) {
+        return(newCols[isLabel])
+    }
+    isId <- grepl('id', newCols, ignore.case=TRUE)
+    if(sum(isId) == 1) {
+        return(newCols[isId])
+    }
+    newCols[1]
 }

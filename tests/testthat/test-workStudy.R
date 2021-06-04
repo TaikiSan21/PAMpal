@@ -65,15 +65,16 @@ test_that('Test working with AcousticStudy object', {
     expect_equal(species(exData[[2]])$id, 'Test')
     # check manual edge cases
     expect_warning(setSpecies(exData, method='manual'), 'Manual mode requires')
-    expect_warning(setSpecies(exData, method='manual', value=1:3), 'Length of "value"')
+    expect_warning(setSpecies(exData, method='manual', value=1:4), 'Length of "value"')
     expect_warning(setSpecies(exData, method='manual', value= data.frame(old=1, new=2),
                               'must contain columns'))
     expect_message(setSpecies(exData, method='manual',
                               value = data.frame(event = 'a', species=1)),
                    'No match found')
-    exData <- setSpecies(exData, method = 'manual', value=letters[1:2])
+    exData <- setSpecies(exData, method = 'manual', value=letters[1:3])
     expect_equal(species(exData[[1]])$id, 'a')
     expect_equal(species(exData[[2]])$id, 'b')
+    expect_equal(species(exData[[3]])$id, 'c')
     exData <- setSpecies(exData, method='manual',
                          value = data.frame(event='Example.OE1', species = 'c'))
     expect_equal(species(exData[[1]])$id, 'c')
@@ -86,9 +87,9 @@ test_that('Test working with AcousticStudy object', {
     expect_equal(species(exData[[1]])$id, 'b')
     # test banter export
     banterData <- export_banter(exData, verbose=FALSE)
-    expect_equal(nrow(banterData$events), 2)
+    expect_equal(nrow(banterData$events), 3)
     expect_equal(length(banterData$detectors), 3)
-    expect_error(export_banter(exData, dropSpecies = 'b', verbose=FALSE))
+    expect_error(export_banter(exData, dropSpecies = c('b', 'c'), verbose=FALSE))
     lessData <- export_banter(exData, dropVars = c('peak'), verbose=FALSE)
     expect_true(!any(
         sapply(lessData$detectors, function(x) 'peak' %in% colnames(x))

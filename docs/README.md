@@ -57,6 +57,11 @@ and installing again. I recommend using the `updateR()` function from the `insta
 You may need to update "ProblemPackage" separately after updating, or if using `updateR()` it is usually a
 good idea to just update all of your packages (this can take a while).
 
+* MacOS users may have some platform specific issues. I do not have access to a Mac, so cannot confirm
+how well solutions work but here are some options. If errors start with
+`xcrun: error: invalid active developer path`, try the suggestions [here][xcrun-err]. If an error like
+`Error: .onLoad failed in loadNameSpace() for 'tcltk'`, try suggestions [here][tcltk-err]
+
 ---
 
 ## Quick Start Guide
@@ -254,3 +259,5 @@ For bug fixes and feature additions in each version see the [NEWS][news] file
 [news]: https://github.com/TaikiSan21/PAMpal/blob/master/NEWS.md
 [case-studies]: CaseStudies.md
 [testavg]: AvTest.html
+[xcrun-err]: https://ma.ttias.be/mac-os-xcrun-error-invalid-active-developer-path-missing-xcrun/
+[tcltk-err]: https://swvanderlaan.github.io/post/getting-r-with-tcl-tk-on-my-mac/

@@ -33,7 +33,10 @@ setClass('PAMpalSettings',
              binaries = list('folder'=character(0), 'list'=character(0)),
              functions = list('ClickDetector'=list(), 'WhistlesMoans'=list(), 'Cepstrum'=list()),
              calibration = list('ClickDetector'=list()),
-             settings = list()
+             settings = list(file=NA_character_,
+                             sources=list(),
+                             detectors=list(),
+                             raw=NA_character_)
          )
 )
 
