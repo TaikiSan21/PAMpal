@@ -90,7 +90,8 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
             calibration <- x@pps@calibration$ClickDetector[[1]]
         }
     }
-    clickUID <- getDetectorData(ev)$click$UID
+    clickData <- distinct(getClickData(ev)[c('eventId', 'UID')])
+    clickUID <- clickData$UID
     binData <- getBinaryData(ev, clickUID, type='click', quiet = TRUE)
     if(length(binData) == 0) {
         stop('Not able to find any data for this event.')
@@ -248,14 +249,20 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
         
         freqPretty <- pretty(seq(from=0, to=max(freq*unitFactor), length.out=5), n=5)
         if(plot[1]) {
-            image(t(plotMat), xaxt='n', yaxt='n', ylab=unitLab, xlab='Click Number')
+            image(x=1:ncol(plotMat), y=seq(from=0, to=max(freq*unitFactor), length.out=nrow(plotMat)),
+                  z=t(plotMat), xaxt='n', yaxt='n', ylab=unitLab, xlab='Click Number', useRaster=TRUE)
             title(paste0(label, title1))
             xPretty <- pretty(1:ncol(plotMat), n=5)
-            axis(1, at = xPretty/ncol(plotMat), labels = xPretty)
-            
-            
-            axis(2, at = freqPretty/max(freq*unitFactor), labels = freqPretty)
-            
+            axis(1, at = xPretty, labels = xPretty)
+            axis(2, at = freqPretty, labels = freqPretty)
+            if(isFALSE(sort) & length(evNum) > 1) {
+                evBreaks <- cumsum(table(clickData$eventId))
+                for(b in 1:(length(evBreaks)-1)) {
+                    lines(x=rep(evBreaks[b]+0.5, 2),
+                          y=c(0, max(freq*unitFactor)),
+                          lwd=2)
+                }
+            }
         }
         if(plot[2]) {
             ylab <- ifelse(norm, 'Normalized Magnitude (dB)', 'Magnitude (dB)')

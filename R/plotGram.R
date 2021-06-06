@@ -9,9 +9,9 @@
 #'   \linkS4class{AcousticStudy} object, not the actual event number. Alternatively
 #'   full event names can be used
 #' @param start start time of the plot, either POSIXct or seconds from
-#'   the start of the recording
+#'   the start of the event
 #' @param end end time of the plot, either POSIXct or seconds from the start
-#'   of the recording.
+#'   of the event.
 #' @param channel channel to plot
 #' @param wl window length of FFT to use for creating plot
 #' @param hop hop value of FFT to use for creating plot, either as a percentage
@@ -41,7 +41,7 @@
 #'
 #' @export
 #'
-plotGram <- function(x, evNum=1,  start=0, end=NULL, channel=1, wl=512, hop=.25, mode=c('spec', 'ceps'),
+plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1, wl=512, hop=.25, mode=c('spec', 'ceps'),
                      detections = c('whistle', 'click', 'cepstrum'), sr=NULL) {
     # Needs to be one event at a time
     x <- x[evNum]
@@ -57,8 +57,17 @@ plotGram <- function(x, evNum=1,  start=0, end=NULL, channel=1, wl=512, hop=.25,
 
     fileCheck <- checkIn(min(dets$UTC), thisRec)
     if(is.na(fileCheck)) return(x)
+    if(is.null(start)) {
+        start <- min(dets$UTC)
+    }
     if(is.null(end)) {
-        end <-thisRec$length[fileCheck]
+        end <- max(dets$UTC)
+    }
+    if(is.numeric(start)) {
+        start <- min(dets$UTC) + start
+    }
+    if(is.numeric(end)) {
+        end <- min(dets$UTC) + end
     }
     if(inherits(start, 'POSIXct')) {
         start <- as.numeric(difftime(start, thisRec$start[fileCheck], units='secs'))
@@ -107,7 +116,7 @@ plotGram <- function(x, evNum=1,  start=0, end=NULL, channel=1, wl=512, hop=.25,
     )
     xName <- paste0('Seconds after ', timeStart)
     image(t(plotMat), col = gray.colors(64, start=1, end=0), xaxt='n', yaxt='n',
-          xlab = xName, ylab=yName)
+          xlab = xName, ylab=yName, useRaster=TRUE)
     tPretty <- pretty((start:end) - start, n=5)
     # tLabs <- files(x)$recordings$start[fileCheck] + tPretty
     tLabs <- tPretty
@@ -170,12 +179,12 @@ plotOneCeps <- function(x, hop, sr, yMin=0, yMax, tMin, tMax) {
 }
 
 plotClick <- function(x, tMin, tMax, yMin, yMax) {
-    clickData <- getClickData(x)[, c('UTC', 'peak')]
+    clickData <- getClickData(x)[, c('UTC', 'peak', 'peakTime')]
     if(is.null(clickData) ||
        nrow(clickData) == 0) {
         return(NULL)
     }
-    xVals <- clickData$UTC
+    xVals <- clickData$UTC + clickData$peakTime
     yVals <- clickData$peak
     xPlot <- scaleToOne(xVals, tMin, tMax)
     yPlot <- scaleToOne(yVals, yMin, yMax)

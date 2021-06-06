@@ -1,3 +1,10 @@
+## PAMpal 0.12.8
+
+* `calculateAverageSpectra` now draws lines breaking up events in concatenated spectrogram
+if plotting multiple events at once
+
+* `plotGram` now uses start and end times based on the start of the event, not the recording
+
 ## PAMpal 0.12.7
 
 * `standardClickCalcs` incorrectly had outputs labelled `centerHz_3dB` and `centerHz_10dB`
