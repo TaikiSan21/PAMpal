@@ -46,10 +46,11 @@ then run the code `Sys.setenv(TZ = 'UTC')` and try again. This is common on fiel
 where the timezone has been set manually to something other than the local timezone. 
 
 * If you see an error like 
-`Error: Failed to install 'PAMpal' from GitHub: installationg of package 'ProblemPackage' had non-zero exit status`,
-try installing the package "ProblemPackage" separately. PAMpal relies on quite a few other packages, if any of them
-fail to install properly then PAMpal will not install. Sometimes a package will request to be "Installed from
-source", try both options if it fails to install.
+`Error: Failed to install 'PAMpal' from GitHub: installation of package 'ProblemPackage' had non-zero exit status`,
+or any other error message related to installing a non-PAMpal package, 
+try installing the package "ProblemPackage" separately using `install.packages('ProblemPackage')`.
+PAMpal relies on quite a few other packages, if any of them fail to install properly then PAMpal will not install. 
+Sometimes a package will request to be "Installed from source", try both options if it fails to install.
 
 * If you see an error like 
 `Error: (converted from warning) package 'ProblemPackage' was built under R version 4.0.3` try updating R
@@ -175,7 +176,8 @@ call type to explore, then you should see something like this:
 
 Click the gear in the top left of the plot, then you'll see drop down menus that you can use to
 choose which data you'd like to graph, and options for coloring and facetting (splitting into
-multiple plots). For more details see `?plotDataExplorer`.
+multiple plots). For more details see `?plotDataExplorer`. If the gear does not appear in your 
+plot, calling `library(manipulate)` and then trying to create the plot again usually fixes it.
 
 Plots are pretty and all, but what did PAMpal actually do and what exactly is in your `myStudy`
 output object? For each detection in each of your events, PAMpal checks what type of detection

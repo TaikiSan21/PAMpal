@@ -1,8 +1,106 @@
-## Next Processing Steps
+# Next Processing Steps
 
 ## Assigning Species IDs
 
+PAMpal supports a variety of ways to assign species identifications to specific
+`AcousticEvent` objects. These IDs can then be used for [filtering data](#filtering-data)
+or potentially exporting to [create a BANTER model](#exporting-for-banter-model). Species
+assignment is always done using the `setSpecies` function, and has three possible
+modes of operation that can be selected using the `method` argument.
+
+For `method='pamguard'`, species IDs will be assigned according to the labels set in
+Pamguard for each event. This will only work for `AcousticStudy` objects created by
+`processPgDetections` using `mode='db'`. For events created using the Click Detector
+module (these have prefix OE in PAMpal), species IDs will be taken from the "eventType"
+column in the Pamguard database. For events created using the Detection Group Localiser
+module, the column used for species ID can be more variable since users may define custom
+forms in Pamguard. PAMpal will check for a species column in this order: 1) "Text_Annotation",
+2) a column with "species" in the name, 3) a column with "label" in the name, 4) a column with
+"id" in the name. If none of these are present, the first non-standard Detection Group Localiser
+column will be used for species ID. Alternatively, users may provide an optional `label` argument
+to `processPgDetections` to specify the name of a column in the event table to use for species ID
+(ex. `procesPgDetections(pps, mode='db', label='SpeciesCode1')`).
+
+```r
+myStudy <- setSpecies(myStudy, method='pamguard')
+# Use this to examine species IDs easily
+species(myStudy)
+```
+
+For `method='manual'`, species IDs will be assigned according to values provided with the `value`
+argument. If `value` is a single value, all events will be assigned this species ID. If `value`
+is a vector of length equal to the number of events present, species IDs will be assigned in
+the order they appear. Rather than relying on the order of events, `value` can also be a dataframe
+with columns `event` and `species` in which case species IDs will be assigned by name. Note
+that event names in PAMpal typically include the database name as well as the prefix OE or DGL,
+so it is usually best to get the list of full event names with `names(events(myStudy))` when using
+this method. Note that it is not required to assign an ID for all events present when `value` is
+a dataframe, but if assigning species IDs to only a subset of events PAMpal will issue a light 
+warning message.
+
+```r
+# Set all species to "Pm"
+myStudy <- setSpecies(myStudy, method='manual', value='Pm')
+species(myStudy)
+# Set species by order - typically not recommended, length must match number of events
+myStudy <- setSpecies(myStudy, method='manual', value=c('PmCoda', 'PmRegular', 'Oo', 'Oo'))
+# Set by dataframe
+myStudy <- setSpecies(myStudy, method='manual',
+                      value = data.frame(event = c('Example.OE1', 'Example.OE2', 'Example.OE3', 'Example.OE4'),
+                                         species = c('Pm', 'Pm', 'Oo', 'Oo')))
+```
+
+For `method='reassign'`, species IDs will be reassigned from existing values. This can be useful
+to switch from abbreviations to full scientific names, or to change subgroups of species IDs to a single
+group (e.g. maybe you used "PmCoda" and "PmRegular" in your original analysis to differentiate between kinds
+of sperm whale detections, but these would more
+appropriately just be "Pm" for a different analysis). Reassignment is accomplished by providing `value`
+as a dataframe with columns `old` and `new` specifying the desired conversions.
+
+```r
+# Expand Oo to Orcinus orca
+myStudy <- setSpecies(myStudy, method='reassign', value = data.frame(old='Oo', new='Orcinus orca'))
+# Change PmCoda and PmRegular to Pm
+myStudy <- setSpecies(myStudy, method='reassign', 
+                      value = data.frame(old = c('PmCoda', 'PmRegular'),
+                                         new = c('Pm', 'Pm')))
+```
+
+As a last note, `setSpecies` also has an argument `type` to specify the kind of species ID to 
+assign. In almost all cases this does not need to be changed from the default of `type='id'`,
+since this is the species ID that PAMpal uses internally to determine the species of an event for
+things like [filtering](#filtering-data).
+However, it can be useful to specify other values for different types of species classification,
+possibly visual vs. acoustic, or a classification coming from a predictive model. 
+
 ## Adding GPS Data
+
+PAMpal can add GPS data to all of your detections, matching the GPS coordinates with the closest
+time (up to a maximum threshold to prevent strangeness) to each detection in your `AcousticStudy`.
+These Latitude and Longitude coordinates can then be used for [filtering](#filtering-data) or to
+[download environmental data](#adding-environmental-data).
+
+This is easiest to do if GPS data is already present in the "gpsData" table of the Pamguard database
+used to process your data, in which case you need only call the `addGps` function, optionally changing
+the `threshold` value from the default of 3600 seconds. Detections will be matched with the GPS coordinate
+with the closest time, unless the time difference between detection and GPS is larger than the `threshold`
+value, in which case Latitude and Longitude will be set to `NA`. If GPS data is not present in the Pamguard
+database, it can also be provided as a dataframe with argument `gps`. This must be a dataframe or data.table
+with columns UTC, Latitude, and Longitude, with UTC being converted to POSIXct format. If providing GPS
+data this way, it can often be more convenient to first add the GPS data directly
+to the Pamguard database using the `addPgGps` function from the `PAMmisc` package, and then run `addGps`
+as normal. `PAMmisc::addPgGps` has the advantage of being able to handle multiple input formats (CSV,
+SPOT .gpx files) and account for different data in different timezones, and once the GPS data is in the
+database there is one less file you need to keep track of. After running `addGps`, all GPS data will
+also be stored in the `gps` slot of your `AcousticStudy`, which can be accessed with the `gps()` function.
+
+```r
+# If GPS is already in Pamguard databases you used to process, changing threshold to 30 minutes
+myStudy <- addGps(myStudy, threshold=1800)
+# Provide a dataframe of coordinates
+myStudy <- addGps(myStudy, gps=gpsDataframe)
+head(gps(myStudy))
+```
 
 ## Gathering Detection Data in a Dataframe
 
@@ -259,3 +357,5 @@ myFilter(myStudy, 'SPECIES1')
 ```
 
 ## Accessing Binary Data
+
+## Exporting for BANTER Model
