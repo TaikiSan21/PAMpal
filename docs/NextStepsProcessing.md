@@ -180,7 +180,6 @@ the `getICI` function. This has one parameter, selecting the type of data you wa
 detector as a list named by detector name.
 
 ```r
-
 iciValues <- getICI(myStudy, type='value')
 ```
 
@@ -358,4 +357,98 @@ myFilter(myStudy, 'SPECIES1')
 
 ## Accessing Binary Data
 
+Sometimes it can be useful to access the binary data that PAMpal uses when initially processing
+data, especially if you need access to the wave forms of click detections. PAMpal has a function
+`getBinaryData` that makes this easy. You just need to provide the UIDs of detections that you would
+like binary data for, and the binary data for each will be returned in a list. There are occasionally
+instances where UIDs can be repeated across different types of detectors, so there is also a `type`
+argument that you can use to specify whether you are looking for binaries from clicks, whistles, or
+cepstrum detections, although this is usually not needed. Typically the easiest way to get UIDs
+without copying/pasting is with `getDetectorData` or the similar functions `getClickData`, 
+`getWhistleData`, and `getCepstrumData`.
+
+```r
+# Get the UIDs first to make things easier, then get click binary data
+clickUIDs <- getClickData(myStudy)$UID
+# These are usually identical, but occasionally it is necessary to specify type
+binData <- getBinaryData(myStudy, UID=clickUIDs)
+binData <- getBinaryData(myStudy, UID=clickUIDs, type='click')
+# plot the waveform of the first click
+plot(binData[[1]]$wave[, 1], type='l')
+```
+
 ## Exporting for BANTER Model
+
+If you've ever tried to run a model created by someone else on your own data, you probably
+know that just getting your data formatted properly can be a huge challenge. One of our goals
+with PAMpal is to reduce that headache by creating export functions that will organize your
+data into the format required by various models. Currently we only support exporting data for
+creating BANTER models (see: package `banter` available on CRAN, [BANTER paper][banter-paper], 
+[BANTER guide][banter-guide]). In the future we hope to add support for a variety of models,
+feel free to e-mail me at [taiki.sakai@noaa.gov](mailto:taiki.sakai@noaa.gov) if you have a model
+that you would like to have supported.
+
+Exporting data in your AcousticStudy object is as easy as calling `export_banter`. The output
+is a list with `events`, `detectors`, and `na`. The contents of `events` and `detectors` are
+formatted for `banter::initBanterModel` and `banter::addBanterDetector`, respectively, and `na`
+is a dataframe showing the information for any detections that had NA values (these will be
+removed from the exported data since random forest models cannot deal with NAs). Also note
+that BANTER can use event-level information in addition to information about each detection.
+Of PAMpal's provided functionality, currently only `calculateICI` and `matchEnvData` will 
+add this kind of event-level information to your AcousticStudy object, but in general anything
+that is in the list named `measures` in the `ancillary` slot of each event can potentially
+be exported for modeling purpose (you can see this for your first event with `ancillary(myStudy[[1]])$measures`.
+Only event-level measures that exist for all exported events can be used in a BANTER model, 
+`export_banter` will issue a warning message if there are event-level measures found that are
+not present in all events.
+
+```r
+# Assign species labels before exporting so that data can be used to train a model
+myStudy <- setSpecies(myStudy, method='pamguard')
+banterData <- export_banter(myStudy)
+names(bnt)
+# create model using exported data.
+banterModel <- banter::initBanterModel(banterData$events)
+banterModel <- banter::addBanterDetector(banterModel, banterData$detectors, ntree=50, sampsize=1)
+banterModel <- banter::runBanterModel(banterModel, ntree=50, sampsize=1)
+
+# add ICI data for export
+myStudy <- calculateICI(myStudy)
+# This may issue a warning about event-level measures depending on your data
+banterICI <- export_banter(myStudy)
+```
+
+`export_banter` will issue warning messages if any of the species or detectors have an insufficient
+number of events (see [BANTER documentation](banter-paper) for more information about
+requirements for creating a model), and it will also print out a summary of the number of 
+detections and events for each species after running (this can be turned off with `verbose=FALSE`).
+There are also two parameters that will allow you to easily remove a subset of species or 
+variables from the exported data, `dropVars` and `dropSpecies`. Both take in a character vector
+of the names of the variables or species that you do not want to be exported.
+
+```r
+# dont include peak3 or dBPP in the exported variables
+lessBanter <- export_banter(myStudy, dropVars = c('peak3', 'dBPP'))
+# dont include species Unid Dolphin or Unid BW in exported
+noUnids <- export_banter(myStudy, dropSpecies = c('Unid Dolphin', 'Unid BW'))
+```
+
+Finally, `export_banter` also has a logical flag `training` to indicate whether or not the
+data you are exporting is to be used for training a new BANTER model. If `training=TRUE` 
+(the default), then species IDs are required for each event, but if it is `FALSE` then they
+are not required. Additionally, if `training` is a numerical value between 0 and 1, then
+the exported data will be split into `$train` and `$test` datasets, where the value of `training`
+indicates the proportion of data to use for a training dataset, with the rest being left in `$test`.
+Note that splitting your data into training and test sets is not actually needed for BANTER
+since it is based on a random forest model (ask Eric Archer if you need convincing), but the
+option is included since it is frequently asked for.
+
+```r
+trainTest <- export_banter(myStudy, train=0.7)
+names(trainTest)
+nrow(trainTest$train$events)
+nrow(trainTest$test$events)
+```
+
+[banter-paper]: https://doi.org/10.1111/mms.12381
+[banter-guide]: https://doi.org/10.1111/mms.12381
