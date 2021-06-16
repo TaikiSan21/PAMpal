@@ -4,7 +4,13 @@
 \alias{getBinaryData}
 \title{Get Raw Binary Data for Detections}
 \usage{
-getBinaryData(x, UID, type = c("click", "whistle"), quiet = FALSE, ...)
+getBinaryData(
+  x,
+  UID,
+  type = c("click", "whistle", "cepstrum"),
+  quiet = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{a \linkS4class{AcousticStudy} object, a list of \linkS4class{AcousticEvent}

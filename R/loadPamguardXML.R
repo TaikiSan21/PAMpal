@@ -182,6 +182,19 @@ xml_getClick <- function(pgxml) {
   threshold <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/dbThreshold') %>% 
     xml_attr('Value') %>% 
     as.numeric()
+  preFilterNodes <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/preFilter')
+  preFilter <- lapply(preFilterNodes, function(x) {
+    vals <- xml_attr(xml_children(x), 'Value')
+    names(vals) <- xml_name(xml_children(x))
+    vals
+  })
+  
+  triggerFilterNodes <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/triggerFilter')
+  triggerFilter <- lapply(triggerFilterNodes, function(x) {
+    vals <- xml_attr(xml_children(x), 'Value')
+    names(vals) <- xml_name(xml_children(x))
+    vals
+  })
   basicIdNodes <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="BasicClickIdParams"]/clickTypeParams')
   basicId <- sapply(basicIdNodes, function(x) {
     tmp <- lapply(xml_children(x), function(y) {
@@ -193,6 +206,7 @@ xml_getClick <- function(pgxml) {
     names(tmp) <- sapply(tmp, function(y) y[['speciesCode']])
     tmp
   })
+
   for(i in seq_along(clickList)) {
     input <- xml_find_all(clickNodes, paste0('PROCESS[@Name="',
                                              names(clickList)[i],
@@ -201,10 +215,30 @@ xml_getClick <- function(pgxml) {
     result <- list(longFilter=longFilter[i],
                    longFilter2=longFilter2[i],
                    shortFilter=shortFilter[i],
-                   threshold=threshold[i])
+                   threshold=threshold[i],
+                   preFilter=preFilter[[i]],
+                   triggerFilter=triggerFilter[[i]])
     result$source <- input
     result$type <- 'click'
     result$basicClass <- basicId[[i]]
+    # sweeps may not be present
+    sweepIdNodes <- xml_find_all(clickNodes[[i]], 'CONFIGURATION/SETTINGS[@Type="ClickSweepClassifier"]/classifierSets')
+    if(length(sweepIdNodes) != 0) {
+      sweepId <- lapply(sweepIdNodes, function(x) {
+        tmp <- lapply(xml_children(x), function(y) {
+          # browser()
+          nds <- xml_find_all(y, '*[@Value]')
+          lst <- xml_attr(nds, 'Value')
+          names(lst) <- xml_name(nds)
+          lst
+        })
+        names(tmp) <- sapply(tmp, function(y) y[['speciesCode']])
+        tmp
+      })[[1]]
+    } else {
+      sweepId <- list()
+    }
+    result$sweepClass <- sweepId
     clickList[[i]] <- result
   }
   clickList

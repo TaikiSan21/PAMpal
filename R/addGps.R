@@ -244,6 +244,9 @@ gpsFromDb <- function(db, extraCols=NULL, bounds=NULL) {
 }
 
 checkGpsKey <- function(gps) {
+    if(!inherits(gps, 'data.frame')) {
+        stop('"gps" must be a data.frame or data.table.')
+    }
     if(!inherits(gps, 'data.table')) {
         setDT(gps)
     }

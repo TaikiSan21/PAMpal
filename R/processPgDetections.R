@@ -172,43 +172,47 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     # if they are there and are valid, assume they assigned
     dbToAssign <- which(!file.exists(grouping$db))
     # match db to events
-    for(i in dbToAssign) {
-        if(is.na(grouping$db[i]) ||
-           !any(grepl(grouping$db[i], allDbs, fixed=TRUE))) {
-            dbPossible <- allDbs[sapply(saList, function(x) {
-                inInterval(c(grouping$start[i], grouping$end[i]), x)
-            })]
-        } else { # case if you just specified basename of the database it will find it
-            dbPossible <- grep(grouping$db[i], allDbs, value=TRUE, fixed=TRUE)
+    if(length(allDbs) == 1) {
+        grouping$db[dbToAssign] <- allDbs
+    } else {
+        for(i in dbToAssign) {
+            if(is.na(grouping$db[i]) ||
+               !any(grepl(grouping$db[i], allDbs, fixed=TRUE))) {
+                dbPossible <- allDbs[sapply(saList, function(x) {
+                    inInterval(c(grouping$start[i], grouping$end[i]), x)
+                })]
+            } else { # case if you just specified basename of the database it will find it
+                dbPossible <- grep(grouping$db[i], allDbs, value=TRUE, fixed=TRUE)
+            }
+            
+            if(length(dbPossible) == 0 ||
+               is.na(dbPossible)) {
+                editGroup <- TRUE
+                myTitle <- paste0('No matching database found for event ', grouping$id[i],
+                                  ' based on times, please choose one or select "0" to',
+                                  ' leave as NA.')
+                myChoice <- menu(title = myTitle, choices = c(allDbs, 'Exit function call (no processing will occur)'))
+                if(myChoice == length(allDbs) + 1) {
+                    stop('Exiting function call', call.=FALSE)
+                }
+                if(myChoice == 0) {
+                    dbPossible <- NA_character_
+                } else {
+                    dbPossible <- allDbs[myChoice]
+                }
+            } else if(length(dbPossible) > 1) {
+                editGroup <- TRUE
+                myTitle <- paste0('Multiple candidate datbases found for event "', grouping$id[i],
+                                  '" based on times, select one to associate with this event.')
+                myChoice <- menu(title = myTitle, choices = dbPossible)
+                if(myChoice == 0) {
+                    dbPossible <- NA_character_
+                } else {
+                    dbPossible <- dbPossible[myChoice]
+                }
+            }
+            grouping$db[i] <- dbPossible
         }
-
-        if(length(dbPossible) == 0 ||
-           is.na(dbPossible)) {
-            editGroup <- TRUE
-            myTitle <- paste0('No matching database found for event ', grouping$id[i],
-                              ' based on times, please choose one or select "0" to',
-                              ' leave as NA.')
-            myChoice <- menu(title = myTitle, choices = c(allDbs, 'Exit function call (no processing will occur)'))
-            if(myChoice == length(allDbs) + 1) {
-                stop('Exiting function call', call.=FALSE)
-            }
-            if(myChoice == 0) {
-                dbPossible <- NA_character_
-            } else {
-                dbPossible <- allDbs[myChoice]
-            }
-        } else if(length(dbPossible) > 1) {
-            editGroup <- TRUE
-            myTitle <- paste0('Multiple candidate datbases found for event "', grouping$id[i],
-                              '" based on times, select one to associate with this event.')
-            myChoice <- menu(title = myTitle, choices = dbPossible)
-            if(myChoice == 0) {
-                dbPossible <- NA_character_
-            } else {
-                dbPossible <- dbPossible[myChoice]
-            }
-        }
-        grouping$db[i] <- dbPossible
     }
     failBin <- 'Havent started'
     on.exit({
@@ -255,9 +259,9 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     # missing DBs
     if(any(is.na(grouping$sr))) {
         editGroup <- TRUE
-        sr <- readline(prompt =
-                           paste0('Not all events have a database associated with them, ',
-                                  'what sample rate should be used for these events?'))
+        cat('\nCould not read sample rate from database,',
+            'what sample rate should be used for these events?\n')
+        sr <- readline()
         grouping$sr[is.na(grouping$sr)] <- as.numeric(sr)
     }
 
@@ -415,10 +419,14 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
             thisSource <- 'Not Found'
         } else {
             filtSa <- saList[[grouping$db[i]]]
-            filtSa <- filter(filtSa, filtSa$UTC <= grouping$end[i], filtSa$UTC >= grouping$start[i])
-            thisSource <- unique(filtSa$SystemType)
+            if(is.null(filtSa)) {
+                thisSource <- 'Not Found'
+            } else {
+                filtSa <- filter(filtSa, filtSa$UTC <= grouping$end[i], filtSa$UTC >= grouping$start[i])
+                thisSource <- unique(filtSa$SystemType)
+            }
         }
-
+        
         acousticEvents[[i]] <-
             AcousticEvent(id=evName[i], detectors = thisData, settings = list(sr = thisSr, source = thisSource),
                           files = list(binaries=binariesUsed, db=grouping$db[i], calibration=calibrationUsed))
@@ -616,7 +624,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
 }
 
 # ---- not exported helpers ----
-getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols = NULL) {
+getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols = NULL, doSR=TRUE) {
     # Combine all click/event tables, even by diff detector. Binary will have det name
     con <- dbConnect(SQLite(), db)
     on.exit(dbDisconnect(con))
@@ -633,7 +641,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
             suppressPamWarnings(
                 bind_rows(
                     lapply(grouping, function(x) {
-                        getDbData(db, x, label, extraCols)
+                        getDbData(db, x, label, extraCols, doSR)
                     }))
             )
         )
@@ -734,7 +742,9 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
     if(!('eventLabel' %in% colnames(allDetections))) {
         allDetections$eventLabel <- NA
     }
-    allDetections <- matchSR(allDetections, db, extraCols=c('SystemType'))
+    if(doSR) {
+        allDetections <- matchSR(allDetections, db, extraCols=c('SystemType'))
+    }
 
     # apply str_trim to all character columns
     whichChar <- which(sapply(allDetections, function(x) 'character' %in% class(x)))
@@ -857,6 +867,9 @@ checkGrouping <- function(grouping, format) {
 readSa <- function(db) {
     con <- dbConnect(db, drv=SQLite())
     on.exit(dbDisconnect(con))
+    if(!('Sound_Acquisition' %in% dbListTables(con))) {
+        return(NULL)
+    }
     sa <- dbReadTable(con, 'Sound_Acquisition')
     sa$Status <- str_trim(sa$Status)
     sa$SystemType <- str_trim(sa$SystemType)
@@ -865,7 +878,7 @@ readSa <- function(db) {
 }
 
 nBins <- function(db) {
-    evData <- getDbData(db)
+    evData <- getDbData(db, doSR=FALSE)
     if(nrow(evData) == 0) {
         return(0)
     }
@@ -907,8 +920,8 @@ autoMode <- function(pps, grouping) {
        (is.character(grouping) && file.exists(grouping))) {
         return('time')
     }
-    if(!is.null(getDbData(pps@db[1])) &&
-       nrow(getDbData(pps@db[1]))) {
+    if(!is.null(getDbData(pps@db[1], doSR=FALSE)) &&
+       nrow(getDbData(pps@db[1], doSR=FALSE))) {
         return('db')
     }
     if(!is.null(suppressPamWarnings(wavToGroup(pps@db[1])))) {

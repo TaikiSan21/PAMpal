@@ -47,8 +47,12 @@ matchSR <- function(data, db, extraCols = NULL, safe=FALSE) {
         }
         con <-dbConnect(db, drv=SQLite())
         on.exit(dbDisconnect(con))
-        soundAcquisition <- dbReadTable(con, 'Sound_Acquisition')
-        soundAcquisition$UTC <- pgDateToPosix(soundAcquisition$UTC)
+        if(!('Sound_Acquisition' %in% dbListTables(con))) {
+            soundAcquisition <- NULL
+        } else {
+            soundAcquisition <- dbReadTable(con, 'Sound_Acquisition')
+            soundAcquisition$UTC <- pgDateToPosix(soundAcquisition$UTC)
+        }
     }
     if(is.data.frame(db)) {
         soundAcquisition <- db
@@ -57,30 +61,33 @@ matchSR <- function(data, db, extraCols = NULL, safe=FALSE) {
        !inherits(data$UTC, 'POSIXct')) {
         stop('Data must have a column "UTC" in POSIXct format.')
     }
-    
-    soundAcquisition <- soundAcquisition %>%
-        mutate(Status = str_trim(.data$Status),
-               SystemType = str_trim(.data$SystemType)) %>%
-        filter(.data$Status=='Start') %>%
-        arrange(.data$UTC) %>%
-        select(all_of(c('UTC', 'sampleRate', extraCols))) %>%
-        distinct() %>%
-        data.table()
-
-    setkeyv(soundAcquisition, 'UTC')
-
-    data <- data.table(data)
-    setkeyv(data, 'UTC')
-
-    # This rolling join rolls to the first time before. Since we filtered to only starts, it goes back
-    # to whatever the last Start was.
-    data <- soundAcquisition[data, roll = TRUE] %>%
-        data.frame()
-    srNa <- which(is.na(data$sampleRate))
+    if(!is.null(soundAcquisition)) {
+        soundAcquisition <- soundAcquisition %>%
+            mutate(Status = str_trim(.data$Status),
+                   SystemType = str_trim(.data$SystemType)) %>%
+            filter(.data$Status=='Start') %>%
+            arrange(.data$UTC) %>%
+            select(all_of(c('UTC', 'sampleRate', extraCols))) %>%
+            distinct() %>%
+            data.table()
+        
+        setkeyv(soundAcquisition, 'UTC')
+        
+        data <- data.table(data)
+        setkeyv(data, 'UTC')
+        
+        # This rolling join rolls to the first time before. Since we filtered to only starts, it goes back
+        # to whatever the last Start was.
+        data <- soundAcquisition[data, roll = TRUE] %>%
+            data.frame()
+        srNa <- which(is.na(data$sampleRate))
+    } else {
+        data[extraCols] <- NA
+        srNa <- rep(TRUE, nrow(data))
+    }
     if(length(srNa) == nrow(data)) {
-        srReplace <- as.integer(
-            readline(prompt = 'No Sample Rate found in SoundAcquisition table. Enter Sample Rate for this data:\n')
-        )
+        cat('\nNo Sample Rate found in SoundAcquisition table. Enter Sample Rate for this data:\n')
+        srReplace <- as.integer(readline())
         data$sampleRate[srNa] <- srReplace
     } else if(length(srNa) > 0) {
         # get mode
@@ -90,7 +97,10 @@ matchSR <- function(data, db, extraCols = NULL, safe=FALSE) {
                          choices = c('Yes', 'No (I want to enter my own SR)'))
         srReplace <- switch(srChoice,
                             '1' = mode,
-                            '2' = readline(prompt='What Sample Rate should be used?\n'),
+                            '2' = {
+                                cat('\nWhat Sample Rate should be used?\n')
+                                readline()
+                            },
                             stop('Sample Rate required for calculations.')
         )
         data$sampleRate[srNa] <- srReplace

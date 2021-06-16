@@ -14,7 +14,7 @@ than some maximum value we specify. This is useful if your data is from duty-cyc
 since no events should be longer than your recording length.
 
 ```r
-longEvents <- checkStudy(myData, maxLength = 120)
+longEvents <- checkStudy(myStudy, maxLength = 120)
 ```
 <a href="images/LongEvents.png" data-lightbox="long-events" data-title="Lots of events longer than two minutes">![](images/LongEvents.png)</a>
 
@@ -67,13 +67,13 @@ follow along with the comments in the code.
 ```r
 # We're going to use a for loop, but first we're going to create
 # a place to store our output for the new events
-newEvents <- vector('list', length = length(events(myData)))
+newEvents <- vector('list', length = length(events(myStudy)))
 for(i in seq_along(newEvents)) {
     # One event at a time, use our functions from earlier to get the
     # start and end times for our neew times
-    thisEvent <- events(myData)[[i]]
+    thisEvent <- events(myStudy)[[i]]
     thisTime <- getTimes(thisEvent)
-    thisStartEnd <- timeToStartEnd(thisTime$UTC)
+    thisStartEnd <- timeToStartEnd(thisTime$UTC, length=120)
     # If it only made one start/end, we don't need to change anything!
     if(length(thisStartEnd$start) == 1) {
         # The "list" part might look weird, but its because when we are breaking
@@ -103,16 +103,16 @@ for(i in seq_along(newEvents)) {
 # of our original so we can compare our results
 newEvents <- unlist(newEvents)
 names(newEvents) <- sapply(newEvents, id)
-shortData <- myData
-events(shortData) <- newEvents
+shortStudy <- myStudy
+events(shortStudy) <- newEvents
 ```
 
 Done! Let's compare our new `AcousticStudy` to what we started with to see what changed.
 
 ```r
-myData
-shortData
-noWarns <- checkStudy(shortData, maxLength = 120)
+myStudy
+shortStudy
+noWarns <- checkStudy(shortStudy, maxLength = 120)
 ```
 
 <a href="images/NoLongEvents.png" data-lightbox="no-long-events" data-title="No more warnings!">![](images/NoLongEvents.png)</a>

@@ -10,6 +10,15 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #' 
+#' @examples 
+#' 
+#' \dontrun{
+#' data(exStudy)
+#' # This will trigger a warning, then we can access it
+#' exStudy <- filter(exStudy, species == "test")
+#' getWarnings(exStudy)
+#' }
+#' 
 #' @export
 #' 
 getWarnings <- function(x) {

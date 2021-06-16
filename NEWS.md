@@ -1,3 +1,17 @@
+## PAMpal 0.13.0
+
+* Added more info to `loadPamguardXML`. Now loads in click sweep classifier type data
+as well as pre-filter and trigger filter data
+
+* `standardClickCalcs` no longer fails if upper end of filter >= to Nyquist
+
+* `processPgDetections` with `mode='time'` can run successfully if no Sound_Acquisition
+table is present by providing columns `db` and `sr` the grouping file (`db` not needed
+if processing a single database)
+
+* `processPgDetections` with `mode='db'` can run successfully if no Sound_Acquisition table
+is present, will ask for sample rate during processing
+
 ## PAMpal 0.12.8
 
 * `calculateAverageSpectra` now draws lines breaking up events in concatenated spectrogram

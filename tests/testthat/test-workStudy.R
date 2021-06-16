@@ -99,7 +99,12 @@ test_that('Test working with AcousticStudy object', {
     recs <- system.file('extdata', 'Recordings', package='PAMpal')
     exData <- addRecordings(exData, folder = recs, log=FALSE, progress=FALSE)
     expect_identical(files(exData)$recordings$file, list.files(recs, full.names = TRUE))
-    expect_warning(addRecordings(exData, folder = 'DNE', log=FALSE, progress=FALSE))
+    expect_warning(warnRec <- addRecordings(exData, folder = 'DNE', log=FALSE, progress=FALSE))
+    
+    # test warning access from recorder warning
+    warns <- getWarnings(warnRec)
+    expect_is(warns, 'data.frame')
+    expect_true('Provided folder DNE does not exist.' %in% warns$message)
 
 })
 

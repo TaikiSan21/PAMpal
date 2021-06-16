@@ -7,7 +7,7 @@
 plotGram(
   x,
   evNum = 1,
-  start = 0,
+  start = NULL,
   end = NULL,
   channel = 1,
   wl = 512,
@@ -26,10 +26,10 @@ spectra for. Note that this is the index in the order that they appear in the
 full event names can be used}
 
 \item{start}{start time of the plot, either POSIXct or seconds from
-the start of the recording}
+the start of the event}
 
 \item{end}{end time of the plot, either POSIXct or seconds from the start
-of the recording.}
+of the event.}
 
 \item{channel}{channel to plot}
 

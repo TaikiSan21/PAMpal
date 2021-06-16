@@ -94,6 +94,10 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
             # kinda janky because NULL * 1e3 is not NULL anymore, its numeric(0)
             if(!is.null(filterto_khz)) {
                 to_hz <- filterto_khz * 1e3
+                # cant filter at or higher than Nyquist or it errors
+                if(to_hz >= sr/2) {
+                    to_hz <- NULL
+                }
             } else {
                 to_hz <- NULL
             }

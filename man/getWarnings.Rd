@@ -17,6 +17,16 @@ a list of warning messages, named by the function call that created
 \description{
 Accessor to easily get all warning messages for \code{x}
 }
+\examples{
+
+\dontrun{
+data(exStudy)
+# This will trigger a warning, then we can access it
+exStudy <- filter(exStudy, species == "test")
+getWarnings(exStudy)
+}
+
+}
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}
 }

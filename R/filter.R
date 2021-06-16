@@ -77,6 +77,7 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
         }
         events(.data) <- events(.data)[spKeep]
         if(length(events(.data)) == 0) {
+            .data <- .addPamWarning(.data)
             return(.data)
         }
     }
@@ -100,6 +101,7 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
         events(.data) <- events(.data)[dbKeep]
         files(.data)$db <- files(.data)$db[studyKeep]
         if(length(events(.data)) == 0) {
+            .data <- .addPamWarning(.data)
             return(.data)
         }
     }
@@ -116,6 +118,7 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
             filteredEv <- doFilter(evDf[, !(names(evDf) %in% c('UTC', 'Longitude', 'Latitude')), drop=FALSE], ...)
             events(.data) <- events(.data)[names(events(.data)) %in% unique(filteredEv$event)]
             if(length(events(.data)) == 0) {
+                .data <- .addPamWarning(.data)
                 return(.data)
             }
         }
