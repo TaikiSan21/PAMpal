@@ -90,7 +90,12 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
             calibration <- x@pps@calibration$ClickDetector[[1]]
         }
     }
-    clickData <- distinct(getClickData(ev)[c('eventId', 'UID')])
+    clickData <- getClickData(ev)[c('eventId', 'UID')]
+    if(is.null(clickData)) {
+        stop('No clicks in this event')
+        return(NULL)
+    }
+    clickData <- distinct(clickData)
     clickUID <- clickData$UID
     binData <- getBinaryData(ev, clickUID, type='click', quiet = TRUE)
     if(length(binData) == 0) {

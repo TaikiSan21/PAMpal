@@ -39,7 +39,7 @@
 #'
 checkStudy <- function(x, maxLength=Inf, maxSep=60*60*2) {
     if(length(events(x)) == 0) {
-        warning('No events in AcousticStudy')
+        pamWarning('No events in AcousticStudy')
         return(NULL)
     }
     peak0Msg <- doCheck(checkPeakZero, x)
@@ -69,7 +69,7 @@ checkPeakZero <- function(x) {
             peak0Msg <- paste0('Some clicks had a peak frequency of 0 Hz,',
                                ' consider adjusting the filter parameter',
                                ' or adding a calibration function.')
-            warning(peak0Msg, call. = FALSE)
+            pamWarning(peak0Msg)
         }
     }
     peak0Msg
@@ -105,14 +105,14 @@ checkTime <- function(x, length=Inf, between=60*60*2) {
         longIds <- paste0(evTimes$id[isLong], collapse=', ')
         longMsg <- paste0('Found ', sum(isLong), ' events longer than ',
                           length, ' seconds: ', longIds)
-        warning(longMsg, call.=FALSE)
+        pamWarning(longMsg)
     }
     badMsg <- ''
     if(any(isBad)) {
         badIds <- paste0(evTimes$id[isBad], collapse=', ')
         badMsg <- paste0('Found ', sum(isBad), ' events with detections',
                          ' more than ', between, ' seconds apart: ', badIds)
-        warning(badMsg, call.=FALSE)
+        pamWarning(badMsg)
     }
     paste0(longMsg, '\n', badMsg)
 }

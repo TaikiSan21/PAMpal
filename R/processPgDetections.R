@@ -141,6 +141,7 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
                      }
     )
     checkStudy(result)
+    result <- .addPamWarning(result)
     result
 }
 
@@ -450,7 +451,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     # events(study) <- acousticEvents
     # files(study) <- list(db=allDbs, binaries=allBins)
     ancillary(study)$grouping <- grouping
-    study <- .addPamWarning(study)
+    # study <- .addPamWarning(study)
     on.exit() # this cancels the on.exit 'save my grouping' call that is there if you crash
     study
 }
@@ -618,7 +619,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
     on.exit()
     study <- AcousticStudy(id=id, events = allAcEv, pps = pps,
                   files = list(db=allDbs, binaries=allBins))
-    study <- .addPamWarning(study)
+    # study <- .addPamWarning(study)
     settings(study)$detectors <- pps@settings$detectors
     study
 }
@@ -696,8 +697,8 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
         })
     )
     if(nrow(allDetections)==0) {
-        warning('No detections found for grouping method "', grouping,
-                '" in database ', basename(db), call.=FALSE)
+        pamWarning('No detections found for grouping method "', grouping,
+                '" in database ', basename(db), which = -1)
         return(NULL)
     }
 
@@ -707,8 +708,8 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
         })
     )
     if(nrow(allEvents)==0) {
-        warning('No events found for grouping method "', grouping,
-                '" in database ', basename(db), call.=FALSE)
+        pamWarning('No events found for grouping method "', grouping,
+                '" in database ', basename(db), which = -1)
         return(NULL)
     }
 
@@ -791,8 +792,8 @@ getMatchingBinaryData <- function(dbData, binList, dbName, idCol = 'UID') {
         return(NULL)
     }
     if(!all(dbData$matched)) {
-        warning(paste0('UID(s) ', printN(dbData$UID[!dbData$matched], n=6),
-                       ' are in databases ', dbName, ' but not in binary file ', binFile), call.=FALSE)
+        pamWarning('UID(s) ', dbData$UID[!dbData$matched],
+                       ' are in databases ', dbName, ' but not in binary file ', binFile)
     }
     # do SR match after, if onyl one we can just simple match
     if(length(unique(dbData$sampleRate)) == 1) {

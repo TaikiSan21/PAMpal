@@ -12,6 +12,8 @@ if processing a single database)
 * `processPgDetections` with `mode='db'` can run successfully if no Sound_Acquisition table
 is present, will ask for sample rate during processing
 
+* Missed some function warnings with new warning system
+
 ## PAMpal 0.12.8
 
 * `calculateAverageSpectra` now draws lines breaking up events in concatenated spectrogram
