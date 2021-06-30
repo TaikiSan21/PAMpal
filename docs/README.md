@@ -242,8 +242,11 @@ Feel free to reach out with any questions, comments, suggestions: [taiki.sakai@n
 
 ## Versions
 
+[test link][PMTest]
+
 For bug fixes and feature additions in each version see the [NEWS][news] file
 
+[PMTest]: PM_IPI_Example.html
 [standard-calcs]: StandardCalcs.md
 [time-grouping]: TimeGrouping.md
 [db-select-image]: images/DBSelectCropped.png
