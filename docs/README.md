@@ -242,7 +242,7 @@ Feel free to reach out with any questions, comments, suggestions: [taiki.sakai@n
 
 ## Versions
 
-[test link][PMTest]
+[test link][testavg]
 
 For bug fixes and feature additions in each version see the [NEWS][news] file
 
