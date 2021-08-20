@@ -83,7 +83,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
         evNum <- evNum[evNum <= length(events(x))]
         ev <- x[evNum]
         if(is.null(sr)) {
-            sr <- getSr(x, 'click')
+            sr <- getSr(x, type='click')
         }
         if(is.null(calibration) &&
            length(x@pps@calibration$ClickDetector) == 1) {
@@ -388,39 +388,6 @@ myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
     ans[, 2] <- dB[1:(wl%/%2)]
     # list(dB = dB[1:(wl%/%2)], freq=y[1:(wl%/%2)])
     ans
-}
-
-getSr <- function(x, type=c('click', 'whistle', 'cepstrum')) {
-    if(!is.AcousticStudy(x)) {
-        return(NULL)
-    }
-    clickFuns <- pps(x)@functions$ClickDetector
-    srSettings <- unique(unlist(lapply(clickFuns, function(c) {
-        formals(c)[['sr_hz']]
-    })))
-    if(length(srSettings) == 1 &&
-       is.numeric(srSettings)) {
-        return(srSettings)
-    }
-    type <- match.arg(type)
-    detSets <- settings(x)$detectors
-    if(is.null(detSets) || length(detSets) == 0) {
-        return(NULL)
-    }
-
-    whichThisType <- sapply(detSets, function(d) {
-        d$type == type
-    })
-    if(!any(whichThisType)) {
-        return(NULL)
-    }
-    possSr <- sapply(detSets[whichThisType], function(d) {
-        d$sr
-    })
-    if(length(possSr) == 1) {
-        return(possSr)
-    }
-    NULL
 }
 
 doLogAvg <- function(x, log=TRUE) {

@@ -98,7 +98,8 @@ test_that('Test working with AcousticStudy object', {
     # test add recordings
     recs <- system.file('extdata', 'Recordings', package='PAMpal')
     exData <- addRecordings(exData, folder = recs, log=FALSE, progress=FALSE)
-    expect_identical(files(exData)$recordings$file, list.files(recs, full.names = TRUE))
+    expect_identical(normalizePath(files(exData)$recordings$file),
+                     normalizePath(list.files(recs, full.names = TRUE)))
     expect_warning(warnRec <- addRecordings(exData, folder = 'DNE', log=FALSE, progress=FALSE))
     
     # test warning access from recorder warning
@@ -161,7 +162,7 @@ test_that('Test getBinaryData', {
     bin <- getBinaryData(exStudy, UID = 8000003)
     expect_equal(names(bin), '8000003')
     expect_true(all(c('wave', 'sr', 'minFreq') %in% names(bin[[1]])))
-    expect_null(getBinaryData(exStudy, UID = 1))
+    expect_null(expect_warning(getBinaryData(exStudy, UID = 1)))
 })
 
 test_that('Test getDetectorData', {

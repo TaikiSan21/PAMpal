@@ -4,13 +4,21 @@
 \alias{PAMpalSettings}
 \title{Constructor for PAMpalSettings Object}
 \usage{
-PAMpalSettings(db = NULL, binaries = NULL, verbose = TRUE, ...)
+PAMpalSettings(
+  db = NULL,
+  binaries = NULL,
+  settings = NULL,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{db}{the full path to a Pamguard database file}
 
 \item{binaries}{a folder containing Pamguard binary files, all subfolders will
 also be added}
+
+\item{settings}{an XML settings file from Pamguard}
 
 \item{verbose}{logical flag to show messages}
 

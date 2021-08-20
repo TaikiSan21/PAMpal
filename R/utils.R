@@ -39,7 +39,7 @@ whereUID <- function(study, UID, quiet=FALSE) {
 # safe to fail with NULL instead of error
 #' @importFrom data.table data.table setkeyv
 #'
-matchSR <- function(data, db, extraCols = NULL, safe=FALSE) {
+matchSR <- function(data, db, extraCols = NULL, safe=FALSE, fixNA=TRUE) {
     if(is.character(db)) {
         if(!file.exists(db)) {
             if(safe) return(NULL)
@@ -57,8 +57,12 @@ matchSR <- function(data, db, extraCols = NULL, safe=FALSE) {
     if(is.data.frame(db)) {
         soundAcquisition <- db
     }
+    if(inherits(data, 'POSIXct')) {
+        data <- data.frame(UTC = data)
+    }
     if(!('UTC' %in% colnames(data)) ||
        !inherits(data$UTC, 'POSIXct')) {
+        if(safe) return(NULL)
         stop('Data must have a column "UTC" in POSIXct format.')
     }
     if(!is.null(soundAcquisition)) {
@@ -85,25 +89,29 @@ matchSR <- function(data, db, extraCols = NULL, safe=FALSE) {
         data[extraCols] <- NA
         srNa <- rep(TRUE, nrow(data))
     }
-    if(length(srNa) == nrow(data)) {
-        cat('\nNo Sample Rate found in SoundAcquisition table. Enter Sample Rate for this data:\n')
-        srReplace <- as.integer(readline())
-        data$sampleRate[srNa] <- srReplace
-    } else if(length(srNa) > 0) {
-        # get mode
-        mode <- which.max(tabulate(data$sampleRate[-srNa]))
-        srChoice <- menu(title=paste0('Could not get Sample Rate for all detections from the "SoundAcquistion" table.',
-                                      ' Should missing values be replaced with ', mode, '(value found in table).'),
-                         choices = c('Yes', 'No (I want to enter my own SR)'))
-        srReplace <- switch(srChoice,
-                            '1' = mode,
-                            '2' = {
-                                cat('\nWhat Sample Rate should be used?\n')
-                                readline()
-                            },
-                            stop('Sample Rate required for calculations.')
-        )
-        data$sampleRate[srNa] <- srReplace
+    if(fixNA) {
+        if(length(srNa) == nrow(data)) {
+            cat('\nNo Sample Rate found in SoundAcquisition table. Enter Sample Rate for this data:\n')
+            srReplace <- as.integer(readline())
+            data$sampleRate[srNa] <- srReplace
+        } else if(length(srNa) > 0) {
+            # get mode
+            mode <- which.max(tabulate(data$sampleRate[-srNa]))
+            srChoice <- menu(title=paste0('Could not get Sample Rate for all detections from the "SoundAcquistion" table.',
+                                          ' Should missing values be replaced with ', mode, '(value found in table).'),
+                             choices = c('Yes', 'No (I want to enter my own SR)'))
+            srReplace <- switch(srChoice,
+                                '1' = mode,
+                                '2' = {
+                                    cat('\nWhat Sample Rate should be used?\n')
+                                    readline()
+                                }, {
+                                    if(safe) return(NULL)
+                                    stop('Sample Rate required for calculations.')
+                                }
+            )
+            data$sampleRate[srNa] <- srReplace
+        }
     }
     data
 }
@@ -197,15 +205,16 @@ checkRecordings <- function(x) {
 
 getPamFft <- function(data) {
     if(inherits(data, 'PamBinary')) {
-        data$data <- contourToFreq(data$data)
-        return(data)
+        # data$data <- contourToFreq(data$data)
+        return(getPamFft(data$data))
     }
     if(length(data) == 0) {
-        return(data)
+        return(NULL)
     }
     if(!(all(c('sliceData', 'nSlices', 'sampleDuration', 'startSample', 'maxFreq') %in%
              names(data[[1]])))) {
-        stop('Appears data is not a Whistle and Moan Detector binary file.')
+        # stop('Appears data is not a Whistle and Moan Detector binary file.')
+        return(NULL)
     }
     tempData <- data[[1]]
     if(tempData$sliceData[[1]]$sliceNumber == 0) {
@@ -260,4 +269,95 @@ findWavCol <- function(sa) {
         wavCol <- 'SystemName'
     }
     wavCol
+}
+
+
+getSr <- function(x, type=c('click', 'whistle', 'cepstrum'), name=NULL, UTC=NULL) {
+    # need to vectorize better this will do matchSR over and over again FML
+    # if(length(name) > 1) {
+    #     return(sapply(name, function(n) {
+    #         getSr(x, type, n, UTC)
+    #     }))
+    # }
+    if(!is.AcousticStudy(x)) {
+        return(NULL)
+    }
+    # type <- match.arg(type)
+    if(length(name) != length(UTC)) {
+        if(length(name) == 1 &&
+           length(UTC) > 1) {
+            name <- rep(name, length(UTC))
+        }
+        if(length(UTC) == 1 &&
+           length(name) > 1) {
+            UTC <- rep(UTC, length(name))
+        }
+    }
+    srOut <- rep(NA, max(1, length(name)))
+    for(i in seq_along(srOut)) {
+        srOut[i] <- doOneSr(x, type, name[i])
+    }
+    
+    srNa <- is.na(srOut)
+    if(!any(srNa)) {
+        return(srOut)
+    }
+    # MAKE DOONESR WORK HERE THEN LEFTOVERS GET FIXED WITH UTC FORM DB
+    # PORBABLY NEED TO RETURN NA INSTEAD OF NULL, NEED TO CHECK OTHER
+    # FUNS THAT USE GETSR TO SEE WHAT THEY CHECK ON FAILURE
+    # if we are trying to match by times, do it from the database
+    if(!is.null(UTC)) {
+        srDf <- bind_rows(lapply(file(x)$db, function(d) {
+            matchSR(UTC[srNa], d, safe=TRUE, fixNA=FALSE)
+        }))
+        srOut[srNa] <- srDf$sampleRate
+    }
+    # giv eup
+    if(!all(is.na(srOut))) {
+        return(srOut)
+    }
+    NULL
+}
+
+doOneSr <- function(x, type=c('click', 'whistle', 'cepstrum'), name=NULL) {
+    detSets <- settings(x)$detectors
+    # fixing click detector names to match settings, and filter down if matching name
+    if(!is.null(name) &&
+       !is.null(detSets)) {
+        name <- gsub('_[0-9]{0,3}$', '', name)
+        detSets <- detSets[names(detSets) == name]
+    }
+    # if we have settings, see if any have matching type and one answer
+    if(!is.null(detSets) && length(detSets) > 0) {
+        whichThisType <- sapply(detSets, function(d) {
+            d$type %in% type
+        })
+        if(any(whichThisType)) {
+            possSr <- unique(sapply(detSets[whichThisType], function(d) {
+                d$sr
+            }))
+            if(length(possSr) == 1) {
+                return(possSr)
+            }
+        }
+    }
+    # try to grab sr_hz param if its clicks
+    if('click' %in% type) {
+        clickFuns <- pps(x)@functions$ClickDetector
+        srSettings <- unique(unlist(lapply(clickFuns, function(c) {
+            formals(c)[['sr_hz']]
+        })))
+        if(length(srSettings) == 1 &&
+           is.numeric(srSettings)) {
+            return(srSettings)
+        }
+    }
+    # see if theres a single SR from audio settings
+    possSr <- unique(sapply(events(x), function(e) {
+        settings(e)$sr
+    }))
+    if(length(possSr) == 1) {
+        return(possSr)
+    }
+    NA
 }

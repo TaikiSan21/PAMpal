@@ -57,6 +57,7 @@ addBinaries <- function(pps, folder=NULL, verbose=TRUE) {
         warning(paste0('Binary folder ', folder, ' does not exist'))
         return(pps)
     }
+    folder <- normalizePath(folder)
     pps@binaries$folder <- unique(c(pps@binaries$folder, folder))
     if(is.null(binList) ||
        length(binList) == 0) {

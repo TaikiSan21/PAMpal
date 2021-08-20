@@ -41,7 +41,7 @@
 #'
 #' @export
 #'
-writeEventClips <- function(x, buffer = c(-0.1, 0.1), outDir='.', mode=c('event', 'detection'),
+writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', 'detection'),
                             channel = 1, useSample=FALSE, progress=TRUE, verbose=TRUE) {
     if(!is.AcousticStudy(x)) {
         stop('"x" must be an AcousticStudy object.')
@@ -279,8 +279,10 @@ getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
                    is.na(recMap$startSample[minIx])) {
                     evResult <- list(start = minUTC)
                 } else {
+                    binMin <- getBinaryData(x, minUID)[[1]]
+                    binSr <- ifelse(is.na(binMin$sr), recMap$sr[minIx], binMin$sr)
                     evResult <- list(start = recMap$start[minIx] + 
-                                         (getBinaryData(x, minUID)[[1]]$startSample - recMap$startSample[minIx]) / recMap$sr[minIx])
+                                         binMin$startSample/binSr - recMap$startSample[minIx]/recMap$sr[minIx])
                 }
                 maxIx <- checkIn(maxUTC, recMap)
                 if(is.na(maxIx) ||
@@ -288,8 +290,10 @@ getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
                    is.na(recMap$startSample[maxIx])) {
                     evResult$end <- maxUTC
                 } else {
+                    binMax <- getBinaryData(x, maxUID)[[1]]
+                    binSr <- ifelse(is.na(binMax$sr), recMap$sr[maxIx], binMax$sr)
                     evResult$end <- recMap$start[maxIx] + 
-                        (getBinaryData(x, maxUID)[[1]]$startSample - recMap$startSample[maxIx]) / recMap$sr[maxIx]
+                        binMax$startSample / binSr - recMap$startSample[maxIx] / recMap$sr[maxIx]
                 }
                 return(evResult)
             }
@@ -306,10 +310,11 @@ getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
                        is.na(recMap$startSample[wavIx])) {
                         return(list(start=thisDate, end=thisDate))
                     }
+                    binSr <- ifelse(is.na(b$sr), recMap$sr[wavIx], b$sr)
                     list(start=recMap$start[wavIx] + 
-                             (b$startSample - recMap$startSample[wavIx]) / recMap$sr[wavIx],
+                             b$startSample / binSr - recMap$startSample[wavIx] / recMap$sr[wavIx],
                          end = recMap$start[wavIx] + 
-                             (b$startSample - recMap$startSample[wavIx]) / recMap$sr[wavIx])
+                             b$startSample / binSr - recMap$startSample[wavIx] / recMap$sr[wavIx])
                 })
                 
             } else {

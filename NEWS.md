@@ -1,3 +1,26 @@
+## PAMpal 0.14.0
+
+* Normalizing some paths internally
+
+* `checkStudy` checks for NA values and reports
+
+* Small bug in `addRecordings` that wasn't assigning `startSample` properly for separate wav files
+
+* Trying to re-work how we can consistently access SR after processing. Functions should
+now be able to automatically tell if a decimated sample rate is appropriate (`calculateAverageSpectra`
+and `writeEventClips` mainly) for clicks in binaries as long as XML settings have been
+added with `addSettings` before processing. 
+
+* `PAMpalSettings` has new parameter `settings` to add XML settings without an additional
+call to `addSettings`
+
+* `filter` works better with detector names
+
+* Grouping in `mode='recording'` wasn't working well when recordings were processed
+with "Merge contiguous files" checked, fixed now
+
+* `writeEventClips` works with decimated data now with `useSample = TRUE`
+
 ## PAMpal 0.13.0
 
 * Added more info to `loadPamguardXML`. Now loads in click sweep classifier type data

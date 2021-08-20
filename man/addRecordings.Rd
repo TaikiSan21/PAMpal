@@ -4,7 +4,7 @@
 \alias{addRecordings}
 \title{Add Recordings to an AcousticStudy Object}
 \usage{
-addRecordings(x, folder = NULL, log = NULL, progress = TRUE)
+addRecordings(x, folder = NULL, log = FALSE, progress = TRUE)
 }
 \arguments{
 \item{x}{a \linkS4class{AcousticStudy} object to add recordings to}

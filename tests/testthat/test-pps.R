@@ -2,8 +2,10 @@ context('PAMpalSettings object creation and manipulation')
 
 test_that('Create and modify PPS', {
     exPps <- new('PAMpalSettings')
-    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'), verbose=FALSE)
-    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'), verbose=FALSE)
+    db <- system.file('extdata', 'Example.sqlite3', package='PAMpal')
+    exPps <- addDatabase(exPps, db, verbose=FALSE)
+    bin <- system.file('extdata', 'Binaries', package='PAMpal')
+    exPps <- addBinaries(exPps, bin, verbose=FALSE)
     exClick <- function(data) {
         standardClickCalcs(data, filterfrom_khz = 0)
     }
@@ -45,7 +47,8 @@ test_that('Create and modify PPS', {
     xmlList <- loadPamguardXML(xmlFile)
     xmlAdd <- addSettings(exPps, xmlFile, type='xml', verbose=FALSE)
     listAdd <- addSettings(exPps, xmlList, type='list', verbose=FALSE)
-    expect_identical(xmlAdd@settings[1:2], listAdd@settings[1:2])
+    xmlPps <- PAMpalSettings(db, bin, sr_hz='auto', filterfrom_khz=5, filterto_khz=NULL, winLen_sec=.0025, settings=xmlFile, verbose=FALSE)
+    expect_identical(xmlPps@settings[1:2], xmlAdd@settings[1:2], listAdd@settings[1:2])
     expect_identical(xmlList[1:2], xmlAdd@settings[1:2])
     expect_true(all(c('sources', 'detectors', 'raw') %in% names(xmlAdd@settings)))
     expect_equal(xmlList$detectors[['Click_Detector']]$sr, 192000)

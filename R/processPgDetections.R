@@ -741,7 +741,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
     # rename column to use as label - standardize across event group types
     colnames(allDetections)[which(colnames(allDetections)==label)] <- 'eventLabel'
     if(!('eventLabel' %in% colnames(allDetections))) {
-        allDetections$eventLabel <- NA
+        allDetections$eventLabel <- 'NOLABELFOUND'
     }
     if(doSR) {
         allDetections <- matchSR(allDetections, db, extraCols=c('SystemType'))
@@ -949,6 +949,36 @@ wavToGroup <- function(db) {
     sa$UTC <- pgDateToPosix(sa$UTC)
     # sa <- filter(sa, .data$Status != 'Continue')
     wavCol <- findWavCol(sa)
+    # Fix for merge continuos NextFile nonsense
+    if(any(sa$Status == 'NextFile')) {
+        whichNext <- sa$Status == 'NextFile'
+        nf <- sa[whichNext, ]
+        cont <- sa[sa$Status %in% c('Continue', 'Stop', 'Start'),]
+        newStuff <- vector('list', length=nrow(nf))
+        tempRow <- sa[FALSE,]
+        tempRow[1:2, ] <- NA
+        for(i in 1:nrow(nf)) {
+            cBefore <- max(which(cont$Id < nf$Id[i]))
+            cAfter <- min(which(cont$Id > nf$Id[i]))
+            thisTemp <- tempRow
+            thisTemp$Status <- c('Stop', 'Start')
+            if(!is.na(wavCol)) {
+                thisTemp[[wavCol]] <- c(cont[[wavCol]][cBefore],
+                                        cont[[wavCol]][cAfter])
+            }
+            thisTemp$UTC <- cont$UTC[cAfter]
+            thisTemp$Id <- nf$Id[i] + c(0, .5)
+            newStuff[[i]] <- thisTemp
+        }
+        newStuff <- bind_rows(newStuff)
+        if(is.na(wavCol)) {
+            newStuff$SystemType <- unique(sa$SystemType)[1]
+        }
+        sa <- sa[!whichNext, ]
+        sa <- rbind(sa, newStuff)
+        sa <- arrange(sa, Id)
+    }
+    
     if(is.na(wavCol)) {
         pamWarning('Wav file names not saved in database, events will be labelled')
         saGrp <- select(sa, c('UTC', 'Status', 'SystemType'))
@@ -1019,6 +1049,8 @@ wavToGroup <- function(db) {
     saGrp$db <- db
     saGrp
 }
+
+globalVariables('Id')
 
 parseDglLabel <- function(x, colnames) {
     standardCols <- ppVars()$dglCols

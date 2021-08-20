@@ -118,6 +118,7 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
 }
 
 # match and replace
+# old is vector or df, new is vector of new file names
 fileMatcher <- function(old, new) {
     if(length(new) == 0) {
         return(old)
@@ -126,6 +127,7 @@ fileMatcher <- function(old, new) {
         old$file <- fileMatcher(old$file, new)
         return(old)
     }
+    new <- normalizePath(new)
     repIx <- sapply(old, function(x) {
         rix <- which(grepl(basename(x), basename(new)))
         if(length(rix) == 0) {

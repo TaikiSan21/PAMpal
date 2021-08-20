@@ -138,10 +138,11 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
 filter.AcousticEvent <- function(.data, ..., .preserve=FALSE) {
     # browser()
     dotChars <- sapply(quos(...), as_label)
-    isDetector <- grepl('^.{0,3}detector|^.{0,3}Detector', dotChars)
+    # isDetector <- grepl('^.{0,3}detector|^.{0,3}Detector', dotChars)
+    isDetector <- grepl('\\b[Dd]etector\\b', dotChars, ignore.case=TRUE)
     detKeep <- rep(TRUE, length(detectors(.data)))
     if(any(isDetector)) {
-        exprText <- gsub('^(.*?)detector(.*)', '\\1names(detectors(.data))\\2', dotChars[isDetector], ignore.case=TRUE)
+        exprText <- gsub('^(.*?)\\bdetector\\b(.*)', '\\1names(detectors(.data))\\2', dotChars[isDetector], ignore.case=TRUE)
         for(s in seq_along(exprText)) {
             thisKeep <- eval(parse_expr(exprText[s]))
             thisKeep[is.na(thisKeep)] <- FALSE

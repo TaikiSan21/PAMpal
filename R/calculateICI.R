@@ -95,38 +95,42 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
     # browser()
     # filter outliers before mode calc
     iciMode <- lapply(iciList, function(i) {
-        ici <- i$ici[i$ici > 0]
-        if(length(ici) == 0) {
-            return(0)
-        }
-        if(length(ici) == 1) {
-            return(ici)
-        }
-        if(!is.na(sd(ici)) &&
-           sd(ici) != 0) {
-            iciZ <- (ici - mean(ici)) / sd(ici)
-            ici <- ici[abs(iciZ) < 2]
-            if(any(abs(iciZ) < 2)) {
-                iciZ <- (ici - mean(ici)) / sd(ici)
-                ici <- ici[abs(iciZ) < 2]
-            }
-            if(length(ici) == 0) {
-                return(0)
-            }
-            if(length(ici) == 1) {
-                return(ici)
-            }
-        }
-        den <- density(ici)
-        mode <- den$x[which.max(den$y)]
-        if(mode < 0) mode <- 0
-        mode
+        calcIciMode(i$ici)
     })
     names(iciMode) <- paste0(names(iciMode), '_ici')
     ancillary(x)$measures <- safeListAdd(ancillary(x)$measures, iciMode)
     x <- .addPamWarning(x)
     x
 })
+
+calcIciMode <- function(ici) {
+    ici <- ici[ici > 0]
+    if(length(ici) == 0) {
+        return(0)
+    }
+    if(length(ici) == 1) {
+        return(ici)
+    }
+    if(!is.na(sd(ici)) &&
+       sd(ici) != 0) {
+        iciZ <- (ici - mean(ici)) / sd(ici)
+        ici <- ici[abs(iciZ) < 2]
+        if(any(abs(iciZ) < 2)) {
+            iciZ <- (ici - mean(ici)) / sd(ici)
+            ici <- ici[abs(iciZ) < 2]
+        }
+        if(length(ici) == 0) {
+            return(0)
+        }
+        if(length(ici) == 1) {
+            return(ici)
+        }
+    }
+    den <- density(ici)
+    mode <- den$x[which.max(den$y)]
+    if(mode < 0) mode <- 0
+    mode
+}
 
 dfICI <- function(x, time='UTC') {
     # check if peakTime is full time or just time within the waveform

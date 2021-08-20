@@ -42,10 +42,13 @@ checkStudy <- function(x, maxLength=Inf, maxSep=60*60*2) {
         pamWarning('No events in AcousticStudy')
         return(NULL)
     }
-    peak0Msg <- doCheck(checkPeakZero, x)
+    dets <- getDetectorData(x)
+    peak0Msg <- doCheck(checkPeakZero, dets)
     timeMsg <- doCheck(checkTime, x, length=maxLength, between=maxSep)
+    NAmsg <- doCheck(checkNAVals, dets)
     list(peak0Check = peak0Msg,
-         timeCheck = timeMsg)
+         timeCheck = timeMsg,
+         NACheck = NAmsg)
 }
 
 doCheck <- function(fun, x, ...) {
@@ -58,14 +61,41 @@ doCheck <- function(fun, x, ...) {
     })
     msg
 }
+# Check for NA vals
 # threshold max distance between consec detections 2 hours
 #
+checkNAVals <- function(x) {
+    nonParamCols <- c('UID', 'UTC', 'Latitude', 'Longitude', 'BinaryFile', 'eventId',
+                      'detectorName', 'species', 'Channel', 'angle', 'angleError')
+    msg <- character(0)
+    for(t in names(x)) {
+        paramCols <- colnames(x[[t]])[!(colnames(x[[t]]) %in% nonParamCols)]
+        if(is.null(x[[t]]) ||
+           length(paramCols) == 0) {
+            naUID <- character(0)
+        } else {
+            naUID <- x[[t]]$UID[apply(x[[t]][, paramCols], 1, function(i) any(is.na(i)))]
+        }
+        if(length(naUID) == 0) {
+            next
+        }
+        msg <- paste0(msg, 'Found ', length(naUID), ' ', t, ' detections with NA values.\n')
+    }
+    if(nchar(msg) > 0) {
+        pamWarning(msg)
+    } else {
+        msg <- 'No detections with NA values.'
+    }
+    msg
+}
+
+# if peak freq is 0 probably something went wrong
 checkPeakZero <- function(x) {
     peak0Msg <- 'All peaks greater than 0.'
-    det <- getDetectorData(x)
-    if(nrow(det$click) > 0 &&
-       'peak' %in% colnames(det$click)) {
-        if(any(det$click$peak == 0, na.rm=TRUE)) {
+    # det <- getDetectorData(x)
+    if(nrow(x$click) > 0 &&
+       'peak' %in% colnames(x$click)) {
+        if(any(x$click$peak == 0, na.rm=TRUE)) {
             peak0Msg <- paste0('Some clicks had a peak frequency of 0 Hz,',
                                ' consider adjusting the filter parameter',
                                ' or adding a calibration function.')

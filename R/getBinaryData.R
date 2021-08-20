@@ -29,9 +29,9 @@
 #' @export
 #'
 getBinaryData <- function(x, UID, type=c('click', 'whistle', 'cepstrum'), quiet=FALSE, ...) {
-    if(is.AcousticStudy(x)) {
-        x <- events(x)
-    }
+    # if(is.AcousticStudy(x)) {
+    #     x <- events(x)
+    # }
     if(is.list(x)) {
         # only do AcEv in list, run quietly bc we know not all UIDs in all events
         isAcev <- sapply(x, is.AcousticEvent)
@@ -58,18 +58,20 @@ getBinaryData <- function(x, UID, type=c('click', 'whistle', 'cepstrum'), quiet=
         }
         return(result)
     }
-    if(!is.AcousticEvent(x)) {
-        warning('This is not an AcousticEvent object.')
+    if(!is.AcousticEvent(x) &&
+       !is.AcousticStudy(x)) {
+        warning('This is not an AcousticEvent or AcousticStudy object.')
         return(NULL)
     }
-    # from here we know its an AcEv
+    # fr
     
-    allBinaries <- files(x)$binaries
+    allBinaries <- unique(files(x)$binaries)
     # find matching UID from dets
     bins <- bind_rows(
-        lapply(detectors(x), function(df) {
-            df[df[['UID']] %in% UID, c('UTC', 'UID', 'BinaryFile')]
+        lapply(getDetectorData(x), function(df) {
+            df[df[['UID']] %in% UID, c('UTC', 'UID', 'BinaryFile', 'detectorName')]
         }))
+    # bins$detectorName <- gsub('_[0-9]{0,3}$', '', bins$detectorName)
     typeMatch <- vector('character', length=length(type))
     for(t in seq_along(type)) {
         typeMatch[t] <- switch(type[t],
@@ -91,21 +93,22 @@ getBinaryData <- function(x, UID, type=c('click', 'whistle', 'cepstrum'), quiet=
     # just doing this bec i goofed earlier and some people had data where this
     # never happened in processing. BinaryFile should already be basename
     bins$BinaryFile <- basename(bins$BinaryFile)
-    if(!is.null(getSr(x))) {
-        bins$sr <- getSr(x)
-    } else if(length(settings(x)$sr) == 1) {
-        bins$sr <- settings(x)$sr
-    } else if(length(settings(x)$sr) > 1) {
-        trySr <- matchSR(bins, files(x)$db, safe=TRUE)
-        if(is.null(trySr)) {
-            warning('Multiple sample rates present for event ', id(x),', but not able to read',
-                    ' from database ', files(x)$db,'.\nSample rate will not be attached,',
-                    ' check that file exists to fix.')
-        } else {
-            bins <- trySr
-        }
+    if(!is.null(getSr(x, type=type, name=bins$detectorName[1], bins$UTC))) {
+        bins$sr <- getSr(x, type, bins$detectorName, bins$UTC)
+    # } else if(length(settings(x)$sr) == 1) {
+    #     bins$sr <- settings(x)$sr
+    # } else if(length(settings(x)$sr) > 1) {
+    #     trySr <- matchSR(bins, files(x)$db, safe=TRUE)
+    #     if(is.null(trySr)) {
+    #         warning('Multiple sample rates present for event ', id(x),', but not able to read',
+    #                 ' from database ', files(x)$db,'.\nSample rate will not be attached,',
+    #                 ' check that file exists to fix.')
+    #     } else {
+    #         bins <- trySr
+    #     }
+    # }
     }
-
+    
     nIn <- sapply(UID, function(y) {
         sum(y == bins[['UID']])
     })
@@ -122,7 +125,7 @@ getBinaryData <- function(x, UID, type=c('click', 'whistle', 'cepstrum'), quiet=
     # Bins is detector data
     result <- lapply(unique(bins$BinaryFile), function(bin) {
         # this has full path name
-        fullBin <- grep(bin, unique(allBinaries), value = TRUE, fixed=TRUE)
+        fullBin <- grep(bin, allBinaries, value = TRUE, fixed=TRUE)
         if(length(fullBin)==0) {
             warning('Binary file ', bin, ' not found in files slot.', call.=FALSE)
             return(NULL)

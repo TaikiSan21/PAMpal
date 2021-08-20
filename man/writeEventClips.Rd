@@ -6,7 +6,7 @@
 \usage{
 writeEventClips(
   x,
-  buffer = c(-0.1, 0.1),
+  buffer = c(0, 0.1),
   outDir = ".",
   mode = c("event", "detection"),
   channel = 1,

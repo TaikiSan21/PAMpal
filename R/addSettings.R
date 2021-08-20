@@ -30,7 +30,7 @@ addSettings <- function(pps, settings=NULL, type=c('xml', 'list'), verbose=TRUE)
     type <- 'list'
   }
   if(is.null(settings)) {
-    cat('Please select the folder where the binaries are stored.\n')
+    cat('Please select the XML settings file.\n')
 
     settings <- tk_choose.files(caption = 'Choose an XML Settings File:',
                               default = getwd(), multi=FALSE)
@@ -41,8 +41,6 @@ addSettings <- function(pps, settings=NULL, type=c('xml', 'list'), verbose=TRUE)
     }
   }
   # Case when cancelled, dont error
-  
-  
   switch(type,
          'list' = {
            if(validSettings(settings)) {
