@@ -68,8 +68,8 @@ writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', '
     }
     if(!dir.exists(outDir)) dir.create(outDir)
     evDbs <- sapply(events(x), function(e) files(e)$db)
-    files(x)$recordings$numStart <- as.numeric(files(x)$recordings$start)
-    files(x)$recordings$numEnd <- as.numeric(files(x)$recordings$end)
+    # files(x)$recordings$numStart <- as.numeric(files(x)$recordings$start)
+    # files(x)$recordings$numEnd <- as.numeric(files(x)$recordings$end)
     dbMap <- split(files(x)$recordings, files(x)$recordings$db)
 
     if(length(buffer) == 1) {

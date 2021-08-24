@@ -1,3 +1,7 @@
+## PAMpal 0.14.1
+
+* `checkStudy` complains about too many things, shush already
+
 ## PAMpal 0.14.0
 
 * Normalizing some paths internally

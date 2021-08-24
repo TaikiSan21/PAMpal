@@ -66,7 +66,7 @@ doCheck <- function(fun, x, ...) {
 #
 checkNAVals <- function(x) {
     nonParamCols <- c('UID', 'UTC', 'Latitude', 'Longitude', 'BinaryFile', 'eventId',
-                      'detectorName', 'species', 'Channel', 'angle', 'angleError')
+                      'detectorName', 'species', 'Channel', 'angle', 'angleError', 'eventLabel')
     msg <- character(0)
     for(t in names(x)) {
         paramCols <- colnames(x[[t]])[!(colnames(x[[t]]) %in% nonParamCols)]
