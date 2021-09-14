@@ -98,12 +98,12 @@ addRecordings <- function(x, folder=NULL, log=FALSE, progress=TRUE) {
                 if(!file.exists(names(dbMap)[d])) {
                     pamWarning('Database ', names(dbMap)[d], ' could not be found, "startSample"',
                                ' cannot be set.')
-                    wavMap$startSample <- NA
+                    wavMap$startSample <- 1
                 } else {
                     sa <- readSa(names(dbMap)[d])
                     wavCol <- findWavCol(sa)
-                    wavMap$startSample <- NA
                     if(!is.na(wavCol)) {
+                        wavMap$startSample <- NA
                         for(w in seq_along(wavMap$file)) {
                             thisWav <- grep(substr(basename(wavMap$file[w]), 1, 49), sa[[wavCol]])
                             if(length(thisWav) == 0) next
@@ -112,6 +112,8 @@ addRecordings <- function(x, folder=NULL, log=FALSE, progress=TRUE) {
                                 wavMap$startSample[w] <- 1
                             }
                         }
+                    } else {
+                        wavMap$startSample <- 1
                     }
                 }
             }

@@ -417,7 +417,7 @@ binToSpecMat <- function(bin, channel=1, freq, wl, filterfrom_khz, filterto_khz,
             chanTemp[, c] <- myGram(x, channel = useChan[c], wl=wl,
                                     from=filterfrom_khz,
                                     to=filterto_khz,
-                                    sr = sr, noise=TRUE, 
+                                    sr = sr, noise=noise, 
                                     decimate = decimate,
                                     mode=mode, ...)[, 2] + calFun(freq)
         }

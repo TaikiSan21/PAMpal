@@ -1,3 +1,11 @@
+## PAMpal 0.14.2
+
+* `calculateAverageSpectra` was always computing noise spectrum cuz I'm bad at stuff
+
+* Bug fix for `addRecordings` with certain SoundAcquisition table setups
+
+* `getBinaryData` was improperly complaining about multiple matches
+
 ## PAMpal 0.14.1
 
 * `checkStudy` complains about too many things, shush already

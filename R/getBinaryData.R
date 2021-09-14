@@ -108,7 +108,8 @@ getBinaryData <- function(x, UID, type=c('click', 'whistle', 'cepstrum'), quiet=
     #     }
     # }
     }
-    
+    bins$detectorName <- NULL
+    bins <- unique(bins)
     nIn <- sapply(UID, function(y) {
         sum(y == bins[['UID']])
     })
