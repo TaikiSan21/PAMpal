@@ -80,7 +80,9 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     if(is.AcousticEvent(x)) {
         ev <- x
     } else if(is.AcousticStudy(x)) {
-        evNum <- evNum[evNum <= length(events(x))]
+        if(is.numeric(evNum)) {
+            evNum <- evNum[evNum <= length(events(x))]
+        }
         ev <- x[evNum]
         if(is.null(sr)) {
             sr <- getSr(x, type='click')

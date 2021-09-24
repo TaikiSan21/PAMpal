@@ -1,3 +1,8 @@
+## PAMpal 0.14.3
+
+* Bug fixed in `calculateAverageSpectra`, previously was not working with event names
+as an argument for `evNum`
+
 ## PAMpal 0.14.2
 
 * `calculateAverageSpectra` was always computing noise spectrum cuz I'm bad at stuff
