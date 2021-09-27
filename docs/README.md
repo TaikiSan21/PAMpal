@@ -222,6 +222,7 @@ removing data / functions from your PPS, adding a hydrophone calibration,
 and more details about what exactly is stored here. 
 - [Parameter calculation details][standard-calcs] - Details on how the parameters
 from the included processing functions are calculated
+- [A guide to getting started with BANTER][banter-guide]
 
 *Sections below are still under construction*
 
@@ -266,3 +267,4 @@ For bug fixes and feature additions in each version see the [NEWS][news] file
 [testavg]: AvTest.html
 [xcrun-err]: https://ma.ttias.be/mac-os-xcrun-error-invalid-active-developer-path-missing-xcrun/
 [tcltk-err]: https://swvanderlaan.github.io/post/getting-r-with-tcl-tk-on-my-mac/
+[banter-guide]: banterGuide.html
