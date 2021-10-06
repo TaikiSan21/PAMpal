@@ -1,3 +1,8 @@
+## PAMpal 0.14.4
+
+* Added `brightness` and `contrast` parameters to `calculateAverageSpectra`. These only affect
+the concatenated spectra plot. Also added a `ylim` parameter for the mean spectra plot.
+
 ## PAMpal 0.14.3
 
 * Bug fixed in `calculateAverageSpectra`, previously was not working with event names

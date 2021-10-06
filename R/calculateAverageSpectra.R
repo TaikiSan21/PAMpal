@@ -42,6 +42,16 @@
 #' @param sort logical flag to sort concatenated spectrogram by peak frequency
 #' @param mode one of \code{'spec'} or \code{'ceps'} to plot the spectrum or cepstrum
 #' @param label optional label before plot titles
+#' @param ylim optional y limits for mean spectra plot
+#' @param brightness value from -255 to 255, positive values increase brightness,
+#'   negative values decrease brightness of concatenated spectrogram image
+#' @param contrast value from -255 to 255, positive values increase contrast, negative
+#'   values decrease contrast of concatenated spectrogram image
+#' @param q lower and upper quantiles to remove for scaling concatenated spectrogram.
+#'   Or if a single value, then quantiles \code{q} and \code{1-q} will be used. Ex.
+#'   if \code{q=.01}, then the bottom 1% and top 1% of values are truncated before
+#'   plotting the image. This is done purely for cosmetic reasons, no output data is
+#'   affected
 #' @param \dots optional args
 #'
 #' @return invisibly returns a list with six items: \code{freq} - the frequency,
@@ -67,6 +77,7 @@
 #' @importFrom signal hanning decimate
 #' @importFrom graphics par image axis lines legend
 #' @importFrom stats fft
+#' @importFrom grDevices hcl.colors
 #'
 #' @export
 #'
@@ -76,6 +87,10 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                                     decimate=1,
                                     sort=FALSE, mode='spec',
                                     label=NULL,
+                                    ylim=NULL,
+                                    brightness=0,
+                                    contrast=0,
+                                    q=.01,
                                     ...) {
     if(is.AcousticEvent(x)) {
         ev <- x
@@ -115,30 +130,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     }
     freq <- myGram(binData[[1]], channel=1, wl=wl, sr=sr, mode=mode,
                    decimate=decimate)[, 1]
-    # calc spectra
-    # specData <- lapply(binData, function(x) {
-    #     if(is.null(x$wave)) {
-    #         return(rep(NA, wl%/%2))
-    #     }
-    #     result <- 0
-    #     hasChan <- 1:ncol(x$wave)
-    #     useChan <- hasChan[hasChan %in% channel]
-    #     
-    #     for(c in seq_along(useChan)) {
-    #         tmp <- 10^((myGram(x, channel = useChan[c], wl=wl,
-    #                            from=filterfrom_khz,
-    #                            to=filterto_khz,
-    #                            sr = sr, noise=FALSE, 
-    #                            decimate=decimate,
-    #                            mode=mode, ...)[, 2] + calFun(freq))/20)
-    #         if(any(is.na(tmp))) next
-    #         result <- result + tmp
-    #     }
-    #     if(all(result == 0)) {
-    #         return(rep(NA, wl%/%2))
-    #     }
-    #     20*log10(result / length(useChan))
-    # })
+
     specData <- binToSpecMat(binData, channel=channel, wl=wl, sr=sr, freq=freq, 
                              calFun=calFun, mode=mode, noise=FALSE, decimate=decimate, 
                              filterfrom_khz=filterfrom_khz, filterto_khz = filterto_khz, ...)
@@ -149,28 +141,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
         specMat[, i] <- specData[[i]]
     }
     snrMat <- rep(0, ncol(specMat))
-    # calc noise spectra
-    # noiseData <- lapply(binData, function(x) {
-    #     if(is.null(x$wave)) {
-    #         return(rep(NA, wl%/%2))
-    #     }
-    #     hasChan <- 1:ncol(x$wave)
-    #     useChan <- hasChan[hasChan %in% channel]
-    #     chanTemp <- matrix(NA, nrow=length(freq), ncol=length(useChan))
-    #     for(c in seq_along(useChan)) {
-    #         chanTemp[, c] <- myGram(x, channel = useChan[c], wl=wl,
-    #                            from=filterfrom_khz,
-    #                            to=filterto_khz,
-    #                            sr = sr, noise=TRUE, 
-    #                            decimate = decimate,
-    #                            mode=mode, ...)[, 2] + calFun(freq)
-    #     }
-    #     chanTemp <- chanTemp[, apply(chanTemp, 2, function(x) !any(is.na(x)))]
-    #     if(all(chanTemp == 0)) {
-    #         return(rep(NA, wl%/%2))
-    #     }
-    #     doLogAvg(chanTemp, log = mode=='spec')
-    # })
+
     noiseData <- binToSpecMat(binData, channel=channel, wl=wl, sr=sr, freq=freq, 
                               calFun=calFun, mode=mode, noise=TRUE, decimate=decimate, 
                               filterfrom_khz=filterfrom_khz, filterto_khz = filterto_khz, ...)
@@ -246,26 +217,39 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                    title2 <- 'Average Cepstrum'
                    maxZ <- 5
                })
-        plotMat <- specMat[, snrKeep, drop=FALSE]
-        if(mode == 'ceps') {
-            skips <- 1:(0.01 * nrow(plotMat))
-            plotMat <- plotMat[-skips, ,drop=FALSE]
-        }
-        lim <- mean(plotMat, na.rm=TRUE) + c(-1,1) * maxZ * sd(plotMat, na.rm=TRUE)
-        plotMat[plotMat < lim[1]] <- lim[1]
-        plotMat[plotMat > lim[2]] <- lim[2]
-        if(sort) {
-            sortIx <- sort(apply(plotMat, 2, which.max), index.return=TRUE)$ix
-            plotMat <- plotMat[, sortIx, drop=FALSE]
-        }
-        # change y axis
         
+        # change y axis
         freqPretty <- pretty(seq(from=0, to=max(freq*unitFactor), length.out=5), n=5)
-        evBreaks <- table(clickData$eventId)[sapply(events(ev), id)]
-        evStarts <- cumsum(evBreaks)
+        
+        # Concat Spec Plot
         if(plot[1]) {
+            plotMat <- specMat[, snrKeep, drop=FALSE]
+            # if(mode == 'ceps') {
+            #     skips <- 1:(0.01 * nrow(plotMat))
+            #     plotMat <- plotMat[-skips, ,drop=FALSE]
+            # }
+            # lim <- mean(plotMat, na.rm=TRUE) + c(-1,1) * maxZ * sd(plotMat, na.rm=TRUE)
+            if(length(q) == 1) {
+                q <- c(q, 1-q)
+            }
+            lim <- quantile(plotMat, q)
+            plotMat[plotMat < lim[1]] <- lim[1]
+            plotMat[plotMat > lim[2]] <- lim[2]
+            plotMat <- plotMat / diff(range(plotMat, na.rm=TRUE)) * 255
+            plotMat <- plotMat - min(plotMat, na.rm=TRUE)
+            plotMat[plotMat > 255] <- 255
+            plotMat[plotMat < 0] <- 0
+            if(sort) {
+                sortIx <- sort(apply(plotMat, 2, which.max), index.return=TRUE)$ix
+                plotMat <- plotMat[, sortIx, drop=FALSE]
+            }
+            plotMat <- doContrast(doBrightness(plotMat, brightness), contrast)
+            evBreaks <- table(clickData$eventId)[sapply(events(ev), id)]
+            evStarts <- cumsum(evBreaks)
             image(x=1:ncol(plotMat), y=seq(from=0, to=max(freq*unitFactor), length.out=nrow(plotMat)),
-                  z=t(plotMat), xaxt='n', yaxt='n', ylab=unitLab, xlab='Click Number', useRaster=TRUE)
+                  z=t(plotMat), xaxt='n', yaxt='n', ylab=unitLab, xlab='Click Number', useRaster=TRUE,
+                  col = hcl.colors(30, "YlOrRd", rev = TRUE),
+                  breaks=seq(from=0, to=255, length.out=31))
             title(paste0(label, title1))
             xPretty <- pretty(1:ncol(plotMat), n=5)
             axis(1, at = xPretty, labels = xPretty)
@@ -278,33 +262,33 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                 }
             }
         }
+        # Mean Spec Plot
         if(plot[2]) {
             ylab <- ifelse(norm, 'Normalized Magnitude (dB)', 'Magnitude (dB)')
             plot(x=freq, averageSpec, type='l',
-                 xaxt='n', yaxt='n', ylab=ylab, xlab=unitLab, lwd=1)
+                 xaxt='n', yaxt='n', ylab=ylab, xlab=unitLab, lwd=1, ylim=ylim)
             if(noise) {
                 lines(x=freq, averageNoise, type='l', lty=3, lwd=2)
                 # legend('topright', inset=c(0, 0), xpd=TRUE, legend=c('Signal', 'Noise'), lty=1:2, bty='n')
             }
-            # if(length(evNum) > 1) {
-            #     for(b in seq_along(evBreaks)) {
-            #         thisAvg <- doLogAvg(specMat[, (1 + sum(evStarts[b-1])):evStarts[b]], log=mode=='spec')
-            #         if(norm) {
-            #             thisAvg <- thisAvg - maxVal
-            #         }
-            #         lines(x=freq, y=thisAvg, col='lightgrey', lwd=1)
-            #     }
-            # }
+
             title(paste0(label, title2))
             axis(1, at = freqPretty/unitFactor, labels=freqPretty)
-            yPretty <- pretty(range(averageSpec), n=5)
+            yRange <- range(averageSpec)
+            if(!is.null(ylim)) {
+                if(ylim[1] > ylim[2]) {
+                    ylim <- rev(ylim)
+                }
+                yRange[1] <- ifelse(yRange[1] < ylim[1], ylim[1], yRange[1])
+                yRange[2] <- ifelse(yRange[2] < ylim[2], ylim[2], yRange[2])
+            }
+            yPretty <- pretty(yRange, n=5)
             axis(2, at=yPretty, labels=yPretty)
         }
         
     }
     invisible(list(freq=freq, UID = names(specData), avgSpec=averageSpec, allSpec=specMat,
                    avgNoise=averageNoise, allNoise=noiseMat))
-    # invisible(list(freq=freq, average=averageSpec, all=specMat))
 }
 
 myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
@@ -429,4 +413,26 @@ binToSpecMat <- function(bin, channel=1, freq, wl, filterfrom_khz, filterto_khz,
         }
         doLogAvg(chanTemp, log = mode=='spec')
     })
+}
+
+doBrightness <- function(x, val=0) {
+    if(val == 0) {
+        return(x)
+    }
+    val <- val * -1
+    x <- x + val
+    x[x > 255] <- 255
+    x[x < 0] <- 0
+    x
+}
+
+doContrast <- function(x, val=0) {
+    if(val == 0) {
+        return(x)
+    }
+    factor <- (259 * (val + 255)) / (255 * (259 - val))
+    x <- factor * (x - 128) + 128
+    x[x > 255] <- 255
+    x[x < 0] <- 0
+    x
 }

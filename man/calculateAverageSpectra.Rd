@@ -21,6 +21,10 @@ calculateAverageSpectra(
   sort = FALSE,
   mode = "spec",
   label = NULL,
+  ylim = NULL,
+  brightness = 0,
+  contrast = 0,
+  q = 0.01,
   ...
 )
 }
@@ -79,6 +83,20 @@ reducing \code{wl} can help get a more accurate noise floor.}
 \item{mode}{one of \code{'spec'} or \code{'ceps'} to plot the spectrum or cepstrum}
 
 \item{label}{optional label before plot titles}
+
+\item{ylim}{optional y limits for mean spectra plot}
+
+\item{brightness}{value from -255 to 255, positive values increase brightness,
+negative values decrease brightness of concatenated spectrogram image}
+
+\item{contrast}{value from -255 to 255, positive values increase contrast, negative
+values decrease contrast of concatenated spectrogram image}
+
+\item{q}{lower and upper quantiles to remove for scaling concatenated spectrogram.
+Or if a single value, then quantiles \code{q} and \code{1-q} will be used. Ex.
+if \code{q=.01}, then the bottom 1% and top 1% of values are truncated before
+plotting the image. This is done purely for cosmetic reasons, no output data is
+affected}
 
 \item{\dots}{optional args}
 }

@@ -467,6 +467,11 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
     }
 
     nBin <- sum(sapply(allDb, nBins))
+    if(nBin == 0) {
+        warning('No detections found within database, are you sure you want',
+                'to run with mode="db" ?')
+        return(NULL)
+    }
     if(progress) {
         cat('Processing databases... \n')
         pb <- txtProgressBar(min=0, max=nBin, style=3)
