@@ -1,5 +1,5 @@
 <!-- badges: start -->
-[![Travis build status](https://travis-ci.com/TaikiSan21/PAMpal.svg?branch=master)](https://travis-ci.com/TaikiSan21/PAMpal)
+[![Travis build status](https://app.travis-ci.com/TaikiSan21/PAMpal.svg?branch=master)](https://app.travis-ci.com/TaikiSan21/PAMpal)
 <!-- badges: end -->
 
 # PAMpal
