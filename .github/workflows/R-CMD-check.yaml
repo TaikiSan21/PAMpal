@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Install XQuarts macOS
-        if: runner.os = 'macOS'
+        if: runner.os == 'macOS'
         run: brew install xquartz --cask
         
       - uses: actions/checkout@v2
