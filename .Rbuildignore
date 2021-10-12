@@ -2,10 +2,10 @@
 ^\.Rproj\.user$
 ^.*\.Rproj$
 ^devel$
-^\.travis\.yml$
 ^Rprof\.out$
 ^docs$
 ^_config\.yml$
 ^paper$
 ^figs$
 ^DeciTester$
+^\.github$
