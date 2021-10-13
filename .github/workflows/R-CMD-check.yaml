@@ -34,7 +34,7 @@ jobs:
         run: sudo apt-get install -y xorg
       - name: Start Xvfb virtual display
         if: runner.os == 'Linux'
-        run: 
+        run: |
           Xvfb :1 -screen 0 1600x1200x32 -fbdir /var/tmp
           export DISPLAY=:1
         
