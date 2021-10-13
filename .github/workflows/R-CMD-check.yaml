@@ -31,7 +31,12 @@ jobs:
     steps:
       - name: Install Xorg ubuntu-latest
         if: runner.os == 'Linux'
-        run: sudo apt-get install xorg
+        run: sudo apt-get install -y xorg
+      - name: Start Xvfb virtual display
+        if: runner.os == 'Linux'
+        run: 
+          Xvfb :1 -screen 0 1600x1200x32 -fbdir /var/tmp
+          export DISPLAY=:1
         
       - name: Install XQuarts macOS
         if: runner.os == 'macOS'
