@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Install Xorg ubuntu-latest
-        if: runner.os == 'ubuntu'
+        if: runner.os == 'Linux'
         run: sudo apt-get install xorg
         
       - name: Install XQuarts macOS
