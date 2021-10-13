@@ -29,6 +29,10 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
 
     steps:
+      - name: Install Xorg ubuntu-latest
+        if: runner.os == 'ubuntu'
+        run: sudo apt-get install xorg
+        
       - name: Install XQuarts macOS
         if: runner.os == 'macOS'
         run: brew install xquartz --cask
