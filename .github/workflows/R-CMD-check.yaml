@@ -27,6 +27,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      DISPLAY: :0
 
     steps:
       - name: Install Xorg ubuntu-latest
@@ -35,8 +36,7 @@ jobs:
       - name: Start Xvfb virtual display
         if: runner.os == 'Linux'
         run: |
-          Xvfb :1 -screen 0 1600x1200x32 -fbdir /var/tmp
-          export DISPLAY=:1
+          sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
         
       - name: Install XQuarts macOS
         if: runner.os == 'macOS'
