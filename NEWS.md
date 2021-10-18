@@ -1,3 +1,7 @@
+## PAMpal 0.14.5
+
+* Some bug fixes for weird SoundTrap click detector stuff
+
 ## PAMpal 0.14.4
 
 * Added `brightness` and `contrast` parameters to `calculateAverageSpectra`. These only affect

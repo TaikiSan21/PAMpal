@@ -698,7 +698,12 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
     }
     allDetections <- bind_rows(
         lapply(detTables, function(table) {
-            dbReadTable(con, table)
+            dt <- dbReadTable(con, table)
+            if(is.null(dt) ||
+               nrow(dt) == 0) {
+                return(NULL)
+            }
+            dt
         })
     )
     if(nrow(allDetections)==0) {
@@ -709,7 +714,12 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
 
     allEvents <- bind_rows(
         lapply(eventTables, function(table) {
-            dbReadTable(con, table)
+            et <- dbReadTable(con, table)
+            if(is.null(et) ||
+               nrow(et) == 0) {
+                return(NULL)
+            }
+            et
         })
     )
     if(nrow(allEvents)==0) {
