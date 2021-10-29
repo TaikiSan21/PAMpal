@@ -13,7 +13,7 @@ NULL
 #' @name testClick
 #' @title A two-channel recording of a delphinid click
 #' @description An example delphinid click waveform. This is a two-channel recording
-#' of some kind of delphinid click, recorded at 192kHz. There are
+#' of some kind of delphinid click, recorded at 500kHz There are
 #' 800 samples recorded on each channel.
 #' @usage data(testClick)
 #' @format A list with two items:

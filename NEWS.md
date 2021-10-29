@@ -1,3 +1,8 @@
+## PAMpal 0.14.6
+
+* Changed included `testClick` from 192kHz to 500kHz to avoid unnecessary errors 
+when trying to add filters > 96kHz
+
 ## PAMpal 0.14.5
 
 * Some bug fixes for weird SoundTrap click detector stuff
