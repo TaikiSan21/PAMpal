@@ -32,7 +32,9 @@ jobs:
     steps:
       - name: Install Xorg ubuntu-latest
         if: runner.os == 'Linux'
-        run: sudo apt-get install -y xorg
+        run: |
+          sudo apt update
+          sudo apt-get install -y xorg
       - name: Start Xvfb virtual display
         if: runner.os == 'Linux'
         run: |
