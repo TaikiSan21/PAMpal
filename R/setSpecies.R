@@ -144,9 +144,9 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                        evs <- dbReadTable(con, 'Click_Detector_OfflineEvents')
                        dbDisconnect(con)
                        # browser()
-                       evs <- evs[, c('UID', 'eventType', 'comment')]
+                       evs <- evs[, c('Id', 'eventType', 'comment')]
                        evs$event <- paste0(gsub('\\.sqlite3', '', basename(y)),
-                                              '.OE', as.character(evs$UID))
+                                              '.OE', as.character(evs$Id))
                        evs$eventType <- str_trim(evs$eventType)
                        evs$comment <- gsub('OFF EFF', '', evs$comment)
                        evs$comment <- gsub("[[:punct:]]", '', evs$comment)

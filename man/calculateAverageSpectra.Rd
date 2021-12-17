@@ -22,6 +22,7 @@ calculateAverageSpectra(
   mode = "spec",
   label = NULL,
   ylim = NULL,
+  flim = NULL,
   brightness = 0,
   contrast = 0,
   q = 0.01,
@@ -85,6 +86,8 @@ reducing \code{wl} can help get a more accurate noise floor.}
 \item{label}{optional label before plot titles}
 
 \item{ylim}{optional y limits for mean spectra plot}
+
+\item{flim}{optional frequency limits for both plots}
 
 \item{brightness}{value from -255 to 255, positive values increase brightness,
 negative values decrease brightness of concatenated spectrogram image}
