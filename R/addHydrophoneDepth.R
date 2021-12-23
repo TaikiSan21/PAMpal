@@ -43,7 +43,6 @@
 #' getClickData(exStudy[1])
 #'
 #' @importFrom data.table data.table setkeyv key setDT setDF as.data.table
-#' @importFrom magrittr %>%
 #' @export
 #'
 addHydrophoneDepth <- function(x, depth=NULL, depthCol=NULL, thresh=60, ...) {

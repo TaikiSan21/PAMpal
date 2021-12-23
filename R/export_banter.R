@@ -72,7 +72,8 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
     numDets <- sapply(x, function(e) length(detectors(e)))
     noDets <- (numDets == 0)
     if(all(noDets)) {
-        stop('No events had any detections.')
+        warning('No events had any detections.')
+        return(NULL)
     }
     if(any(noDets)) {
         warning(sum(noDets), ' events have 0 detections, they will be removed.\n', call. = FALSE)
@@ -102,8 +103,8 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
                          stringsAsFactors = FALSE)
 
     # check if enough events to make train data, remove any we dont have for
+    events$species <- sp
     if(training) {
-        events$species <- sp
         nSpecies <- table(events$species)
         # need min 2 to train banter, 3 if also making test
         if(training == 1) {
@@ -134,7 +135,8 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
         x <- x[!toDrop]
     }
     if(nrow(events) == 0) {
-        stop('No events left with any detections after removing species.')
+        warning('No events left with any detections after removing species.')
+        return(NULL)
     }
     # check if any event level measures are present in all data
     # or should i get all and fill NA, let banter deal with the NAs and warn you?
@@ -152,9 +154,10 @@ export_banter <- function(x, dropVars=NULL, dropSpecies=NULL, training=TRUE, ver
         measureData <- bind_rows(lapply(x[events[['event.id']]], function(e) {
             ancillary(e)$measures[allMeasures]
         }))
+        measureData <- dropCols(measureData, dropVars)
         events <- cbind(events, measureData)
         if(verbose) {
-            cat('Found ', length(allMeasures), ' event level measures (', printN(allMeasures, 10),
+            cat('Found ', ncol(measureData), ' event level measures (', printN(colnames(measureData), 10),
             ') that were present in all events, adding these to your event data.\n', sep='')
         }
     }

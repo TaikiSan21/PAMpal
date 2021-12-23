@@ -142,13 +142,13 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
     )
     checkStudy(result)
     result <- .addPamWarning(result)
+    ancillary(result)$processDate <- Sys.time()
     result
 }
 
 # ---- separate methods ----
 
 #' @importFrom utils setTxtProgressBar txtProgressBar
-#' @importFrom readr read_csv cols col_character
 #'
 processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NULL,
                                     progress=progress) {
@@ -171,7 +171,12 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
         grouping$db <- NA_character_
     }
     # if they are there and are valid, assume they assigned
-    dbToAssign <- which(!file.exists(grouping$db))
+    dbToAssign <- which(sapply(basename(grouping$db), function(d) {
+        if(is.na(d)) {
+            return(TRUE)
+        }
+        !any(grepl(d, allDbs))
+    }))
     # match db to events
     if(length(allDbs) == 1) {
         grouping$db[dbToAssign] <- allDbs
@@ -292,8 +297,8 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
         cat('Processing binary files... \n')
         pb <- txtProgressBar(min=0, max=length(binList), style=3)
     }
-    modList <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum')
-    modWarn <- c(FALSE, FALSE, FALSE)
+    modList <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum', 'GPLDetector')
+    modWarn <- c(FALSE, FALSE, FALSE, FALSE)
     names(modWarn) <- modList
     binData <- lapply(binList, function(bin) {
         # should i do here - read in head/foot only, then check those
@@ -427,10 +432,10 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
                 thisSource <- unique(filtSa$SystemType)
             }
         }
-        
+        thisDb <- allDbs[grepl(basename(grouping$db[i]), allDbs)]
         acousticEvents[[i]] <-
             AcousticEvent(id=evName[i], detectors = thisData, settings = list(sr = thisSr, source = thisSource),
-                          files = list(binaries=binariesUsed, db=grouping$db[i], calibration=calibrationUsed))
+                          files = list(binaries=binariesUsed, db=thisDb, calibration=calibrationUsed))
     }
     if(length(noDetEvent) > 0) {
         pamWarning('No detections in Event(s) ', noDetEvent, n=6)
@@ -477,8 +482,8 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
         pb <- txtProgressBar(min=0, max=nBin, style=3)
     }
     binNo <- 1
-    modList <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum')
-    modWarn <- c(FALSE, FALSE, FALSE)
+    modList <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum', 'GPLDetector')
+    modWarn <- c(FALSE, FALSE, FALSE, FALSE)
     tarMoCols <- ppVars()$tarMoCols
     names(modWarn) <- modList
     allAcEv <- lapply(allDb, function(db) {
@@ -838,7 +843,8 @@ checkGrouping <- function(grouping, format) {
                 ' columns "start", "end", and "id" to group detections into events.')
             # grouping <- tk_choose.files(caption = 'Select event time csv file:', multi = FALSE)
         }
-        grouping <- read_csv(grouping, col_types = cols(.default=col_character()))
+        # grouping <- read_csv(grouping, col_types = cols(.default=col_character()))
+        grouping <- read.csv(grouping, stringsAsFactors = FALSE, colClasses = 'character')
     }
     colsNeeded <- c('start', 'end', 'id')
     if(inherits(grouping, 'data.frame')) {

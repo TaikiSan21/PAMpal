@@ -10,21 +10,24 @@
 calculateICI(
   x,
   time = c("UTC", "peakTime"),
-  callType = c("click", "whistle", "cepstrum"),
+  callType = c("click", "whistle", "cepstrum", "gpl"),
+  verbose = TRUE,
   ...
 )
 
 \S4method{calculateICI}{AcousticStudy}(
   x,
   time = c("UTC", "peakTime"),
-  callType = c("click", "whistle", "cepstrum"),
+  callType = c("click", "whistle", "cepstrum", "gpl"),
+  verbose = TRUE,
   ...
 )
 
 \S4method{calculateICI}{AcousticEvent}(
   x,
   time = c("UTC", "peakTime"),
-  callType = c("click", "whistle", "cepstrum"),
+  callType = c("click", "whistle", "cepstrum", "gpl"),
+  verbose = TRUE,
   ...
 )
 
@@ -41,6 +44,8 @@ objects, or a single \linkS4class{AcousticEvent} object}
 \item{callType}{the call type to calculate ICI for, usually this is \code{click}
 but also allows users to specify \code{whistle} or \code{cepstrum} to calculate this
 using other detector data}
+
+\item{verbose}{logical flag to print messages}
 
 \item{\dots}{not currently used}
 

@@ -10,6 +10,7 @@
 #' @param callType the call type to calculate ICI for, usually this is \code{click}
 #'   but also allows users to specify \code{whistle} or \code{cepstrum} to calculate this
 #'   using other detector data
+#' @param verbose logical flag to print messages
 #' @param \dots not currently used
 #'
 #' @details Calculates the ICI for each individual detector and across all detectors.
@@ -47,7 +48,8 @@
 #'
 setGeneric('calculateICI', function(x,
                                     time=c('UTC', 'peakTime'),
-                                    callType = c('click', 'whistle', 'cepstrum'),
+                                    callType = c('click', 'whistle', 'cepstrum', 'gpl'),
+                                    verbose=TRUE,
                                     ...) standardGeneric('calculateICI'))
 
 #' @rdname calculateICI
@@ -55,9 +57,10 @@ setGeneric('calculateICI', function(x,
 #'
 setMethod('calculateICI', 'AcousticStudy', function(x,
                                                     time=c('UTC', 'peakTime'),
-                                                    callType = c('click', 'whistle', 'cepstrum'),
+                                                    callType = c('click', 'whistle', 'cepstrum', 'gpl'),
+                                                    verbose=TRUE,
                                                     ...) {
-    events(x) <- lapply(events(x), function(e) calculateICI(e, time, callType, ...))
+    events(x) <- lapply(events(x), function(e) calculateICI(e, time, callType, verbose, ...))
     x
 })
 
@@ -66,12 +69,15 @@ setMethod('calculateICI', 'AcousticStudy', function(x,
 #'
 setMethod('calculateICI', 'AcousticEvent', function(x,
                                                     time=c('UTC', 'peakTime'),
-                                                    callType = c('click', 'whistle', 'cepstrum'),
+                                                    callType = c('click', 'whistle', 'cepstrum', 'gpl'),
+                                                    verbose=TRUE,
                                                     ...) {
     callType <- match.arg(callType)
     detData <- getDetectorData(x)[[callType]]
     if(is.null(detData)) {
-        message('No detector data found for call type "', callType, '" in event "', id(x), '"\n')
+        if(verbose) {
+            message('No detector data found for call type "', callType, '" in event "', id(x), '"\n')
+        }
         return(x)
     }
     detNames <- unique(detData$detectorName)

@@ -29,7 +29,7 @@
 #' @export
 #'
 addFunction <- function(pps, fun, module=NULL, verbose = TRUE, ...) {
-    modsAllowed <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum')
+    modsAllowed <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum', 'GPLDetector')
     if(is.PAMpalSettings(fun)) {
         for(m in modsAllowed) {
             newFuns <- fun@functions[[m]]
@@ -108,6 +108,7 @@ functionChecker <- function(fun, module) {
            'ClickDetector' = clickChecker(fun),
            'WhistlesMoans' = whistleChecker(fun),
            'Cepstrum' = cepstrumChecker(fun),
+           'GPLDetector' = gplChecker(fun),
            FALSE
     )
 }
@@ -173,3 +174,23 @@ cepstrumChecker <- function(fun) {
     }
     good
 }
+
+gplChecker <- function(fun) {
+    good <- TRUE
+    testThisGpl <- try(fun(data=PAMpal::testGPL))
+    
+    if(inherits(testThisGpl, 'try-error')) {
+        message('GPL function did not run successfully.')
+        message('Error: ', attr(testThisGpl, 'condition')$message)
+        return(FALSE)
+    }
+    if(is.null(testThisGpl)) {
+        message('GPL function returned nothing.')
+        return(FALSE)
+    }
+    if(nrow(data.frame(testThisGpl)) != 1) {
+        message('GPL functions should return a single row for each contour.')
+        return(FALSE)
+    }
+    good
+}    

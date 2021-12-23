@@ -20,7 +20,7 @@ data(testClick)
 }
 \description{
 An example delphinid click waveform. This is a two-channel recording
-of some kind of delphinid click, recorded at 192kHz. There are
+of some kind of delphinid click, recorded at 500kHz There are
 800 samples recorded on each channel.
 }
 \keyword{datasets}

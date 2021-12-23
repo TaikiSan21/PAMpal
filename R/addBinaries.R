@@ -66,7 +66,7 @@ addBinaries <- function(pps, folder=NULL, verbose=TRUE) {
         }
         # only have functions for Clicks & Whistles right now, filter out so we dont get garbage
         # warning overflow later
-        binList <- list.files(folder, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans).*pgdf$')
+        binList <- list.files(folder, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans|GPL).*pgdf$')
     }
     if(verbose) {
         cat('Adding', length(binList), 'binary files from', length(folder), 'folders\n')

@@ -7,7 +7,7 @@
 getBinaryData(
   x,
   UID,
-  type = c("click", "whistle", "cepstrum"),
+  type = c("click", "whistle", "cepstrum", "gpl"),
   quiet = FALSE,
   ...
 )

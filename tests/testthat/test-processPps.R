@@ -61,7 +61,7 @@ test_that('Test process time', {
                       end = c('2018-03-20 15:25:11'),
                       id = 'TimeExample')
     exChar <- processPgDetections(exPps, mode='time', grouping=grpChar, id='Time', format='%Y-%m-%d %H:%M:%S', progress=FALSE)
-    expect_identical(exChar, exTime)
+    expect_identical(events(exChar), events(exTime))
     dets <- getDetectorData(exTime)
     times <- do.call(rbind, lapply(dets, function(x) {
         x[, c('UTC', 'UID')]

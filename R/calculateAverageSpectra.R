@@ -43,6 +43,7 @@
 #' @param mode one of \code{'spec'} or \code{'ceps'} to plot the spectrum or cepstrum
 #' @param label optional label before plot titles
 #' @param ylim optional y limits for mean spectra plot
+#' @param flim optional frequency limits for both plots
 #' @param brightness value from -255 to 255, positive values increase brightness,
 #'   negative values decrease brightness of concatenated spectrogram image
 #' @param contrast value from -255 to 255, positive values increase contrast, negative
@@ -88,6 +89,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                                     sort=FALSE, mode='spec',
                                     label=NULL,
                                     ylim=NULL,
+                                    flim=NULL,
                                     brightness=0,
                                     contrast=0,
                                     q=.01,
@@ -114,7 +116,8 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     }
     clickData <- distinct(clickData)
     clickUID <- clickData$UID
-    binData <- getBinaryData(ev, clickUID, type='click', quiet = TRUE)
+    # reordering because they get put in UID order
+    binData <- getBinaryData(ev, clickUID, type='click', quiet = TRUE)[clickUID]
     if(length(binData) == 0) {
         stop('Not able to find any data for this event.')
     }
@@ -219,16 +222,27 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                })
         
         # change y axis
-        freqPretty <- pretty(seq(from=0, to=max(freq*unitFactor), length.out=5), n=5)
+        if(is.null(flim)) {
+            plotFreq <- rep(TRUE, length(freq))
+        } else {
+            plotFreq <- freq >= flim[1] & freq <= flim[2]
+        }
+        freqPretty <- pretty(seq(from=min(freq[plotFreq])*unitFactor, to=max(freq[plotFreq])*unitFactor, length.out=5), n=5)
         
         # Concat Spec Plot
         if(plot[1]) {
-            plotMat <- specMat[, snrKeep, drop=FALSE]
+            plotMat <- specMat[plotFreq, snrKeep, drop=FALSE]
             # if(mode == 'ceps') {
             #     skips <- 1:(0.01 * nrow(plotMat))
             #     plotMat <- plotMat[-skips, ,drop=FALSE]
             # }
             # lim <- mean(plotMat, na.rm=TRUE) + c(-1,1) * maxZ * sd(plotMat, na.rm=TRUE)
+            goodFreq <- freq[plotFreq] >= filterfrom_khz * 1e3
+            if(!is.null(filterto_khz)) {
+                goodFreq <- (freq[plotFreq] <= filterto_khz * 1e3) &
+                    goodFreq
+            }
+            plotMat[plotMat < min(plotMat[goodFreq, ])] <- min(plotMat[goodFreq,])
             if(length(q) == 1) {
                 q <- c(q, 1-q)
             }
@@ -244,9 +258,9 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                 plotMat <- plotMat[, sortIx, drop=FALSE]
             }
             plotMat <- doContrast(doBrightness(plotMat, brightness), contrast)
-            evBreaks <- table(clickData$eventId)[sapply(events(ev), id)]
-            evStarts <- cumsum(evBreaks)
-            image(x=1:ncol(plotMat), y=seq(from=0, to=max(freq*unitFactor), length.out=nrow(plotMat)),
+            
+            image(x=1:ncol(plotMat), 
+                  y=seq(from=min(freq[plotFreq]*unitFactor), to=max(freq[plotFreq]*unitFactor), length.out=nrow(plotMat)),
                   z=t(plotMat), xaxt='n', yaxt='n', ylab=unitLab, xlab='Click Number', useRaster=TRUE,
                   col = hcl.colors(30, "YlOrRd", rev = TRUE),
                   breaks=seq(from=0, to=255, length.out=31))
@@ -255,9 +269,11 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
             axis(1, at = xPretty, labels = xPretty)
             axis(2, at = freqPretty, labels = freqPretty)
             if(isFALSE(sort) & length(evNum) > 1) {
+                evBreaks <- table(clickData$eventId)[sapply(events(ev), id)]
+                evStarts <- cumsum(evBreaks)
                 for(b in 1:(length(evStarts)-1)) {
                     lines(x=rep(evStarts[b]+0.5, 2),
-                          y=c(0, max(freq*unitFactor)),
+                          y=c(0, max(freq[plotFreq]*unitFactor)),
                           lwd=2)
                 }
             }
@@ -266,7 +282,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
         if(plot[2]) {
             ylab <- ifelse(norm, 'Normalized Magnitude (dB)', 'Magnitude (dB)')
             plot(x=freq, averageSpec, type='l',
-                 xaxt='n', yaxt='n', ylab=ylab, xlab=unitLab, lwd=1, ylim=ylim)
+                 xaxt='n', yaxt='n', ylab=ylab, xlab=unitLab, lwd=1, ylim=ylim, xlim=range(freq[plotFreq]))
             if(noise) {
                 lines(x=freq, averageNoise, type='l', lty=3, lwd=2)
                 # legend('topright', inset=c(0, 0), xpd=TRUE, legend=c('Signal', 'Noise'), lty=1:2, bty='n')
@@ -377,8 +393,20 @@ myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
 }
 
 doLogAvg <- function(x, log=TRUE) {
-    if(is.null(dim(x))) {
-        x <- matrix(x, ncol=1)
+    if(is.null(dim(x)) ||
+       dim(x)[2] == 1) {
+        # x <- matrix(x, ncol=1)
+        return(x)
+    }
+    if(dim(x)[2] == 2) {
+        if(isTRUE(log)) {
+            x <- 10^(x/20)
+        }
+        outs <- (x[, 1] + x[, 2]) / 2
+        if(isTRUE(log)) {
+            outs <- 20*log10(outs)
+        }
+        return(outs)
     }
     if(isTRUE(log)) {
         return(20*log10(apply(x, 1, function(y) {

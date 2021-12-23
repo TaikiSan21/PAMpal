@@ -279,7 +279,8 @@ getSr <- function(x, type=c('click', 'whistle', 'cepstrum'), name=NULL, UTC=NULL
     #         getSr(x, type, n, UTC)
     #     }))
     # }
-    if(!is.AcousticStudy(x)) {
+    if(!is.AcousticStudy(x) &&
+       !is.AcousticEvent(x)) {
         return(NULL)
     }
     # type <- match.arg(type)
@@ -294,6 +295,12 @@ getSr <- function(x, type=c('click', 'whistle', 'cepstrum'), name=NULL, UTC=NULL
         }
     }
     srOut <- rep(NA, max(1, length(name)))
+    if(is.AcousticEvent(x)) {
+        if(length(settings(x)$sr) != 1) {
+            return(NULL)
+        }
+        return(rep(settings(x)$sr, length(srOut)))
+    }
     for(i in seq_along(srOut)) {
         srOut[i] <- doOneSr(x, type, name[i])
     }
@@ -307,7 +314,7 @@ getSr <- function(x, type=c('click', 'whistle', 'cepstrum'), name=NULL, UTC=NULL
     # FUNS THAT USE GETSR TO SEE WHAT THEY CHECK ON FAILURE
     # if we are trying to match by times, do it from the database
     if(!is.null(UTC)) {
-        srDf <- bind_rows(lapply(file(x)$db, function(d) {
+        srDf <- bind_rows(lapply(files(x)$db, function(d) {
             matchSR(UTC[srNa], d, safe=TRUE, fixNA=FALSE)
         }))
         srOut[srNa] <- srDf$sampleRate

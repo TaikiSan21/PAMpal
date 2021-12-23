@@ -1,7 +1,7 @@
 Package: PAMpal
 Type: Package
 Title: Load and Process Passive Acoustic Data
-Version: 0.14.6
+Version: 0.15.0
 Authors@R: c(
   TS = person("Taiki", "Sakai", email = "taiki.sakai@noaa.gov", role = c("aut", "cre")),
   JB = person("Jay", "Barlow", role = c("ctb")),
@@ -22,9 +22,9 @@ LazyData: true
 Depends: 
     R (>= 3.5.0),
     PamBinaries (>= 1.3.0),
-    dplyr,
-    tuneR
+    dplyr
 Imports:
+    tuneR,
     seewave,
     gam,
     data.table,
@@ -33,19 +33,16 @@ Imports:
     stringr,
     purrr,
     methods,
-    magrittr,
     signal,
-    readr,
     tidyr,
     ggplot2,
     manipulate,
     knitr,
     rstudioapi,
     xml2,
-    rjson,
     rlang,
     reticulate,
     lubridate
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Suggests: 
     testthat

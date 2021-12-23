@@ -40,6 +40,7 @@ PAMpalSettings <- function(db=NULL, binaries=NULL, settings=NULL, verbose=TRUE, 
     pps <- addFunction(pps, standardClickCalcs, 'ClickDetector', verbose=verbose, ...)
     pps <- addFunction(pps, roccaWhistleCalcs, 'WhistlesMoans', verbose=verbose)
     pps <- addFunction(pps, standardCepstrumCalcs, 'Cepstrum', verbose=verbose)
+    pps <- addFunction(pps, roccaWhistleCalcs, 'GPLDetector', verbose=verbose)
     if(!is.null(settings)) {
         pps <- addSettings(pps, settings, verbose=verbose)
     }

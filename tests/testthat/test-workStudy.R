@@ -89,7 +89,7 @@ test_that('Test working with AcousticStudy object', {
     banterData <- export_banter(exData, verbose=FALSE)
     expect_equal(nrow(banterData$events), 3)
     expect_equal(length(banterData$detectors), 3)
-    expect_error(export_banter(exData, dropSpecies = c('b', 'c'), verbose=FALSE))
+    expect_warning(export_banter(exData, dropSpecies = c('b', 'c'), verbose=FALSE))
     lessData <- export_banter(exData, dropVars = c('peak'), verbose=FALSE)
     expect_true(!any(
         sapply(lessData$detectors, function(x) 'peak' %in% colnames(x))

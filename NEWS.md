@@ -1,3 +1,11 @@
+## PAMpal 0.15.0
+
+* Added support for GPL Detector data!
+
+* Added `processDate` to ancillary info of each study
+
+* Removing some unnecessary package dependencies
+
 ## PAMpal 0.14.6
 
 * Changed included `testClick` from 192kHz to 500kHz to avoid unnecessary errors 

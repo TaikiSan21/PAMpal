@@ -37,12 +37,22 @@ roccaWhistleCalcs <- function(data) {
     }
     contour <- data.frame(freq = data$freq, time = data$time)
     nSlices <- nrow(contour)
-
+    if(nSlices == 1) {
+        contour <- rbind(contour, contour)
+        nSlices <- 2
+        if(!is.null(data$timeRes)) {
+            timeRes <- data$timeRes
+        } else {
+            timeRes <- 0
+        }
+    } else {
+        timeRes <- diff(contour$time[1:2])
+    }
     result <- list(freqBeg = contour$freq[1],
                          freqEnd = contour$freq[nSlices],
                          freqMean = mean(contour$freq),
                          freqStdDev = sd(contour$freq),
-                         duration = (contour$time[nSlices] - contour$time[1]))
+                         duration = (contour$time[nSlices] - contour$time[1]) + timeRes)
     contour$sweep <- 0L # 0 1 2 down flat up
     contour$step <- 0L # 0 1 2 flat up down
     contour$slope <- 0
@@ -73,8 +83,8 @@ roccaWhistleCalcs <- function(data) {
 
     # Not first, not if time diff==0. First is 0. Java 749
     useSlope <- contour$slope[contour$timediff != 0]
-    result$freqSlopeMean <- mean(useSlope)
-    result$freqAbsSlopeMean <- mean(abs(useSlope))
+    result$freqSlopeMean <- ifelse(length(useSlope) == 0, 0, mean(useSlope))
+    result$freqAbsSlopeMean <- ifelse(length(useSlope) == 0, 0, mean(abs(useSlope)))
     # positive slopes
     useSlope <- contour$slope[contour$slope > 0]
     result$freqPosSlopeMean <- ifelse(length(useSlope)==0, 0,
@@ -105,6 +115,9 @@ roccaWhistleCalcs <- function(data) {
     result$freqCofm <- freqCofmSum / 10000
 
     freqQuarters <- contour$freq[round(c(1, 2, 3)*nSlices/4, 0)]
+    if(length(freqQuarters) <= 2) {
+        freqQuarters <- c(rep(freqQuarters[1], 3-length(freqQuarters)), freqQuarters)
+    }
     result$freqQuarter1 <- freqQuarters[1]
     result$freqQuarter2 <- freqQuarters[2]
     result$freqQuarter3 <- freqQuarters[3]
@@ -122,10 +135,10 @@ roccaWhistleCalcs <- function(data) {
 
     # Java 739
     result$freqNumSteps <- result$freqStepUp + result$freqStepDown
-    result$stepDur <- result$freqNumSteps / result$duration
+    result$stepDur <- ifelse(result$duration == 0, 0, result$freqNumSteps / result$duration)
 
     # Java 770
-    slopeBegAve <- mean(contour$slope[2:4]) # not first cuz 0
+    slopeBegAve <- mean(contour$slope[2:4], na.rm=TRUE) # not first cuz 0
     if(slopeBegAve > 0) {
         result$freqBegSweep <- 2
         result$freqBegUp <- TRUE
@@ -139,7 +152,7 @@ roccaWhistleCalcs <- function(data) {
         result$freqBegUp <- FALSE
         result$freqBegDwn <- FALSE
     }
-    slopeEndAve <- mean(contour$slope[(nSlices-2):nSlices])
+    slopeEndAve <- mean(contour$slope[(nSlices-2):nSlices], na.rm=TRUE)
     if(slopeEndAve > 0) {
         result$freqEndSweep <- 2
         result$freqEndUp <- TRUE
@@ -210,6 +223,9 @@ setStep <- function(contour, ix, stepSens = 11) {
 
 setSweep <- function(freq) {
     nFreq <- length(freq)
+    if(nFreq <= 2) {
+        return(rep(1L, nFreq))
+    }
     freqBefore <- freq[1:(nFreq-2)]
     freqNow <- freq[2:(nFreq-1)]
     freqAfter <- freq[3:nFreq]
@@ -239,6 +255,6 @@ countSweeps <- function(sweep) {
     result$numSweepsFlatUp <- sum(swpBefore == 1L & swpAfter == 2L)
     result$numSweepsUpDwn <- sum(swpBefore == 2L & swpAfter == 0L)
     result$numSweepsUpFlat <- sum(swpBefore == 2L & swpAfter == 1L)
-
+    result[is.na(result)] <- 0
     result
 }

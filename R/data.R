@@ -53,3 +53,17 @@ NULL
 #' }
 #' @keywords datasets
 NULL
+
+#' @docType data
+#' @name testGPL
+#' @title A fake GPL detection
+#' @description A manually created fake GPL contour, mimicing what the output
+#'   would be from the Pamguard module and fed into the GPL calcs
+#' @usage data(testGPL)
+#' @format A list with three items:
+#' \describe{
+#'   \item{freq}{a vector of the frequency contour values in hertz}
+#'   \item{time}{a vector of the time values of the contour in seconds}
+#' }
+#' @keywords datasets
+NULL

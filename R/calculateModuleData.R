@@ -126,6 +126,16 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
             allCepstrum$callType <- 'cepstrum'
             allCepstrum
         },
+        'GPLDetector' = {
+            allGPL <- doGPLCalcs(binData$data, c(getBasic(moduleType), binFuns[['GPLDetector']]))
+            if(is.null(allGPL) ||
+               nrow(allGPL) == 0) {
+                return(NULL)
+            }
+            allGPL$detectorName <- detName
+            allGPL$callType <- 'gpl'
+            allGPL
+        },
         pamWarning("I don't know how to deal with Module Type ", moduleType)
     )
     result$BinaryFile <- binData$fileInfo$fileName
@@ -262,4 +272,76 @@ doCepstrumCalcs <- function(cepstrumData, cepstrumFuns, detSettings=NULL) {
         )
     }
     bind_cols(allCeps)
+}
+
+# GPL 
+doGPLCalcs <- function(gplData, gplFuns, detSettings=NULL) {
+    # Does this die if 1st slice is #1 (or 0, w/e index is)
+    # probably, so use next whistle
+    if(is.null(detSettings)) {
+        freqRes <- gplData[[1]]$freqRes
+        timeRes <- gplData[[1]]$timeRes
+    } else {
+        # this not perfect for changing SR so we should just not do it for whistles
+        sr <- detSettings$sr
+        fftLen <- detSettings$length
+        fftHop <- detSettings$hop
+        freqRes <- sr / fftLen
+        timeRes <- fftHop / sr
+        # whistleData[[i]]$freq <- whistleData[[i]]$contour * sr/fftLen
+        # whistleData[[i]]$allFreq <- do.call(cbind, lapply(whistleData[[i]]$sliceData, 
+        #                                                   function(x) x$peakData)) * sr/fftLen
+        # whistleData[[i]]$time <- sapply(whistleData[[i]]$sliceData, function(x) x$sliceNumber) * 
+        #     fftHop/sr
+        
+    }
+    
+    for(i in seq_along(gplData)) {
+        # if(gplData[[i]]$area <= 2) {
+        #     next
+        # }
+        allTimes <- gplData[[i]]$points[1, ]
+        times <- unique(allTimes)
+        freq <- rep(NA, length(times))
+        thisEnergy <- gplData[[i]]$energy
+        thisFreq <- gplData[[i]]$points[2, ] * freqRes
+        for(j in seq_along(times)) {
+            whichThis <- allTimes == times[j]
+            maxEn <- max(thisEnergy[whichThis])
+            whichMax <- whichThis & (thisEnergy == maxEn)
+            freq[j] <- thisFreq[whichMax]
+        }
+        gplData[[i]]$freq <- freq
+        gplData[[i]]$time <- times * timeRes
+        if(length(times) == 1) {
+            gplData[[i]]$timeRes <- timeRes
+        }
+    }
+    # tempData <- whistleData[[1]]
+    # if(tempData$sliceData[[1]]$sliceNumber == 0) {
+    #     tempData <- whistleData[[2]]
+    # }
+    # fftHop <- (tempData$startSample + 1)/tempData$sliceData[[1]]$sliceNumber
+    # fftLen <- tempData$sampleDuration -
+    #     (tempData$sliceData[[tempData$nSlices]]$sliceNumber - tempData$sliceData[[1]]$sliceNumber) * fftHop
+    allGpl <- vector('list', length=length(gplFuns))
+    for(f in seq_along(gplFuns)) {
+        allGpl[[f]] <- bind_rows(
+            lapply(gplData, function(oneGpl) {
+                # if(length(oneGpl$freq) <= 2) {
+                #     return(NULL)
+                # }
+                tryCatch({
+                    gplFuns[[f]](oneGpl)
+                }, error = function(e) {
+                    # browser()
+                    message('Error in function ', names(gplFuns)[f],
+                            ': ', as.character(e$call[1]), '-', e$message,
+                            '. UID: ', oneGpl$UID, sep='')
+                }
+                )
+            })
+        )
+    }
+    bind_cols(allGpl)
 }

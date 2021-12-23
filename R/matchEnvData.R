@@ -97,14 +97,14 @@ setMethod('matchEnvData',
 )
 
 addEnvToEvent <- function(event, env) {
-    env <- env[env$event == id(event), ]
+    env <- env[env$eventId == id(event), ]
     envList <- as.list(env)
     oldEnv <- ancillary(event)$environmental
     if(!is.null(oldEnv)) {
         envList <- safeListAdd(oldEnv, envList)
     }
     ancillary(event)$environmental <- envList
-    measureOnly <- !grepl('_median$|_sd$|Longitude|match|Latitude|UTC|event', names(env))
+    measureOnly <- !grepl('_median$|_sd$|Longitude|match|Latitude|UTC|eventId', names(env))
     measList <- env[measureOnly]
     oldMeas <- ancillary(event)$measures
     if(!is.null(oldMeas)) {
@@ -115,7 +115,7 @@ addEnvToEvent <- function(event, env) {
 }
 
 getEventStart <- function(data) {
-    dets <- detectors(data)
+    dets <- getDetectorData(data)
     if(length(dets) == 0) {
         return(NULL)
     }
@@ -128,10 +128,13 @@ getEventStart <- function(data) {
         pamWarning('Event ', id(data), ' does not have GPS data added.')
         return(NULL)
     }
-    coordsOnly <- do.call(rbind, lapply(dets, function(x) {
-        x[, c('UTC', 'Longitude', 'Latitude')]
+    coordsOnly <- bind_rows(lapply(dets, function(x) {
+        coord <- x[, c('UTC', 'Longitude', 'Latitude', 'eventId')]
     }))
-    coordsOnly$event <- id(data)
+    # coordsOnly$event <- id(data)
     # for now use earliest time in event, first row only just in case a tie
-    coordsOnly[which.min(coordsOnly$UTC), ][1, ]
+    bind_rows(lapply(split(coordsOnly, coordsOnly[['eventId']]), function(x) {
+        x[which.min(x$UTC), ][1, ]
+    }))
+    # coordsOnly[which.min(coordsOnly$UTC), ][1, ]
 }

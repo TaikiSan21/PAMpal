@@ -56,7 +56,6 @@ setGeneric('addGps', function(x, gps=NULL, thresh = 3600, ...) standardGeneric('
 #' @rdname addGps
 #' @importFrom data.table data.table setkeyv key setDT setDF
 #' @importFrom dplyr mutate select
-#' @importFrom magrittr %>%
 #' @importFrom utils globalVariables
 #' @export
 #'
@@ -103,13 +102,6 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, ...) {
         setkeyv(x, 'UTC')
         setkeyv(gps, 'UTC') # removing channel key from gps if its there i guess
     }
-    # result <- gps[x, roll='nearest'] %>%
-    #     mutate(diff = abs(dataTime - gpsTime),
-    #            Latitude = ifelse(diff > thresh, NA, Latitude),
-    #            Longitude = ifelse(diff > thresh, NA, Longitude),
-    #            UTC = dataTime) %>%
-    #     select(-diff, -gpsTime, -dataTime)
-    # browser()
     result <- gps[x, roll='nearest']
     result[abs(dataTime - gpsTime) > thresh, c('Latitude', 'Longitude') := NA]
     # result[, UTC := dataTime]

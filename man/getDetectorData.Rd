@@ -5,6 +5,8 @@
 \alias{getClickData}
 \alias{getWhistleData}
 \alias{getCepstrumData}
+\alias{getGPLData}
+\alias{getMeasures}
 \title{Extract and Combine Detector Data}
 \usage{
 getDetectorData(x)
@@ -14,6 +16,10 @@ getClickData(x)
 getWhistleData(x)
 
 getCepstrumData(x)
+
+getGPLData(x)
+
+getMeasures(x)
 }
 \arguments{
 \item{x}{data to extract detector data from, either an \code{AcousticStudy},

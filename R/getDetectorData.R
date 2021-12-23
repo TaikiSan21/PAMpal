@@ -109,3 +109,34 @@ getCepstrumData <- function(x) {
     getDetectorData(x)$cepstrum
 }
 
+#' @export
+#' @rdname getDetectorData
+#' 
+getGPLData <- function(x) {
+    getDetectorData(x)$gpl
+}
+
+#' @export
+#' @rdname getDetectorData
+#' 
+getMeasures <- function(x) {
+    if(is.data.frame(x)) {
+        return(x)
+    }
+    if(is.AcousticStudy(x)) {
+        return(getMeasures(events(x)))
+    }
+    if(is.list(x)) {
+        if(length(x) == 0) {
+            return(NULL)
+        }
+        result <- lapply(x[sapply(x, is.AcousticEvent)], function(e) {
+            getMeasures(e)
+        })
+        names(result) <- NULL
+        result <- unlist(result, recursive=FALSE)
+        return(squishList(result))
+    }
+    # base case one acev
+    c(id=id(x), ancillary(x)$measures)
+}
