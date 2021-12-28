@@ -137,33 +137,46 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                }
            },
            'am' = {
-               specDf <- distinct(do.call(rbind, lapply(acev, function(oneAe) {
-                   dbs <- files(oneAe)$db
-                   events <- do.call(rbind, lapply(dbs, function(y) {
-                       con <- dbConnect(y, drv=SQLite())
-                       evs <- dbReadTable(con, 'Click_Detector_OfflineEvents')
-                       dbDisconnect(con)
-                       # browser()
-                       evs <- evs[, c('Id', 'eventType', 'comment')]
-                       evs$event <- paste0(gsub('\\.sqlite3', '', basename(y)),
-                                              '.OE', as.character(evs$Id))
-                       evs$eventType <- str_trim(evs$eventType)
-                       evs$comment <- gsub('OFF EFF', '', evs$comment)
-                       evs$comment <- gsub("[[:punct:]]", '', evs$comment)
-                       evs$comment <- str_trim(evs$comment)
-                       evs
-                   }))
+               specDf <- bind_rows(lapply(acev, function(oneAe) {
+                   list(event = id(oneAe), 
+                                  eventType = str_trim(getClickData(oneAe)$eventLabel[1]),
+                                  comment = ancillary(oneAe)$eventComment)
+                   # dbs <- files(oneAe)$db
+                   # events <- do.call(rbind, lapply(dbs, function(y) {
+                   #     con <- dbConnect(y, drv=SQLite())
+                   #     evs <- dbReadTable(con, 'Click_Detector_OfflineEvents')
+                   #     dbDisconnect(con)
+                   #     # browser()
+                   #     evs <- evs[, c('Id', 'eventType', 'comment')]
+                   #     evs$event <- paste0(gsub('\\.sqlite3', '', basename(y)),
+                   #                            '.OE', as.character(evs$Id))
+                   #     evs$eventType <- str_trim(evs$eventType)
+                   #     evs$comment <- gsub('OFF EFF', '', evs$comment)
+                   #     evs$comment <- gsub("[[:punct:]]", '', evs$comment)
+                   #     evs$comment <- str_trim(evs$comment)
+                   #     evs
+                   # }))
                    # events$event <- paste0('OE', as.character(events$UID))
-                   events$species <- 'unid'
-                   goodEvents <- c('BEAK', 'FORG')
-                   events$species[events$eventType %in% goodEvents] <- str_split(events$comment[events$eventType %in% goodEvents],
-                                                                         ' ', simplify=TRUE)[, 1]
-                   events$species <- tolower(events$species)
-                   events$species[events$species %in% c('mmme', 'mm')] <- 'unid'
-                   events
-               }
-               )))
-               specToAssign <- unique(specDf[specDf$event %in% sapply(acev, id), 'species'])
+                   # events$species <- 'unid'
+                   # events$species[events$eventType %in% goodEvents] <- str_split(events$comment[events$eventType %in% goodEvents],
+                   #                                                       ' ', simplify=TRUE)[, 1]
+                   # events$species <- tolower(events$species)
+                   # events$species[events$species %in% c('mmme', 'mm')] <- 'unid'
+                   # events
+               }))
+               specDf$comment <- gsub('OFF EFF', '', specDf$comment)
+               specDf$comment <- gsub("[[:punct:]]", '', specDf$comment)
+               specDf$comment <- str_trim(specDf$comment)
+               specDf$species <- 'unid'
+               goodEvents <- c('BEAK', 'FORG')
+               specDf$species <- 'unid'
+               specDf$species[specDf$eventType %in% goodEvents] <- str_split(specDf$comment[specDf$eventType %in% goodEvents],
+                                                                             ' ', simplify=TRUE)[, 1]
+               specDf$species <- tolower(specDf$species)
+               specDf$species[specDf$species %in% c('mmme', 'mm')] <- 'unid'
+               
+               # specToAssign <- unique(specDf[specDf$event %in% sapply(acev, id), 'species'])
+               specToAssign <- unique(specDf$species)
                if(length(specToAssign) > 0) {
                    cat('Assigning unique species: ', paste0(specToAssign, collapse = ', '), '.\n', sep = '')
                }
