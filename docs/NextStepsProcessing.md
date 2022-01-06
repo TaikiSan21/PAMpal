@@ -32,7 +32,7 @@ argument to `processPgDetections` to specify the name of a column in the
 event table to use for species ID (ex.
 `procesPgDetections(pps, mode='db', label='SpeciesCode1')`).
 
-``` {.r}
+```r
 myStudy <- setSpecies(myStudy, method='pamguard')
 # Use this to examine species IDs easily
 species(myStudy)
@@ -52,7 +52,7 @@ is not required to assign an ID for all events present when `value` is a
 dataframe, but if assigning species IDs to only a subset of events
 PAMpal will issue a light warning message.
 
-``` {.r}
+```r
 # Set all species to "Pm"
 myStudy <- setSpecies(myStudy, method='manual', value='Pm')
 species(myStudy)
@@ -73,7 +73,7 @@ these would more appropriately just be "Pm" for a different analysis).
 Reassignment is accomplished by providing `value` as a dataframe with
 columns `old` and `new` specifying the desired conversions.
 
-``` {.r}
+```r
 # Expand Oo to Orcinus orca
 myStudy <- setSpecies(myStudy, method='reassign', value = data.frame(old='Oo', new='Orcinus orca'))
 # Change PmCoda and PmRegular to Pm
@@ -120,7 +120,7 @@ database there is one less file you need to keep track of. After running
 `addGps`, all GPS data will also be stored in the `gps` slot of your
 `AcousticStudy`, which can be accessed with the `gps()` function.
 
-``` {.r}
+```r
 # If GPS is already in Pamguard databases you used to process, changing threshold to 30 minutes
 myStudy <- addGps(myStudy, threshold=1800)
 # Provide a dataframe of coordinates
@@ -150,7 +150,7 @@ for only specific detectors, `getClickData`, `getWhistleData`, and
 convenient to directly output a dataframe instead of needing to access
 it from a list.
 
-``` {.r}
+```r
 # Get data for your entire study
 allDets <- getDetectorData(myStudy)
 # this will contain $click, $whistle, and $cepstrum (if those are present in your data)
@@ -189,7 +189,7 @@ There is only really one option to set, this controls what number to use
 as the time of each detection. `time='time'` simply uses UTC time in
 Pamguard
 
-``` {.r}
+```r
 myStudy <- calculateICI(myStudy, time='time')
 ```
 
@@ -198,7 +198,7 @@ value in the waveform clip. So if the peak value of the waveform for a
 given detection is 500 samples into a clip, then 'peakTime' will use the
 UTC time plus 500 / SampleRate as the time of that click
 
-``` {.r}
+```r
 myStudy <- calculateICI(myStudy, time='peakTime')
 ```
 
@@ -213,14 +213,14 @@ using the `getICI` function. This has one parameter, selecting the type
 of data you want to get. `type='value'` will return the single ICI value
 calculated for each detector as a list named by detector name.
 
-``` {.r}
+```r
 iciValues <- getICI(myStudy, type='value')
 ```
 
 This returns a list of results for every single event, so to see the ICI
 values for your first event:
 
-``` {.r}
+```r
 iciValues[[1]]
 ```
 
@@ -228,7 +228,7 @@ iciValues[[1]]
 calculate the number returned by 'value', this can be useful for making
 plots or if you have your own way of doing things
 
-``` {.r}
+```r
 iciData <- getICI(myStudy, type='data')
 ```
 
@@ -236,7 +236,7 @@ These are similarly returned as a list for each event, and the result is
 a list of dataframes for each click detector that just contain the name
 of the detector and the time difference values used
 
-``` {.r}
+```r
 str(iciData[[1]])
 ```
 
@@ -250,7 +250,7 @@ will be exactly the same since Pamguard does not store a separate
 detection time for each channel, but the ICI values should be close but
 slightly different for `time ='peakTime'`
 
-``` {.r}
+```r
 iciData[[1]]$All
 ```
 
@@ -274,7 +274,7 @@ specified using either `database` or `Database`, the best way to provide
 the full names is typically by indexing from `files(myStudy)$db`.
 Alternatively, functions like `basename` can be used
 
-``` {.r}
+```r
 # This won't work because it needs the full file name and path
 oneDb <- filter(myStudy, database == 'FirstDb.sqlite3')
 # This works instead, events from only first database
@@ -295,7 +295,7 @@ provided, and thus should only be done after species are assigned using
 `setSpecies`. Criteria are specified using either `species` or
 `Species`.
 
-``` {.r}
+```r
 # Only 'ZC' events
 zcOnly <- filter(myStudy, species == 'ZC')
 # Not ZC events
@@ -310,7 +310,7 @@ provided, and the names of the criteria must exactly match the names of
 variables listed in `ancillary(myStudy[[1]])$environmental`, so it is
 usually best to double check these names before filtering.
 
-``` {.r}
+```r
 # This probably wont work because name is not exact match
 shallowOnly <- filter(myStudy, sea_floor_depth > -500)
 # Environmental parameters usually have mean or median added to the name, this works
@@ -327,7 +327,7 @@ It is best to check exact names using `names(detectors(myStudy[[1]]))`
 before filtering. Any events left with no detections will be removed
 from the study.
 
-``` {.r}
+```r
 # Remove Click_Detector_0
 noZero <- filter(myStudy, detector != 'Click_Detector_0')
 # Just 1 or 2
@@ -346,7 +346,7 @@ affect all click detections in your data, but will leave all Whistle or
 Cepstrum detectors untouched. Any events that are left with 0 detections
 after filtering are removed.
 
-``` {.r}
+```r
 less10Peak <- filter(myStudy, peak < 10)
 peak10to20 <- filter(myStudy, peak > 10, peak < 20)
 ```
@@ -354,7 +354,7 @@ peak10to20 <- filter(myStudy, peak > 10, peak < 20)
 Multiple types of filters can also be combined into a single filter
 statement
 
-``` {.r}
+```r
 filterStudy <- filter(myStudy,
                         database != files(myStudy)$db[3],
                         species == 'OO',
@@ -368,7 +368,7 @@ all, but rather just using `[]` to subset your data. You can provide
 either indexes or full event names, event names are usually easiest to
 provide by indexing into `names(events(myStudy))`
 
-``` {.r}
+```r
 firstOnly <- myStudy[1]
 someOdds <- myStudy[c(1,3,5,7,9)]
 byName <- myStudy[names(events(myStudy))[c(1,3,5)]]
@@ -382,7 +382,7 @@ filter, it won't work and will likely give you an error. As a
 workaround, the function works fine if you first assign these to a
 variable, then filter.
 
-``` {.r}
+```r
 # This probably won't work
 badFilt <- filter(myStudy, species %in% c("SPECIES1", "SPECIES2", "SPECIES3", "SPECIES4", "SPECIES5",
                              "SPECIES6", "SPECIES7", "SPECIES8", "SPECIES9", "SPECIES10"))
@@ -397,7 +397,7 @@ to use it inside other functions. Unfortunately there is not currently a
 work around for this, but I will be looking into improving the function
 in the filter so that these issues do not occur.
 
-``` {.r}
+```r
 # This probably won't work
 myFilter <- function(x, sp) {
     filter(x, species %in% sp)
@@ -421,7 +421,7 @@ usually not needed. Typically the easiest way to get UIDs without
 copying/pasting is with `getDetectorData` or the similar functions
 `getClickData`, `getWhistleData`, and `getCepstrumData`.
 
-``` {.r}
+```r
 # Get the UIDs first to make things easier, then get click binary data
 clickUIDs <- getClickData(myStudy)$UID
 # These are usually identical, but occasionally it is necessary to specify type
@@ -463,7 +463,7 @@ exist for all exported events can be used in a BANTER model,
 `export_banter` will issue a warning message if there are event-level
 measures found that are not present in all events.
 
-``` {.r}
+```r
 # Assign species labels before exporting so that data can be used to train a model
 myStudy <- setSpecies(myStudy, method='pamguard')
 banterData <- export_banter(myStudy)
@@ -490,7 +490,7 @@ data, `dropVars` and `dropSpecies`. Both take in a character vector of
 the names of the variables or species that you do not want to be
 exported.
 
-``` {.r}
+```r
 # dont include peak3 or dBPP in the exported variables
 lessBanter <- export_banter(myStudy, dropVars = c('peak3', 'dBPP'))
 # dont include species Unid Dolphin or Unid BW in exported
@@ -510,7 +510,7 @@ needed for BANTER since it is based on a random forest model (ask Eric
 Archer if you need convincing), but the option is included since it is
 frequently asked for.
 
-``` {.r}
+```r
 trainTest <- export_banter(myStudy, train=0.7)
 names(trainTest)
 nrow(trainTest$train$events)
