@@ -15,7 +15,7 @@ BANTER model](#exporting-for-banter-model). Species assignment is always
 done using the `setSpecies` function, and has three possible modes of
 operation that can be selected using the `method` argument.
 
-For `method='pamguard'`{.r}, species IDs will be assigned according to the
+For `method='pamguard'`{:.r}, species IDs will be assigned according to the
 labels set in Pamguard for each event. This will only work for
 `AcousticStudy` objects created by `processPgDetections` using
 `mode='db'` {.r}. For events created using the Click Detector module (these
