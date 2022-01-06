@@ -243,8 +243,6 @@ Feel free to reach out with any questions, comments, suggestions: [taiki.sakai@n
 
 ## Versions
 
-[test link][testavg]
-
 For bug fixes and feature additions in each version see the [NEWS][news] file
 
 [PMTest]: PM_IPI_Example.html
@@ -268,3 +266,4 @@ For bug fixes and feature additions in each version see the [NEWS][news] file
 [xcrun-err]: https://ma.ttias.be/mac-os-xcrun-error-invalid-active-developer-path-missing-xcrun/
 [tcltk-err]: https://swvanderlaan.github.io/post/getting-r-with-tcl-tk-on-my-mac/
 [banter-guide]: banterGuide.html
+[avg-spec]: AvgSpec.html

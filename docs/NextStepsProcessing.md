@@ -256,7 +256,7 @@ iciData[[1]]$All
 
 ## Calculate and Plot Average Click Spectra
 
-
+This is an in-depth topic that has its [own page][avg-spec]
 
 ## Adding Environmental Data {#adding-environmental-data}
 
@@ -516,3 +516,5 @@ names(trainTest)
 nrow(trainTest$train$events)
 nrow(trainTest$test$events)
 ```
+
+[avg-spec]: AvgSpec.html
