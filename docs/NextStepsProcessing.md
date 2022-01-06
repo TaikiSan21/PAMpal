@@ -18,7 +18,7 @@ operation that can be selected using the `method` argument.
 For `method='pamguard'`{:.r}, species IDs will be assigned according to the
 labels set in Pamguard for each event. This will only work for
 `AcousticStudy` objects created by `processPgDetections` using
-`mode='db'` {.r}. For events created using the Click Detector module (these
+`r mode='db'`. For events created using the Click Detector module (these
 have prefix OE in PAMpal), species IDs will be taken from the
 "eventType" column in the Pamguard database. For events created using
 the Detection Group Localiser module, the column used for species ID can
