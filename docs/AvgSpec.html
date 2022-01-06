@@ -1,6 +1,6 @@
 ---
-theme: default
 layout: default
+theme: default
 ---
 <!DOCTYPE html>
 
@@ -254,6 +254,14 @@ pre code {
 </div>
 
 
+<style type="text/css">
+code
+{ color: #efefef ! important; background-color: #333 ! important; }
+section {
+  margin-left: 50px;
+  margin-right: 0px;
+}
+</style>
 <div id="basic-usage" class="section level3">
 <h3>Basic Usage</h3>
 <p>PAMpal makes it easy to calculate the average spectrum for a set of clicks, since this is often a useful image to create for assisting in species classification. You simply need to provide PAMpal an AcousticStudy object, and tell it which event (or events) to create the image for. It will then take all the clicks from all channels in that event, calculate their spectra, and average them (converting to/from log space where appropriate). This function creates two plots - first a concatenated spectrogram of all the clicks, and second the average spectrum. Here we calculate and plot the average spectrum of the first event in our study.</p>
