@@ -260,6 +260,12 @@ This is an in-depth topic that has its [own page][avg-spec]
 
 ## Adding Environmental Data {#adding-environmental-data}
 
+Basic choose from menu version
+
+Choose by picking erddap ID
+
+
+
 ## Filtering Data {#filtering-data}
 
 AcousticStudy objects can be filtered with syntax similar to the `dplyr`
@@ -440,7 +446,7 @@ headache by creating export functions that will organize your data into
 the format required by various models. Currently we only support
 exporting data for creating BANTER models (see: package `banter`
 available on CRAN, [BANTER paper](https://doi.org/10.1111/mms.12381),
-[BANTER guide](https://doi.org/10.1111/mms.12381)). In the future we
+[BANTER guide][banter-guide]). In the future we
 hope to add support for a variety of models, feel free to e-mail me at
 [taiki.sakai\@noaa.gov](mailto:taiki.sakai@noaa.gov) if you have a model
 that you would like to have supported.
@@ -518,3 +524,4 @@ nrow(trainTest$test$events)
 ```
 
 [avg-spec]: AvgSpec.html
+[banter-guide]: banterGuide.html

@@ -142,7 +142,6 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
     )
     checkStudy(result)
     result <- .addPamWarning(result)
-    ancillary(result)$processDate <- Sys.time()
     result
 }
 

@@ -1,6 +1,7 @@
 Items that are **bolded** are parameters output by the function, items in *italics* are input parameters to the function.
 
 ## standardClickCalcs
+
 The process for calculating the included click parameters is as follows:
 
 First a Butterworth filter is applied, either a highpass filter starting at *filterfrom_khz*, or bandpass if *filterto_khz*  is also specified (bandpass was added in more recent versions of PAMpal, previously only a highpass was available, uses additional parameter *filterto_khz*)
@@ -27,12 +28,16 @@ Soldevilla, M. et al (2008) “Classification of Risso’s and Pacific white-sid
 
 ## roccaWhistleCalcs
 
-Whistle calculations are a reimplementation of the ROCCA calculations currently present in Pamguard with
+Whistle and calculations are a reimplementation of the ROCCA calculations currently present in Pamguard with
 permission from Julie and Michael Oswald. More details can be found in:
 
 Oswald et al (2007) "A tool for real-time acoustic species identification of delphinid whistles", J. Acoust. Soc. Am. 122 587
 
+**NOTE**: Support for GPL detections has been added as of PAMpal version 0.15.0. The GPL Detector
+stores contours similar to the Whistle & Moan Detector, so PAMpal uses the same function for both.
+
 ## standardCepstrumCalcs
+
 **ici** is the median ICI value across the detected contour.
 **duration** is the length in seconds of the contour
 **iciSlope** is the slope of the ICI contour, given by fitting a line to the contour data using the `lm` function

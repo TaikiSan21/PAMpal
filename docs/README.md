@@ -24,9 +24,12 @@ on an image to open up a larger version.
 
 ## Installation
 
+PAMpal is available on CRAN and can be installed like any other package, but it
+receives frequent updates on GitHub that may not yet be on CRAN. 
 To install the latest version from GitHub, first make sure that you have
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) installed, then 
-run the following code to install PAMpal.
+run the following code to install PAMpal. 
+
 
 ```r
 # make sure you have Rtools installed
@@ -34,6 +37,10 @@ if(!require('devtools')) install.packages('devtools')
 # install from GitHub
 devtools::install_github('TaikiSan21/PAMpal')
 ```
+
+Note that GitHub installation is much
+more prone to errors, so if you have any issues with that installation (or getting
+Rtools working properly), feel free to just install from CRAN.
 
 ### Common Installation Issues
 
@@ -69,13 +76,15 @@ how well solutions work but here are some options. If errors start with
 
 PAMpal is currently only built to work with [Pamguard][pamguard],
 and is built to organize your acoustic detections into events. Before getting
-started you'll need to have three things:
+started you'll need to have three things (plus one optional):
 
 1. The database (or multiple) created by Pamguard
 2. The folder containing containing the binary files (xxx.pgdf) created by Pamguard
 3. A way of organizing your data into events, either using Pamguard's event or 
 Detection Group Localizer modules, or by specifying start and end times (see
 [guide][time-grouping] for details on how to do this)
+(**Optional**) 4. The XML settings file exported from Pamguard (you need to do this manually,
+see [here][pampalsettings] for more info). This is optional but highly recommended
 
 ### Create a PAMpalSettings Object
 
@@ -91,8 +100,6 @@ First you will be asked to select the database files. You can select more than o
 using CTRL or SHIFT. Don't worry - you can add or remove databases later, nothing
 here is final.
 
-
-
 <a href="images/DBSelectCropped.png" data-lightbox="file-select" data-title="Selecting database files">![](images/DBSelectCropped.png)</a>
 
 Next you will be asked to select a folder containing the binary files. You can
@@ -107,8 +114,8 @@ if you don't immediately see the file selection window for either of these two
 steps then look for it with ALT+TAB.
 
 Next you will be asked to set some parameters for the processing functions that
-come with PAMpal. There is one function for each of three types of detections -
-clicks, whistles, and cepstrum detections. See [here][standard-calcs] for more
+come with PAMpal. There is one function for each of four types of detections -
+clicks, whistles, cepstrum, and GPL detections. See [here][standard-calcs] for more
 information.
 
 The only function you need to set parameters for is the "standardClickCalcs"
@@ -119,7 +126,8 @@ shown. There are three parameters you will be asked to set
 
 1. "sr_hz" - the sample rate in hertz for the click data. This should be kept 
 to the default value of "auto" (just press ENTER) unless your click data was
-decimated, in which case enter the decimated sample rate.
+decimated, in which case enter the decimated sample rate. This is not necessary
+if you will add an XML settings file (described more below)
 2. "filterfrom_khz" - the value in kilohertz of the butterworth highpass filter, or
 if a bandpass filter is desired (see next item) the lower end of the filter. If this value
 is 0 then no filter will be applied.
@@ -133,7 +141,22 @@ filter. If a highpass or no filter is desired, leave as the default NULL (just p
 `PAMpalSettings()` from a script you need to either click in the console before typing
 or use the shortcut CTRL+2.
 
-Once you've finished entering values for these (or accepting the defaults), you're 
+Once you've finished entering values for these (or accepting the defaults), there 
+is just one more **optional** (but recommended) step. More recent version of Pamguard
+have the ability to export some module settings as an XML file, and this XML
+file can be added to your `PAMpalSettings` object to help PAMpal process data more
+accurately and also to keep a record of your Pamguard settings in R. For more
+details on how to get this XML file, see the "Adding XML Settings" [here][pampalsettings].
+If you already have this file, it is easily added with the function `addSettings`.
+Again, this step is **optional**, so feel free to skip if this is your first time trying
+PAMpal and you just want to see how things work. But it is highly recommended when
+you are more familiar and want to really start processing data.
+
+```r
+myPps <- addSettings(myPps, 'XMLSettings.xml')
+```
+
+Once you've added some settings (or skipped that step), you're 
 ready to process some data! For more details about the PPS, including adding or 
 removing data and functions, or ways to set up a PPS without the interactive parts,
 see the [PAMpalSettings page][pampalsettings].
@@ -141,9 +164,10 @@ see the [PAMpalSettings page][pampalsettings].
 ### Processing Your Data
 
 Once you have a PPS, processing your data is easily accomplished by calling
-the `processPgDetections` function. This function has two modes, `mode = 'db'`
-for processing events labeled within Pamguard, and `mode = 'time'` for events
-labelled by start and end times. For "db", you can just run:
+the `processPgDetections` function. This function has three modes, `mode = 'db'`
+for processing events labeled within Pamguard, `mode = 'time'` for events
+labelled by start and end times, and `mode = 'recording'` to organize data
+by wav file. For `mode  = 'db'`, you can just run:
 
 ```r
 myStudy <- processPgDetections(myPps, 
@@ -154,7 +178,7 @@ myStudy <- processPgDetections(myPps,
 Note that if `id` is not specified it will default to today's date, but it is
 always recommended to provide an informative name.
 
-For "time", you will also need to supply your event data, see [this guide][time-grouping]
+For `mode = 'time'`, you will also need to supply your event data, see [this guide][time-grouping]
 or `?processPgDetections` for details on how this should be formatted:
 
 ```r
@@ -164,9 +188,19 @@ myStudy <- processPgDetections(myPps,
                                grouping='myEvents.csv')
 ```
 
+For `mode = 'recording'` you don't need to supply any extra information. This is the most
+straight forward way to have PAMpal process all possible detections with minimal effort.
+
+
 **NOTE:** When running `mode='time'`, you may be prompted to make some decisions about matching
 databases and events, or have issues converting dates from a csv file. See [here][time-grouping]
 for more details about what's going on.
+
+```r
+myStudy <- processPgDetections(myPps,
+                               mode='recording',
+                               id='MyStudyName')
+```
 
 And you're done! Let's take a look at what you got with one of PAMpal's built in plotting functions,
 `plotDataExplorer`. After calling `plotDataExplorer(myStudy)`, you might be asked to select a
@@ -182,8 +216,10 @@ plot, calling `library(manipulate)` and then trying to create the plot again usu
 Plots are pretty and all, but what did PAMpal actually do and what exactly is in your `myStudy`
 output object? For each detection in each of your events, PAMpal checks what type of detection
 it is and then applies all of the functions you have added for that type. For the default options
-we have just one function each for clicks, whistles, and cepstrum detections, but you could add more.
+we have just one function each for clicks, whistles, cepstrum, and GPL detections, but you could add more.
 These outputs are grouped by the detector that detected them, and by the event that you are a part of.
+For details on how to easily get your data out into a dataframe see the [Next Steps][next-steps-processing]
+section.
 
 You might have noticed that `myStudy` is not a normal R list or data frame, it is a custom R object
 called an `AcousticStudy` (an S4 class, if you're into that sort of thing). This means that actually 
@@ -209,8 +245,7 @@ can't find, or if there's anything else you want PAMpal to do!
 To learn more about what PAMpal can do for you, click on the links below
 
 - [Data processing: Next steps][next-steps-processing] Adding GPS data, assigning
-species ID, and more info on how to access
-and manipulate your data
+species ID, more info on how to access and manipulate your data, and much more
 - [Case Studies][case-studies] Some tutorials of working through a specific problem,
 great for examples of manipulating `AcousticStudy` objects and seeing how to program
 with your data

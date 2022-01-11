@@ -7,7 +7,7 @@ replicate results between users. All you need to do is send someone your
 PAMpalSettings object and they can see exactly how you analysed your data, or 
 even point the PPS at their own data and process it in the exact same way.
 
-A PAMpalSettings object has four slots:
+A PAMpalSettings object has five slots:
 
 * db - This stores the full path to any SQLite databases that will be analysed
 * binaries - This stores the folder names of any binaries, as well as the full
@@ -19,7 +19,12 @@ function, users are asked to supply values for any arguments of the function.
 These values are saved with the function and cannot be changed without removing
 the function entirely. 
 * calibration - Stores a calibration function to correct for different hydrophone
-characteristics. Optional, currently only affects certain 'ClickDetector' functions
+characteristics. Optional, currently only affects certain 'ClickDetector' functions.
+Added with the function `addCalibration`
+* settings - Stores an XML settings file created by Pamguard. This file is mostly
+used to keep track of whether or not a decimator was used for various detectors,
+but it also stores all of the settings used for all detectors. Optional, but 
+recommended. Added with the function `addSettings`
 
 Note that none of these slots should ever be manually edited, use the functions described
 below if you want to add or remove anything.
@@ -45,7 +50,7 @@ myPps <- PAMpalSettings(db = myDb,
 
 After the initial set-up of your PPS, you may want to add to it. There are 
 four functions that accomplish this: `addDatabase`, `addBinaries`,
-`addFunction`, and `addCalibration`. The first two are simple, and can be called interactively
+`addFunction`, `addCalibration`, and `addSettings`. The first two are simple, and can be called interactively
 just like the initial PPS setup or by providing the paths.
 
 ```r
@@ -114,6 +119,47 @@ This will bring up menu selections asking what units the calibration are in (see
 to.
 
 <a href="images/Calibration.png" data-lightbox="add-calibration" data-title="Adding calibration to a PPS">![](images/Calibration.png)</a>
+
+##### Adding XML Settings
+
+It is a good idea to add an XML settings file exported from Pamguard. This helps
+PAMpal keep track of which detectors are operating at which samplerate, which
+is surprisingly tricky to keep track of otherwise. For example, there is no way
+to tell just from the database whether or not a decimator was used, which is why
+the `standardClickCalcs` function needs the `sr_hz` parameter to manually set this
+value if it was run on decimated data.
+
+The first step to adding settings is to get the settings file out of Pamguard in
+the first place. This is found under File -> Export XML Configuration:
+
+<a href="images/ExportXMLMenu.png" data-lightbox="xml-menu" data-title="Where to export XML">![](images/ExportXMLMenu.png)</a>
+
+This will open a dialogue box with lots of options, but we only need a few of them.
+First make sure that the "All Modules" box is checked. Then you can change the name
+of the XML file that will be created (highly recommended, the default names can
+be quite long). Finally you must actually hit the "Write Now" button rather than just
+hitting "Ok".
+
+<a href="images/ExportXMLOptions.png" data-lightbox="xml-options" data-title="Important options in XML dialogue box">![](images/ExportXMLOptions.png)</a>
+
+This file is like an XML version of the .PSF files that Pamguard runs on - it stores
+settings for all the modules you have added to Pamguard, but in a more portable format
+that can be read by other programs. Now we need to add this XML file to our `PAMpalSettings`
+object with the `addSettings` function
+
+```r
+myPps <- addSettings(myPps, 'XMLSettings.xml')
+```
+
+Now when we run `processPgDetections` PAMpal will be assured of using the appropriate
+sample rate for various detectors, and additionally the settings you had chosen for these
+detectors will be stored in the `settings` slot of your `AcousticStudy` object.
+This is a long messy list parameters that serves no purpose other than record keeping.
+One example of potentially relevant information stored here is all of the settings
+for the different classes if using the Click Classifier for click detections. Since
+these classes are only labeled by a single number, storing the settings here allows
+us to compare classes from datasets run by different people to ensure that the
+settings for each class are the same.
 
 ### Adding from another PPS
 
