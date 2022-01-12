@@ -257,14 +257,15 @@ removing data / functions from your PPS, adding a hydrophone calibration,
 and more details about what exactly is stored here. 
 - [Parameter calculation details][standard-calcs] - Details on how the parameters
 from the included processing functions are calculated
-- [A guide to getting started with BANTER][banter-guide]
+- [A guide to getting started with BANTER][banter-guide] (also see the section
+on exporting data for BANTER in [next steps][next-steps-processing])
+- [Creating custom functions][custom-functions] How to create custom functions
+to add to your PPS. We don't claim to have all the answers in our provided
+"standard" functions, we want you to add your own ideas!
 
 *Sections below are still under construction*
 
 - [More details about the AcousticStudy and AcousticEvent objects][acoustic-study]
-- [Creating custom functions][custom-functions] How to create custom functions
-to add to your PPS. We don't claim to have all the answers in our provided
-"standard" functions, we want you to add your own ideas!
 - [Collaboration][collaboration] More details on how PAMpal makes it easy to collaborate
 - [Common error messages][errors] A (probably incomplete) list of some warning
 and error messages you might encounter, why they are happening, and what to

@@ -77,8 +77,7 @@ function arguments in the `addFunction()` call.
 ```r
 meanAdd <- function(data, add=1) {
     result <- apply(data$wave, 2, mean) + add
-    data.frame(Channel = 1:length(result),
-               MeanAdd = result)
+    data.frame(MeanAdd = result)
 }
 
 myPps <- addFunction(myPps, 
