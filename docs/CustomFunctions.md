@@ -62,7 +62,7 @@ ideas, this `packageList` checks to make sure that other users have all the nece
 packages they need to run for your function (or installs if missing). Make sure to fill
 this out completely to avoid headaches.
 
-```{r}
+```r
 sampleClickFun <- function(data, calibration=NULL) {
   # List names of all required packages here to guarantee they will be 
   # installed when others try to use your function, ex:
@@ -134,7 +134,7 @@ named list where all items have length 1.
 
 Here's the template, again be sure to fill in the `packageList`:
   
-```{r}
+```r
 sampleContourFun <- function(data) {
   # List names of all required packages here to guarantee they will be 
   # installed when others try to use your function, ex:
@@ -173,7 +173,7 @@ Just like the contour detectors above, the only expected parameter is `data`.
 The expected output is a dataframe with 1 row or a named list where all items have
 length 1.
 
-```{r}
+```r
 sampleCepstrumFun <- function(data) {
   # List names of all required packages here to guarantee they will be 
   # installed when others try to use your function, ex:
