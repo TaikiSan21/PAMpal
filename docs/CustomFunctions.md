@@ -69,9 +69,9 @@ sampleClickFun <- function(data, calibration=NULL) {
   # packageList <- c('seewave', 'signal')
   packageList <- c()
   for(p in packageList) {
-    if(!require(p)) {
+    if(!require(p, character.only = TRUE)) {
       install.packages(p)
-      require(p)
+      require(p, character.only = TRUE)
     }
   }
   # prepping output
@@ -141,9 +141,9 @@ sampleContourFun <- function(data) {
   # packageList <- c('seewave', 'signal')
   packageList <- c()
   for(p in packageList) {
-    if(!require(p)) {
+    if(!require(p, character.only = TRUE)) {
       install.packages(p)
-      require(p)
+      require(p, character.only = TRUE)
     }
   }
   # prepping output
@@ -180,9 +180,9 @@ sampleCepstrumFun <- function(data) {
   # packageList <- c('seewave', 'signal')
   packageList <- c()
   for(p in packageList) {
-    if(!require(p)) {
+    if(!require(p, character.only = TRUE)) {
       install.packages(p)
-      require(p)
+      require(p, character.only = TRUE)
     }
   }
   # prepping output

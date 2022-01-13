@@ -13,7 +13,7 @@ addFunction(pps, fun, module = NULL, verbose = TRUE, ...)
 In this case all functions from the second object will be added to \code{pps}}
 
 \item{module}{Pamguard module output this function should act on, one of
-ClickDetector, WhistlesMoans, or Cepstrum. If \code{NULL} (default), user
+ClickDetector, WhistlesMoans, Cepstrum, or GPLDetector. If \code{NULL} (default), user
 will be prompted to select which module it applies to}
 
 \item{verbose}{logical flag to show messages}

@@ -8,7 +8,7 @@
 #' @param fun function to add OR another \linkS4class{PAMpalSettings} object.
 #'   In this case all functions from the second object will be added to \code{pps}
 #' @param module Pamguard module output this function should act on, one of
-#'   ClickDetector, WhistlesMoans, or Cepstrum. If \code{NULL} (default), user
+#'   ClickDetector, WhistlesMoans, Cepstrum, or GPLDetector. If \code{NULL} (default), user
 #'   will be prompted to select which module it applies to
 #' @param verbose logical flag to show messages
 #' @param \dots named arguments to pass to function being added
@@ -40,7 +40,11 @@ addFunction <- function(pps, fun, module=NULL, verbose = TRUE, ...) {
         }
         return(pps)
     }
-    fname <- deparse(substitute(fun))
+    if(is.null(attr(fun, 'fname'))) {
+        fname <- deparse(substitute(fun))
+    } else {
+        fname <- attr(fun, 'fname')
+    }
     if(is.null(module) ||
        !(module %in% modsAllowed)) {
         chooseMod <- menu(choices = modsAllowed,

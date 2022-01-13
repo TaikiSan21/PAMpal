@@ -102,6 +102,30 @@ on the requirements for adding functions other than the built-in functions.
 
 <a href="images/FnAddError.png" data-lightbox="fn-add-error" data-title="Added function successfully to ClickDetector but not WhistlesMoans">![](images/FnAddError.png)</a>
 
+You can also add functions during the initial call to `PAMpalSettings` by setting
+the `functions` parameter. This needs to be a named list of the functions you want
+to add, where the name is the module that you want to add the function for.
+
+You can also do this in the initial call to `PAMpalSettings` by using the `settings`
+parameter:
+
+```r
+myPps <- PAMpalSettings(db = myDb, 
+                        binaries = myBinaryFolder,
+                        sr_hz = 'auto',
+                        filterfrom_khz = 10,
+                        filterto_khz = NULL,
+                        winLen_sec = .001,
+                        functions = list('ClickDetector' = meanAdd),
+                        add = 2)
+```
+
+Note that you can specify parameter values for your new function here as well. If
+any of the functions you add share parameter names with any other functions, then
+specifying the value here will use that same value for all functions that need it. 
+For example, if our new `meanAdd` function had a parameter called `filterfrom_khz`
+then it would have also been set to 10 in the example above. 
+
 ##### Adding Calibration
 
 A calibration file can be added that will adjust caluclated dB values, this currently
@@ -148,6 +172,19 @@ object with the `addSettings` function
 
 ```r
 myPps <- addSettings(myPps, 'XMLSettings.xml')
+```
+
+You can also do this in the initial call to `PAMpalSettings` by using the `settings`
+parameter:
+
+```r
+myPps <- PAMpalSettings(db = myDb, 
+                        binaries = myBinaryFolder,
+                        sr_hz = 'auto',
+                        filterfrom_khz = 10,
+                        filterto_khz = NULL,
+                        winLen_sec = .001,
+                        settings = 'XMLSettings.xml')
 ```
 
 Now when we run `processPgDetections` PAMpal will be assured of using the appropriate

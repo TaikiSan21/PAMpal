@@ -8,6 +8,7 @@ PAMpalSettings(
   db = NULL,
   binaries = NULL,
   settings = NULL,
+  functions = NULL,
   verbose = TRUE,
   ...
 )
@@ -19,6 +20,8 @@ PAMpalSettings(
 also be added}
 
 \item{settings}{an XML settings file from Pamguard}
+
+\item{functions}{a named list of additional functions to add}
 
 \item{verbose}{logical flag to show messages}
 

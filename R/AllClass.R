@@ -294,8 +294,8 @@ AcousticStudy <- function(id=NULL,
         fileTemp[[n]] <- files[[n]]
     }
     ancillary$version <- list(R = R.version.string,
-                              PAMpal = packageVersion('PAMpal'),
-                              processDate = Sys.time())
+                              PAMpal = packageVersion('PAMpal'))
+    ancillary$processDate <- Sys.time()
     new('AcousticStudy', id=id, events=events, files=fileTemp, gps=gps,pps=pps,
         settings=settings, effort=effort, models=models, ancillary=ancillary)
 }
@@ -315,7 +315,6 @@ is.AcousticStudy <- function(x) {
 setMethod('show', 'AcousticStudy',
           function(object) {
               cat('AcousticStudy object named ', id(object), ' with ',
-                  length(events(object)), ' AcousticEvents.\n',
-                  'Created on ', ancillary(object)$processDate, sep='')
+                  length(events(object)), ' AcousticEvents.\n', sep='')
           }
 )
