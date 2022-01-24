@@ -53,10 +53,10 @@
 #'
 #' @details If \code{mode} is not specified, it will try to be automatically determined
 #'   in the following order. 1) if a \code{grouping} data.frame or CSV is provided, then
-#'   \code{mode='time'} will be used. 2) If there are labelled events present in the 
+#'   \code{mode='time'} will be used. 2) If there are labelled events present in the
 #'   database, \code{mode='db'} will be used. 3) \code{mode='recording'} will be used,
-#'   which should be equivalent to loading all possible data. 
-#' 
+#'   which should be equivalent to loading all possible data.
+#'
 #' @return an \linkS4class{AcousticStudy} object with one \linkS4class{AcousticEvent}
 #'   for each event in the \code{events} slot, and the \linkS4class{PAMpalSettings} object
 #'   used stored in the \code{pps} slot.
@@ -85,7 +85,7 @@
 #' exStudyTime <- processPgDetections(exPps, mode='time', grouping=grp, id='Time')
 #' # process events by recording event
 #' exStudyRecording <- processPgDetections(exPps, mode='recording', id='Recording')
-#' 
+#'
 #' @importFrom PamBinaries loadPamguardBinaryFile
 #' @importFrom PAMmisc squishList
 #' @importFrom RSQLite dbConnect dbListTables dbReadTable dbDisconnect SQLite dbListFields
@@ -158,7 +158,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     binList <- pps@binaries$list
     binFuns <- pps@functions
     allDbs <- pps@db
-    
+
     # study <- AcousticStudy(id=id, pps = pps)
     # Check for what DB shit should be associated with, get full list of SA data
     # first, gonna match event times to that since its roughly the times assoicated
@@ -189,7 +189,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
             } else { # case if you just specified basename of the database it will find it
                 dbPossible <- grep(grouping$db[i], allDbs, value=TRUE, fixed=TRUE)
             }
-            
+
             if(length(dbPossible) == 0 ||
                is.na(dbPossible)) {
                 editGroup <- TRUE
@@ -464,7 +464,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
 processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                                   progress=TRUE, ...) {
     allDb <- pps@db
-    
+
     # awk diff init values between modes have to reset this here
     if(is.null(grouping)) {
         grouping <- c('event', 'detGroup')
@@ -550,7 +550,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             }
             # This is a list for each binary, we want for each detector
             dbData <- dbData[sapply(dbData, function(x) !is.null(x))]
-            
+
             dbData <- lapply(dbData, function(x) split(x, x$detectorName))
             names(dbData) <- NULL
             dbData <- unlist(dbData, recursive = FALSE)
@@ -685,7 +685,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
                } else {
                    label <- NA
                }
-               
+
                eventColumns <- c('Id', label)
                evName <- 'DGL'
            },
@@ -844,6 +844,9 @@ checkGrouping <- function(grouping, format) {
         }
         # grouping <- read_csv(grouping, col_types = cols(.default=col_character()))
         grouping <- read.csv(grouping, stringsAsFactors = FALSE, colClasses = 'character')
+        if('sr' %in% colnames(grouping)) {
+            grouping$sr <- as.numeric(grouping$sr)
+        }
     }
     colsNeeded <- c('start', 'end', 'id')
     if(inherits(grouping, 'data.frame')) {
@@ -998,7 +1001,7 @@ wavToGroup <- function(db) {
         sa <- rbind(sa, newStuff)
         sa <- arrange(sa, Id)
     }
-    
+
     if(is.na(wavCol)) {
         pamWarning('Wav file names not saved in database, events will be labelled')
         saGrp <- select(sa, c('UTC', 'Status', 'SystemType'))
@@ -1017,7 +1020,7 @@ wavToGroup <- function(db) {
             pamWarning('Could not find appropriate start and stop times in Sound_Acquisition table')
             return(NULL)
         }
-        
+
         saGrp <- data.frame(start=saGrp$Start, end=saGrp$Stop, id=saGrp$id)
     } else {
         for(i in which(is.na(sa[[wavCol]]))) {
@@ -1055,7 +1058,7 @@ wavToGroup <- function(db) {
                  id = thisId)
         }))
     }
-    isNa <- is.na(saGrp$start) | is.na(saGrp$end) | 
+    isNa <- is.na(saGrp$start) | is.na(saGrp$end) |
         is.infinite(saGrp$start) | is.infinite(saGrp$end)
     if(all(isNa)) {
         pamWarning('Could not find appropriate start and stop times in Sound_Acquisition table')
@@ -1078,7 +1081,7 @@ parseDglLabel <- function(x, colnames) {
     if(length(newCols) == 0) {
         return(NA)
     }
-    if(!is.null(x) && 
+    if(!is.null(x) &&
        x %in% newCols) {
         return(x)
     }

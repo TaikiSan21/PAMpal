@@ -1,3 +1,11 @@
+## PAMpal 0.15.2
+
+* Bug with `mode='time'` where sample rate could be read in as a character, causing crashes
+
+## PAMpal 0.15.1
+
+* Added ability to add functions during `PAMpalSettings` call
+
 ## PAMpal 0.15.0
 
 * Added support for GPL Detector data!
