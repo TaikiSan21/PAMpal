@@ -2,6 +2,9 @@
 
 * Bug with `mode='time'` where sample rate could be read in as a character, causing crashes
 
+* `calculateAverageSpectra` would have problems when doing multiple events that had detections
+with repeated UIDs
+
 ## PAMpal 0.15.1
 
 * Added ability to add functions during `PAMpalSettings` call
