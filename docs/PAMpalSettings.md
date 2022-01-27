@@ -29,7 +29,7 @@ recommended. Added with the function `addSettings`
 Note that none of these slots should ever be manually edited, use the functions described
 below if you want to add or remove anything.
 
-#### Creating a PPS Without Pop-Ups
+### Creating a PPS Without Pop-Ups
 
 A PAMpalSettings object can be created without supplying any arguments (as described in the
 [quick start guide](README.md)), or it can be created by directly supplying the database and binary
@@ -46,7 +46,8 @@ myPps <- PAMpalSettings(db = myDb,
                         filterto_khz = NULL,
                         winLen_sec = .001)
 ```
-#### Adding to Your PPS
+
+### Adding to Your PPS
 
 After the initial set-up of your PPS, you may want to add to it. There are 
 four functions that accomplish this: `addDatabase`, `addBinaries`,
@@ -61,7 +62,8 @@ newBinaries <- './Data/NewBinaries/'
 myPps <- addDatabase(myPps, newDb)
 myPps <- addBinaries(myPps, newBinaries)
 ```
-##### Adding Functions
+
+### Adding Functions
 
 Adding a function is slightly more involved. First make sure the function (or
 the package the function is in) is already sourced. Then add the function by
@@ -126,7 +128,7 @@ specifying the value here will use that same value for all functions that need i
 For example, if our new `meanAdd` function had a parameter called `filterfrom_khz`
 then it would have also been set to 10 in the example above. 
 
-##### Adding Calibration
+### Adding Calibration
 
 A calibration file can be added that will adjust caluclated dB values, this currently
 mostly affects calculations within `standardClickCalcs`. The calibration can be supplied
@@ -143,7 +145,7 @@ to.
 
 <a href="images/Calibration.png" data-lightbox="add-calibration" data-title="Adding calibration to a PPS">![](images/Calibration.png)</a>
 
-##### Adding XML Settings
+### Adding XML Settings
 
 It is a good idea to add an XML settings file exported from Pamguard. This helps
 PAMpal keep track of which detectors are operating at which samplerate, which
@@ -210,7 +212,7 @@ myPps <- addFunction(myPps, otherPps)
 myPps <- addCalibration(myPps,otherPps)
 ```
 
-#### Removing Things From Your PPS
+### Removing Things From Your PPS
 
 There are four functions that remove items from your PPS, and it is recommended
 that you use this instead of trying to alter the PPS manually. All of them can
