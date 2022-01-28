@@ -257,6 +257,8 @@ removing data / functions from your PPS, adding a hydrophone calibration,
 and more details about what exactly is stored here. 
 - [Parameter calculation details][standard-calcs] - Details on how the parameters
 from the included processing functions are calculated
+- [Grouping events by start and end time][time-grouping] - More details on the information
+required for the CSV file to group your events by start/end time
 - [A guide to getting started with BANTER][banter-guide] (also see the section
 on exporting data for BANTER in [next steps][next-steps-processing])
 - [Creating custom functions][custom-functions] How to create custom functions

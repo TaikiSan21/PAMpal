@@ -264,7 +264,15 @@ Basic choose from menu version
 
 Choose by picking erddap ID
 
+Setup without interactive steps
 
+Setup from non-coastwatch/upwell server
+
+Works on dataframes
+
+Differnt summary functions (mean, median, sd)
+
+Saving the NC file
 
 ## Filtering Data {#filtering-data}
 
