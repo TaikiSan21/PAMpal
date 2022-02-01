@@ -10,7 +10,7 @@
   nc = NULL,
   var = NULL,
   buffer = c(0, 0, 0),
-  FUN = c(mean, median, sd),
+  FUN = c(mean),
   fileName = NULL,
   progress = TRUE,
   ...
@@ -21,7 +21,7 @@
   nc = NULL,
   var = NULL,
   buffer = c(0, 0, 0),
-  FUN = c(mean, median, sd),
+  FUN = c(mean),
   fileName = NULL,
   progress = TRUE,
   ...

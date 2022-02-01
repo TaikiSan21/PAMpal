@@ -9,21 +9,24 @@
 \alias{getMeasures}
 \title{Extract and Combine Detector Data}
 \usage{
-getDetectorData(x)
+getDetectorData(x, measures = TRUE)
 
-getClickData(x)
+getClickData(x, measures = TRUE)
 
-getWhistleData(x)
+getWhistleData(x, measures = TRUE)
 
-getCepstrumData(x)
+getCepstrumData(x, measures = TRUE)
 
-getGPLData(x)
+getGPLData(x, measures = TRUE)
 
 getMeasures(x)
 }
 \arguments{
 \item{x}{data to extract detector data from, either an \code{AcousticStudy},
 \code{AcousticEvent} or list of \code{AcousticEvent} object}
+
+\item{measures}{logical flag whether or not to append measures to detector
+dataframes}
 }
 \value{
 A list of data frames containing all detection data from \code{x},

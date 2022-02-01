@@ -83,7 +83,7 @@ Loads and processes acoustic detection data that has been
 \details{
 If \code{mode} is not specified, it will try to be automatically determined
   in the following order. 1) if a \code{grouping} data.frame or CSV is provided, then
-  \code{mode='time'} will be used. 2) If there are labelled events present in the 
+  \code{mode='time'} will be used. 2) If there are labelled events present in the
   database, \code{mode='db'} will be used. 3) \code{mode='recording'} will be used,
   which should be equivalent to loading all possible data.
 }

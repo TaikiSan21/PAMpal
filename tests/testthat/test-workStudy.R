@@ -53,6 +53,7 @@ test_that('Test working with AcousticStudy object', {
         is.na(ancillary(exData[[1]])$ici[[2]]$ici)
     ))
     expect_true(all(c('Click_Detector_1_ici', 'All_ici') %in% names(ancillary(exData[[1]])$measures)))
+    expect_true(all(c('Click_Detector_1_ici', 'All_ici') %in% names(getClickData(exData[[1]]))))
     iciData <- getICI(exData, 'data')
     expect_true(all(c('Click_Detector_1', 'All') %in% names(iciData[[1]])))
     expect_identical(names(iciData), names(events(exData)))
@@ -101,7 +102,7 @@ test_that('Test working with AcousticStudy object', {
     expect_identical(normalizePath(files(exData)$recordings$file),
                      normalizePath(list.files(recs, full.names = TRUE)))
     expect_warning(warnRec <- addRecordings(exData, folder = 'DNE', log=FALSE, progress=FALSE))
-    
+
     # test warning access from recorder warning
     warns <- getWarnings(warnRec)
     expect_is(warns, 'data.frame')

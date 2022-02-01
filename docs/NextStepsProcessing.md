@@ -15,7 +15,7 @@ BANTER model](#exporting-for-banter-model). Species assignment is always
 done using the `setSpecies` function, and has three possible modes of
 operation that can be selected using the `method` argument.
 
-For `method='pamguard'`{:.language-r}, species IDs will be assigned according to the
+For `method='pamguard'`, species IDs will be assigned according to the
 labels set in Pamguard for each event. This will only work for
 `AcousticStudy` objects created by `processPgDetections` using
 `mode='db'`. For events created using the Click Detector module (these
@@ -91,7 +91,7 @@ specify other values for different types of species classification,
 possibly visual vs. acoustic, or a classification coming from a
 predictive model.
 
-## Adding GPS Data
+## Adding GPS Data {#gps}
 
 PAMpal can add GPS data to all of your detections, matching the GPS
 coordinates with the closest time (up to a maximum threshold to prevent
@@ -260,19 +260,235 @@ This is an in-depth topic that has its [own page][avg-spec]
 
 ## Adding Environmental Data {#adding-environmental-data}
 
-Basic choose from menu version
+Trying to download and match up environmental data to your
+acoustic data can be quite a pain, but lucky for you PAMpal is
+here to make it easier. This currently works with data from ERDDAP
+or HYCOM dataservers, or from a netcdf file that you already have.
+Adding environmental data requires that you 
+have first added [GPS coordinates](#gps). From there you just need
+to use the function `matchEnvData`, which has a lot of options ranging
+from very simple to more involved. 
 
-Choose by picking erddap ID
+#### Download from Dataset List
 
-Setup without interactive steps
+The simplest way to use this function is by giving it no information other
+than your `AcousticStudy` object. In this case it will bring up a menu of
+some dataset suggestions to get you started:
 
-Setup from non-coastwatch/upwell server
+<a href="images/EnvMenu.png" data-lightbox="env-menu" data-title="Selecting environmental dataset">![](images/EnvMenu.png)</a>
 
-Works on dataframes
+Each dataset has an ID (this is usually the exact ERDDAP ID, which may not
+be particularly informative), a list of variable names (also exactly matching
+the names as stored in the data structure, may not be informative), the
+range of valid coordinates (pay particular attention to time range if you are
+working with older data), and the average spacing of the coordinates (note
+the jplMURSST dataset has three flavors with different time spacing - daily,
+monthly, and averaged climatology).
 
-Differnt summary functions (mean, median, sd)
+Choose which one you want by entering the appropriate number, then you will
+be asked which of the variables you want to download. Here we download the
+daily MURSST data (#2), and then choose to download only the `analysed_sst` 
+variable, selecting "No" `analysis_error`, `mask`, and `sea_ice_fraction`.
 
-Saving the NC file
+<a href="images/EnvVarSelect.png" data-lightbox="env-varselect" data-title="Selecting variables to download">![](images/EnvVarSelect.png)</a>
+
+After making decisions for all the variables, the data will start to 
+try and download, and you will see a progress bar. If the temporal and phyiscal
+range of your dataset is small, this can be quite quick, but for larger datasets
+it might take some time. PAMpal tries to break up larger downloads into smaller
+individual chunks since most servers have limits on file size. Note that
+download from HYCOM servers usually involve longer delays.
+
+#### What Did We Download?
+
+So, what does this function actually do? For each `AcousticEvent` in your 
+`AcousticStudy`, `matchEnvData` will get the environmental data closest
+to the coordinate associated with the *start* of that event. This means 
+that each event will have a single piece of environmental data associated with
+it, rather than a separate value for every single detection within that event.
+This is because environmental variables typically change on a much larger scale
+than individual detections within an event, but if you have exceptionally long
+events this might not be the most accurate (there are other options you may
+try further below).
+
+**NOTE** Currently (01/31/2022) if your environmental dataset has a Depth
+component, `matchEnvData` will average the value over all available depths.
+This will be expanded in future versions in Q1 2022
+
+To see the data, you can use the `getMeasures` function. The `measures` are
+special values stored for each event so that `PAMpal` knows to export
+them for modeling applications, so you might also see the ICI or some
+other things here depending on what other processing you have done. The measures
+will also be attached to your detections when using the `getDetectorData`
+family of functions (as of `PAMpal` v0.15.2, not yet on CRAN as of 01/30/2022
+only on GitHub). You'll also note that each variable name has `_mean` appended
+to the end, more on this towards the end of this section.
+
+```r
+# You should see the downloaded values here for each event
+getMeasures(myStudy)
+# This should have a new column for the environmental data
+str(getClickData(myStudy))
+```
+
+#### Download Other ERDDAP Datasets
+
+If you have a different ERDDAP dataset in mind, PAMpal can also work with that.
+If the dataset is on the [upwell][https://upwell.pfeg.noaa.gov/erddap/index.html]
+server, then you can just provide the dataset id as the `nc` argument, and then
+it will ask which variables you want as before:
+
+```r
+myStudy <- matchEnvData(myStudy, nc='erdMWpar01day')
+```
+
+If it is on a different server, there is slightly more set-up involved,
+and you may need to manually load the `PAMmisc` package for the rest to work.
+You will need to set up an `edinfo` object using the function `erddapToEdinfo`.
+This object contains all the info needed to create the server request that lets
+`PAMpal` sort out the downloading process for you. Here we'll create one for
+this [distance to shore](https://pae-paha.pacioos.hawaii.edu/erddap/griddap/dist2coast_1deg.html) dataset stored on a different ERDDAP server. We need to tell it the
+dataset ID and the URL of the dataserver. It will then ask which variables you
+want to download, as before.
+
+```r
+library(PAMmisc)
+# dataset is the dataset ID
+# baseurl is the rest of the URL, up to /erddap/
+dist2shore <- erddapToEdinfo(dataset='dist2coast_1deg'
+                             baseurl='https://pae-paha.pacioos.hawaii.edu/erddap/')
+# Then use this as the "nc" argument
+myStudy <- matchEnvData(myStudy, nc=dist2shore)
+```
+
+#### Download Without Interactive Steps
+
+While PAMpal's interactive features can be useful when doing an
+exploratory analysis, or for one-off analyses, it can be a hassle
+for any analysis that might get run multiple times. Getting environmental
+data without any interactive steps just requires slightly more setup.
+This may require directly loading the `PAMmisc`, then we create an `edinfo`
+object as above. This time we use the option `chooseVars = FALSE` to
+avoid the interactive menu, then use the function `varSelect` to manually
+set the variables we wish to download. This requires knowing how many
+total variables there are in your dataset, since the number of values given
+to `varSelect` must match the number of variables present.
+
+```r
+# This dataset is on upwell, we'll select only the first of 4 variables
+sst <- erddapToEdinfo(dataset='jplMURSST41',
+                      chooseVars = FALSE)
+sst <- varSelect(sst, select=c(TRUE, FALSE, FALSE, FALSE))
+# this dataset is on a different server, it has a single variable that we will get
+dist2shore <- erddapToEdinfo(dataset='dist2coast_1deg',
+                             baseurl='https://pae-paha.pacioos.hawaii.edu/erddap/',
+                             chooseVars = FALSE)
+dist2shore <- varSelect(dist2shore, select = c(TRUE))
+myStudy <- matchEnvData(myStudy, nc=dist2shore)
+```
+
+#### Saving the Downloaded File
+
+If you need to re-use the same environmental dataset for multiple
+analyses, you might be able to save the file and use it instead of
+downloading the same dataset multiple times. Just setting the
+`fileName` argument will have `PAMpal` save the downloaded Netcdf
+file. However, there are situations where this doesn't work. If
+your dataset covers a large range of times or locations, the file
+size required to download that all in a single file might be too large.
+The dataservers typically have restrictions on how large of a file they can
+serve, and if this happens this download will fail. Even if it doesn't
+fail, it might take quite a long time. When not saving the downloaded file,
+`PAMpal` can get around this issue by breaking down the request into
+several smaller downloads, so if you are not able to save the Netcdf file 
+then this is always an option.
+
+```r
+# Save our distance to shore data for future use
+myStudy <- matchEnvData(myStudy, nc=dist2shore, fileName='Dist2Shore.nc')
+```
+
+#### Loading From an Existing Netcdf File
+
+If you were able to download your data as above, how can you actually use it?
+Easy! Just set the `nc` argument to that filename, and `PAMpal` will load
+in all the variables stored in that Netcdf file. Unlike when downloading,
+it will not ask which variables you are interested in, it will just take 
+everything that is available. One potential issue here - Netcdf files do
+not have universal standards for how coordinates are stored, so it is possible
+that if you have a Netcdf file from somewhere else that it might not be
+able to read it properly. This is typically an issue with how the date/time
+information is stored - `PAMpal` can currently handle most of the formats
+found on ERDDAP, but if you encounter a problem here please reach out and
+I will get it fixed for you!
+
+```r
+# Use the data we stored in the step above
+myStudy <- matchEnvData(myStudy, nc='Dist2Shore.nc')
+```
+
+#### Summarising Environmental Variables Over a Range
+
+Sometimes it can be useful to summarise environmental variables over a
+range of values instead of just picking the closest value. To support
+this, there is a `buffer` argument that can be used to set a range of 
+values to summarise over. This is a vector of length 3 specifying how 
+much to expand the Longitude, Latitude, and Time values in each direction 
+(units of decimal degrees and seconds). For example if our point was at
+32, -117:
+
+```r
+# All values between Lat 30,34 and Long -118,-116
+myStudy <- matchEnvData(myStudy, 'jplMURSST41', buffer = c(1, 2, 0))
+# Average all times within one day
+myStudy <- matchEnvData(myStudy, 'jplMURSST41', buffer = c(0, 0, 86400))
+```
+
+How are they summarised? By default, all values within the `buffer` range
+are averaged, but if you want to do something else like the median or
+come up with some other way to summarise you can provide these as a 
+vector `FUN`. Each function creates another stored variable for each
+environmental variable as `EnvVariableName_FunctionName`
+
+```r
+# Compute standard deviation as well as default mean
+# Stored vars "analysedsst_mean" and "analysedsst_sd"
+myStudy <- matchEnvData(myStudy, 'jplMURSST41', 
+                        buffer = c(1, 1, 0), FUN=c(mean, sd))
+# Replace mean with median
+# Stored var "analysedsst_median"
+myStudy <- matchEnvData(myStudy, 'jplMURSST41', 
+                        buffer = c(1, 1, 0), FUN=c(median))
+```
+
+If you write your own summarising function,
+just provide the name of that to `FUN`. These functions should
+expect a matrix of values, and should expect the possiblity of 
+`NA` values.
+
+#### More Options for Dataframes
+
+All of the above methods can work on dataframes instead of 
+`AcousticStudy` objects, in which case every single row of the
+dataframe will get its own matching environmental data. This can
+be useful if you have exceptionally long events, you can extract
+a dataframe of your detections using the `getDetectorData` family
+of functions and then match environmental data to it.
+
+```r
+library(PAMmisc)
+clicks <- getClickDat(myStudy)
+clicks <- matchEnvData(clicks, 'jplMURSST41')
+```
+
+You will notice that when matching to a dataframe there are a lot
+more columns attached. In additional to the normal variable names,
+there are columns for `matchLat`, `matchLong`, and `matchTime`. The 
+Netcdf files have fixed datapoints, so these tell you the coordinate
+within the Netcdf file that your data matched to. This can be useful
+to double check and make sure that matches were made appropriately, or
+in cases where your Netcdf file did not fully cover the range of your data.
+These columns can be removed from your output by setting `keepMatch = FALSE`
 
 ## Filtering Data {#filtering-data}
 

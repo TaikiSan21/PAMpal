@@ -45,7 +45,7 @@
 #'
 setMethod('matchEnvData',
           'AcousticEvent',
-          function(data, nc=NULL, var=NULL, buffer=c(0,0,0), FUN = c(mean, median, sd),
+          function(data, nc=NULL, var=NULL, buffer=c(0,0,0), FUN = c(mean),
                    fileName = NULL, progress=TRUE, ...) {
               if(is.list(FUN) &&
                  is.null(names(FUN))) {
@@ -70,7 +70,7 @@ setMethod('matchEnvData',
 #'
 setMethod('matchEnvData',
           'AcousticStudy',
-          function(data, nc=NULL, var=NULL, buffer=c(0,0,0), FUN = c(mean, median, sd),
+          function(data, nc=NULL, var=NULL, buffer=c(0,0,0), FUN = c(mean),
                    fileName = NULL, progress=TRUE, ...) {
               eventStart <- do.call(rbind, lapply(events(data), function(x) {
                   getEventStart(x)
