@@ -273,7 +273,7 @@ from very simple to more involved.
 
 The simplest way to use this function is by giving it no information other
 than your `AcousticStudy` object. In this case it will bring up a menu of
-some dataset suggestions to get you started:
+some dataset suggestions to get you started (click image for larger view):
 
 <a href="images/EnvMenu.png" data-lightbox="env-menu" data-title="Selecting environmental dataset">![](images/EnvMenu.png)</a>
 
@@ -288,7 +288,8 @@ monthly, and averaged climatology).
 Choose which one you want by entering the appropriate number, then you will
 be asked which of the variables you want to download. Here we download the
 daily MURSST data (#2), and then choose to download only the `analysed_sst` 
-variable, selecting "No" `analysis_error`, `mask`, and `sea_ice_fraction`.
+variable, selecting "No" `analysis_error`, `mask`, and `sea_ice_fraction` 
+(click image for larger view):
 
 <a href="images/EnvVarSelect.png" data-lightbox="env-varselect" data-title="Selecting variables to download">![](images/EnvVarSelect.png)</a>
 
@@ -334,7 +335,7 @@ str(getClickData(myStudy))
 #### Download Other ERDDAP Datasets
 
 If you have a different ERDDAP dataset in mind, PAMpal can also work with that.
-If the dataset is on the [upwell][https://upwell.pfeg.noaa.gov/erddap/index.html]
+If the dataset is on the [upwell](https://upwell.pfeg.noaa.gov/erddap/index.html)
 server, then you can just provide the dataset id as the `nc` argument, and then
 it will ask which variables you want as before:
 
