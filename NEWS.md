@@ -7,6 +7,8 @@ with repeated UIDs
 
 * `matchEnvData` now has a `depth` parameter to specify depth or range of depths to match
 
+* Store and print total processing time for `processPgDetections`
+
 ## PAMpal 0.15.1
 
 * Added ability to add functions during `PAMpalSettings` call

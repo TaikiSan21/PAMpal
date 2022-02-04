@@ -122,6 +122,7 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
         stop(paste0(pps, ' is not a PAMpalSettings object. Please create one with',
                     ' function "PAMpalSettings()"'), call.=FALSE)
     }
+    startTime <- Sys.time()
     result <- switch(mode,
                      'db' = processPgDb(pps=pps, grouping=grouping, id=id,
                                                   progress=progress, ...),
@@ -142,6 +143,12 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
     )
     checkStudy(result)
     result <- .addPamWarning(result)
+    endTime <- Sys.time()
+    procTime <- round(as.numeric(difftime(endTime, startTime, units='secs')), 0)
+    ancillary(result)$processingTime <- procTime
+    if(verbose) {
+        cat('\nProcessing took', procTime, 'seconds')
+    }
     result
 }
 
