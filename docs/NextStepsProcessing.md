@@ -106,26 +106,60 @@ you need only call the `addGps` function, optionally changing the
 `threshold` value from the default of 3600 seconds. Detections will be
 matched with the GPS coordinate with the closest time, unless the time
 difference between detection and GPS is larger than the `threshold`
-value, in which case Latitude and Longitude will be set to `NA`. If GPS
-data is not present in the Pamguard database, it can also be provided as
+value, in which case Latitude and Longitude will be set to `NA`.
+
+```r
+# If GPS is already in Pamguard databases you used to process, changing threshold to 30 minutes
+myStudy <- addGps(myStudy, threshold=1800)
+```
+
+If GPS data is not present in the Pamguard database, it can also be provided as
 a dataframe with argument `gps`. This must be a dataframe or data.table
 with columns UTC, Latitude, and Longitude, with UTC being converted to
-POSIXct format. If providing GPS data this way, it can often be more
+POSIXct format. If your GPS data is in a CSV, this means you will need to
+first read it in to R and then convert the `UTC` column to POSIXct format
+before passing it to `addGps` (note that your `format` to convert to
+POSIXct may be different than what is shown here - it must match your
+date format, see `?strptime` for how to specify this).
+
+```r
+# Provide a dataframe of coordinates
+gpsDf <- read.csv('GPS.csv', stringsAsFactors = FALSE)
+# Your format may be different, times must be in UTC
+gpsDf$UTC <- as.POSIXct(gpsDf$UTC, format='%m-%d-%Y %H:%M:%S', tz='UTC')
+myStudy <- addGps(myStudy, gps=gpsDf)
+```
+
+If providing GPS data from a CSV file, it can often be more
 convenient to first add the GPS data directly to the Pamguard database
 using the `addPgGps` function from the `PAMmisc` package, and then run
 `addGps` as normal. `PAMmisc::addPgGps` has the advantage of being able
 to handle multiple input formats (CSV, SPOT .gpx files) and account for
 different data in different timezones, and once the GPS data is in the
-database there is one less file you need to keep track of. After running
-`addGps`, all GPS data will also be stored in the `gps` slot of your
-`AcousticStudy`, which can be accessed with the `gps()` function.
+database there is one less file you need to keep track of. See 
+`?PAMmisc::addPgGps` for more info.
 
 ```r
-# If GPS is already in Pamguard databases you used to process, changing threshold to 30 minutes
-myStudy <- addGps(myStudy, threshold=1800)
-# Provide a dataframe of coordinates
-myStudy <- addGps(myStudy, gps=gpsDataframe)
+db <- 'MyDatabases.sqlite3'
+# Can also access your DB file names directly from your AcousticStudy
+db <- files(myStudy)$db[1]
+# If your GPS data is in a different timezone, this can handle the conversion
+# See help file for how to specify timezone names properly (its annoying)
+# This will check for default date formats m/d/Y H:M:S, m-d-Y H:M:S,
+# Y/m/d H:M:S, and Y-m-d H:M:S, if yours is different specify with format argument
+PAMmisc::addPgGps(db, gps = 'GPS.csv', source='csv', tz='UTC')
+# Now GPS is in your database, we can add to AcousticStudy as normal
+myStudy <- addGps(myStudy)
+```
+
+After running `addGps`, all GPS data will also be stored in the `gps` 
+slot of your `AcousticStudy`, which can be accessed with the `gps()` function.
+This can useful if you want to make a plot of your entire survey.
+GPS data will also be attached to all of your individual detections.
+
+```r
 head(gps(myStudy))
+head(getClickData(myStudy))
 ```
 
 ## Gathering Detection Data in a Dataframe
@@ -145,8 +179,8 @@ the parameters calculated by the processing functions, as well as the
 event ID, detector name, and the species ID ( species will be NA if it
 has not been set using `setSpecies`). In addition to `getDetectorData`,
 there are also three functions that do the exact same thing to get data
-for only specific detectors, `getClickData`, `getWhistleData`, and
-`getCepstrumData`. These have the exact same functionality, and are just
+for only specific detectors, `getClickData`, `getWhistleData`,
+`getCepstrumData`, and `getGPLData`. These have the exact same functionality, and are just
 convenient to directly output a dataframe instead of needing to access
 it from a list.
 
@@ -159,6 +193,7 @@ names(allDets)
 str(allDets$click)
 str(allDets$whistle)
 str(allDets$cepstrum)
+str(allDets$gpl)
 
 # The functions for accessing just one type of detector directly
 justClicks <- getClickData(myStudy)
@@ -166,6 +201,7 @@ str(justClicks)
 identical(justClicks, allDets$click)
 justWhistles <- getWhistleData(myStudy)
 justCepstrums <- getCepstrumData(myStudy)
+justGPL <- getGPLData(myStudy)
 
 # These also works for a single event
 oneDets <- getDetectorData(myStudy$`Example.OE1`)
@@ -312,9 +348,12 @@ than individual detections within an event, but if you have exceptionally long
 events this might not be the most accurate (there are other options you may
 try further below).
 
-**NOTE** Currently (01/31/2022) if your environmental dataset has a Depth
+**NOTE** Currently (01/31/2022 / v0.15.1) if your environmental dataset has a Depth
 component, `matchEnvData` will average the value over all available depths.
-This will be expanded in future versions in Q1 2022
+This is changed in v0.15.2 and later (currently on GitHub not yet on CRAN),
+in these versions you can specify a `depth` argument to set the depth you need
+or range of depths to average over (ex. `depth=0` to get surface value, 
+`depth = c(100, 400)` to average over depths between 100m and 400m).
 
 To see the data, you can use the `getMeasures` function. The `measures` are
 special values stored for each event so that `PAMpal` knows to export
@@ -323,13 +362,33 @@ other things here depending on what other processing you have done. The measures
 will also be attached to your detections when using the `getDetectorData`
 family of functions (as of `PAMpal` v0.15.2, not yet on CRAN as of 01/30/2022
 only on GitHub). You'll also note that each variable name has `_mean` appended
-to the end, more on this towards the end of this section.
+to the end, this refers to the default summarising function `mean` applied
+to the environmental data, see the section on summarising data over a range
+below. 
 
 ```r
 # You should see the downloaded values here for each event
 getMeasures(myStudy)
 # This should have a new column for the environmental data
 str(getClickData(myStudy))
+```
+
+There is also one more place the environmental data is stored, in the
+`ancillary` slot of each `AcousticEvent`. This is a spot in each event
+that stores a lot of different things from different places, and is not
+used for exporting to models like the `measures` are. However, there is more
+information stored here that you may wish to use for troubleshooting. 
+You will notice that there are a few more values stored here for each piece
+of environmental data. In additional to the normal variable names,
+there are columns for `matchLat`, `matchLong`, and `matchTime`. The 
+Netcdf files have fixed datapoints, so these tell you the coordinate
+within the Netcdf file that your data matched to. This can be useful
+to double check and make sure that matches were made appropriately, or
+in cases where your Netcdf file did not fully cover the range of your data.
+
+```r
+# Look at more detailed info for first event
+ancillary(myStudy[[1]])$environmental
 ```
 
 #### Download Other ERDDAP Datasets
