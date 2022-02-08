@@ -51,7 +51,7 @@ addDatabase <- function(pps, db=NULL, verbose=TRUE) {
     }
     db <- normalizePath(db)
     if(verbose) {
-        cat(paste0('Adding ', length(db), 'databases:\n  ', printN(basename(db), 6, collapse='\n  '), '\n'))
+        cat(paste0('Adding ', length(db), ' databases:\n  ', printN(basename(db), 6, collapse='\n  '), '\n'))
         # if(length(db) > 6) {
         #     dbMsg <- paste0(c(basename(db[1:6]),paste0('... (', length(db)-6, ' more not shown)')), collapse = '\n  ')
         # } else {

@@ -74,12 +74,12 @@ matchSR <- function(data, db, extraCols = NULL, safe=FALSE, fixNA=TRUE) {
             select(all_of(c('UTC', 'sampleRate', extraCols))) %>%
             distinct() %>%
             data.table()
-        
+
         setkeyv(soundAcquisition, 'UTC')
-        
+
         data <- data.table(data)
         setkeyv(data, 'UTC')
-        
+
         # This rolling join rolls to the first time before. Since we filtered to only starts, it goes back
         # to whatever the last Start was.
         data <- soundAcquisition[data, roll = TRUE] %>%
@@ -122,8 +122,15 @@ matchSR <- function(data, db, extraCols = NULL, safe=FALSE, fixNA=TRUE) {
 #'
 inInterval <- function(bounds, sa) {
     sa <- sa[sa$Status %in% c('Start', 'Stop'), c('UTC', 'Status', 'sampleRate')]
+    if(nrow(sa) < 2 ||
+       !all(c('Start', 'Stop') %in% sa$Status)) {
+        return(FALSE)
+    }
     first <- min(which(sa$Status == 'Start'))
     last <- max(which(sa$Status == 'Stop'))
+    if(first > last) {
+        return(FALSE)
+    }
     sa <- sa[first:last,]
     alt <- sa$Status[1:(nrow(sa)-1)] != sa$Status[2:nrow(sa)]
     sa <- sa[c(TRUE, alt), ]
@@ -232,25 +239,25 @@ ppVars <- function() {
     list(nonModelVars = c('UID', 'Id', 'parentUID', 'sampleRate', 'Channel',
                           'angle', 'angleError', 'peakTime', 'depth', 'sr'),
          tarMoCols = c(
-             "TMModelName1", "TMLatitude1", "TMLongitude1", "BeamLatitude1",                
-             "BeamLongitude1", "BeamTime1", "TMSide1", "TMChi21", "TMAIC1", "TMProbability1",               
-             "TMDegsFreedom1", "TMPerpendicularDistance1", "TMPerpendicularDistanceError1", "TMDepth1",                     
-             "TMDepthError1","TMHydrophones1","TMComment1","TMError1","TMLatitude2","TMLongitude2",                
-             "BeamLatitude2","BeamLongitude2","BeamTime2","TMSide2", "TMChi22","TMAIC2",                       
+             "TMModelName1", "TMLatitude1", "TMLongitude1", "BeamLatitude1",
+             "BeamLongitude1", "BeamTime1", "TMSide1", "TMChi21", "TMAIC1", "TMProbability1",
+             "TMDegsFreedom1", "TMPerpendicularDistance1", "TMPerpendicularDistanceError1", "TMDepth1",
+             "TMDepthError1","TMHydrophones1","TMComment1","TMError1","TMLatitude2","TMLongitude2",
+             "BeamLatitude2","BeamLongitude2","BeamTime2","TMSide2", "TMChi22","TMAIC2",
              "TMProbability2", "TMDegsFreedom2", "TMPerpendicularDistance2", "TMPerpendicularDistanceError2",
              "TMDepth2" ,"TMDepthError2", "TMHydrophones2","TMError2","TMComment2"),
          bftHeight = data.table(bftMax=c(1, 2.4, 2.9, 3.4, 3.9, 4.4, 4.9, 5.4, 6, 12),
                                 waveHeight=c(0, 0.05, 0.1, 0.2, 0.5, 0.6, 1.25, 1.3, 2.5, 2.5),
                                 key='bftMax'),
-         specMap = data.frame(comment = c('cuviers', 'cuvier', 'gervais', 'gervai', 
-                                          'sowerbys', 'sowerby', 'trues', 'true', 
+         specMap = data.frame(comment = c('cuviers', 'cuvier', 'gervais', 'gervai',
+                                          'sowerbys', 'sowerby', 'trues', 'true',
                                           'blainvilles', 'blainville',
                                           'unid mesoplodon', 'mmme', 'undi mesoplodon'),
-                              id = c('Cuviers', 'Cuviers', 'Gervais', 'Gervais', 
-                                     'Sowerbys', 'Sowerbys', 'Trues', 'Trues', 
+                              id = c('Cuviers', 'Cuviers', 'Gervais', 'Gervais',
+                                     'Sowerbys', 'Sowerbys', 'Trues', 'Trues',
                                      'Blainvilles', 'Blainvilles',
                                      'MmMe', 'MmMe', 'MmMe')),
-         dglCols = c('Id', 'UID', 'UTC', 'UTCMilliseconds', 'PCLocalTime', 'PCTime', 
+         dglCols = c('Id', 'UID', 'UTC', 'UTCMilliseconds', 'PCLocalTime', 'PCTime',
                       'ChannelBitmap', 'SequenceBitmap', 'EndTime', 'DataCount')
     )
 }
@@ -263,7 +270,7 @@ findWavCol <- function(sa) {
     if((all(is.na(sn)) || is.null(sn)) &&
        !all(grepl('^Audio ', st))) {
         wavCol <- 'SystemType'
-    } 
+    }
     if(!(all(is.na(sn)) || is.null(sn)) &&
        !(all(grepl('Audio ', sn)))) {
         wavCol <- 'SystemName'
@@ -304,7 +311,7 @@ getSr <- function(x, type=c('click', 'whistle', 'cepstrum'), name=NULL, UTC=NULL
     for(i in seq_along(srOut)) {
         srOut[i] <- doOneSr(x, type, name[i])
     }
-    
+
     srNa <- is.na(srOut)
     if(!any(srNa)) {
         return(srOut)

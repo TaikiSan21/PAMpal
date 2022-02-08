@@ -255,7 +255,14 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     #     grouping$sr[d] <- saByDb[grouping$db[d]]
     # }
     grouping <- bind_rows(lapply(split(grouping, grouping$db), function(d) {
-        thisSa <- saList[[unique(d$db)]]
+        if(!any(is.na(d$sr))) {
+            return(d)
+        }
+        whichSa <- which(grepl(basename(unique(d$db)), names(saList)))
+        if(length(whichSa) == 0) {
+            return(d)
+        }
+        thisSa <- saList[[whichSa[1]]]
         if(is.null(thisSa) ||
            nrow(thisSa) == 0) {
             return(d)
@@ -263,7 +270,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
         d$UTC <- d$end
         d <- matchSR(d, thisSa)
         d$UTC <- NULL
-        d$sr <- d$sampleRate
+        d$sr[is.na(d$sr)] <- d$sampleRate[is.na(d$sr)]
         d$sampleRate <- NULL
         d
     }))

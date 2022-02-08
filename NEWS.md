@@ -1,3 +1,10 @@
+## PAMpal 0.15.3
+
+* Trying to stabilize processing against minor errors - should no longer crash entire processing
+if one piece of binary data fails, will try again instead
+
+* Trying to fix some crashes with missing Sound Acquisition data
+
 ## PAMpal 0.15.2
 
 * Bug with `mode='time'` where sample rate could be read in as a character, causing crashes
