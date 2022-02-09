@@ -9,7 +9,7 @@ addDatabase(pps, db = NULL, verbose = TRUE)
 \arguments{
 \item{pps}{a \linkS4class{PAMpalSettings} object to add a database to}
 
-\item{db}{a database to add}
+\item{db}{database(s) to add, or single directory containing databases}
 
 \item{verbose}{logical flag to show messages}
 }

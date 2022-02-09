@@ -5,6 +5,8 @@ if one piece of binary data fails, will try again instead
 
 * Trying to fix some crashes with missing Sound Acquisition data
 
+* `addDatabase` can now accept a folder containing databases
+
 ## PAMpal 0.15.2
 
 * Bug with `mode='time'` where sample rate could be read in as a character, causing crashes

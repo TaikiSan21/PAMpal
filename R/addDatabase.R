@@ -4,7 +4,7 @@
 #'   object. Interactively asks for database files if none are supplied as input
 #'
 #' @param pps a \linkS4class{PAMpalSettings} object to add a database to
-#' @param db a database to add
+#' @param db database(s) to add, or single directory containing databases
 #' @param verbose logical flag to show messages
 #'
 #' @return the same \linkS4class{PAMpalSettings} object as pps, with the database
@@ -37,10 +37,19 @@ addDatabase <- function(pps, db=NULL, verbose=TRUE) {
 
     exists <- file.exists(db)
     if(any(!exists)) {
-        warning(paste0('Database(s) ',
-                       paste0(db[!exists], collapse=', ')
-                       , ' do(es) not exist.'))
-        db <- db[exists]
+        if(length(db) == 1 &&
+           dir.exists(db)) {
+            db <- list.files(db, pattern='\\.sqlite', full.names=TRUE, recursive=FALSE)
+            if(length(db) == 0) {
+                warning('No databases found in directory ', db)
+                return(pps)
+            }
+        } else {
+            warning(paste0('Database(s) ',
+                           paste0(db[!exists], collapse=', ')
+                           , ' do(es) not exist.'))
+            db <- db[exists]
+        }
     }
     isSqlite <- grepl('\\.sqlite3$', db)
     if(any(!isSqlite)) {
