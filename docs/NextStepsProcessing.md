@@ -305,7 +305,7 @@ have first added [GPS coordinates](#gps). From there you just need
 to use the function `matchEnvData`, which has a lot of options ranging
 from very simple to more involved. 
 
-### Download from Dataset List
+#### ***Download from Dataset List***
 
 The simplest way to use this function is by giving it no information other
 than your `AcousticStudy` object. In this case it will bring up a menu of
@@ -336,7 +336,7 @@ it might take some time. PAMpal tries to break up larger downloads into smaller
 individual chunks since most servers have limits on file size. Note that
 download from HYCOM servers usually involve longer delays.
 
-### What Did We Download?
+#### ***What Did We Download?***
 
 So, what does this function actually do? For each `AcousticEvent` in your 
 `AcousticStudy`, `matchEnvData` will get the environmental data closest
@@ -391,7 +391,7 @@ in cases where your Netcdf file did not fully cover the range of your data.
 ancillary(myStudy[[1]])$environmental
 ```
 
-### Download Other ERDDAP Datasets
+#### ***Download Other ERDDAP Datasets***
 
 If you have a different ERDDAP dataset in mind, PAMpal can also work with that.
 If the dataset is on the [upwell](https://upwell.pfeg.noaa.gov/erddap/index.html)
@@ -421,7 +421,7 @@ dist2shore <- erddapToEdinfo(dataset='dist2coast_1deg'
 myStudy <- matchEnvData(myStudy, nc=dist2shore)
 ```
 
-### Download Without Interactive Steps
+#### ***Download Without Interactive Steps***
 
 While PAMpal's interactive features can be useful when doing an
 exploratory analysis, or for one-off analyses, it can be a hassle
@@ -447,7 +447,7 @@ dist2shore <- varSelect(dist2shore, select = c(TRUE))
 myStudy <- matchEnvData(myStudy, nc=dist2shore)
 ```
 
-### Saving the Downloaded File
+#### ***Saving the Downloaded File***
 
 If you need to re-use the same environmental dataset for multiple
 analyses, you might be able to save the file and use it instead of
@@ -468,7 +468,7 @@ then this is always an option.
 myStudy <- matchEnvData(myStudy, nc=dist2shore, fileName='Dist2Shore.nc')
 ```
 
-### Loading From an Existing Netcdf File
+#### ***Loading From an Existing Netcdf File***
 
 If you were able to download your data as above, how can you actually use it?
 Easy! Just set the `nc` argument to that filename, and `PAMpal` will load
@@ -487,7 +487,7 @@ I will get it fixed for you!
 myStudy <- matchEnvData(myStudy, nc='Dist2Shore.nc')
 ```
 
-### Summarising Environmental Variables Over a Range
+#### ***Summarising Environmental Variables Over a Range***
 
 Sometimes it can be useful to summarise environmental variables over a
 range of values instead of just picking the closest value. To support
@@ -526,7 +526,7 @@ just provide the name of that to `FUN`. These functions should
 expect a matrix of values, and should expect the possiblity of 
 `NA` values.
 
-### More Options for Dataframes
+#### ***More Options for Dataframes***
 
 All of the above methods can work on dataframes instead of 
 `AcousticStudy` objects, in which case every single row of the
