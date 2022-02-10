@@ -1,0 +1,125 @@
+---
+title: "DCLDE2022"
+author: "Taiki Sakai"
+date: "2/7/2022"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## DCLDE 2022 Notes
+
+ioslides info:
+https://bookdown.org/yihui/rmarkdown/ioslides-presentation.html
+
+Presentation is 10 minutes + 2 for questions 
+
+Outline:
+Basics
+Env/GPS
+
+Names and contributions for  click/whistle measures. ACknowledge slide at end?
+For all - emphasis that once it is done, anyone who uses PAMpal can easily apply methods to their data
+Export_Banter - formatting made easy, link to paper, selling point do for other models
+DiveDepth - streamlining complicated workflows. creating wav clips, keeping track of metadata associated with them
+RoboJ - Condense 20 R scripts to one, sound speed profile application, link to paper
+
+## ABSTRACT
+
+FOSSA: Simple open-source software to simplify DCLDE workflows
+
+There have been significant efforts to improve signal processing methods for the Detection, Classification, and Localization of marine mammals, but the reality of implementing these methods is often a long, convoluted analytical process that impedes adoption and replication. Analyzing passive acoustic data is messy, but it doesn’t need to be that way. FOSSA (Free Open-Source Software for Acoustics) is a series of R packages developed with the goal of making analysis easier by increasing accessibility, reproducibility, and standardization. PAMpal (one of the packages) is designed to work with the output from PAMGuard, providing an end-to-end open source workflow for data analysis. PAMpal vastly simplifies the process of loading PAMGuard output into R. It provides a standardized set of descriptive measures for all clicks, whistles, and burst pulses with a few keystrokes, and users can also add their own custom measures with a single function. Ancillary data (species identity, GPS coordinates, and environmental variables) can be matched to the appropriate detections, each with a single line of code. All data and metadata are saved in a standardized structure; any models designed to work with PAMpal output can be readily adopted by all PAMpal users. Standardized datasets analyzed in PAMpal and saved on open data platforms can provide a common test case for developing and comparing novel analytical methods using real-world examples. Here we present an overview of the basic functionality of PAMpal, as well as a few case studies showcasing how it has helped streamlined a variety of analyses.
+
+
+## FOSSA Introduction
+
+Shannon's shpeal on our FOSSA thang. Maybe steal her recent graphic
+
+## PAMpal Introduction
+
+PAMpal was created to make it easier to work with data collected using PAMGuard.
+The main goals of PAMpal are (1) to develop a standardized approach to processing
+data post-PAMGuard that allows you to more readily share and compare results and 
+simplifies reproducibility, (2) to create a standardized data structure that allows
+us to develop tools that will work for more users without having to rebuild them
+every time, and (3) to make this entire process easier to do, especially for users
+with less programming experience. We have an extensive tutorial website with more
+details on everything covered in this workshop and more:
+
+1. Develop standardized approach to processing acoustic data. Share/compare results and simplify reproducibility
+2. Standardized data structure so that tools work for everyone
+3. Make it ez pz lemon squeazy
+
+## PAMpal Cont.
+
+GPS? Enviro? Spam slide of examples of things done in one line of code?
+
+1. Avg spec (bolf polts)
+2. GPS to detections (MAP?)
+3. Environmental variables (ERDDAP?NETCDF?)
+4. ICI (Histo)
+
+And more: Link to website, PSAW vids, GitHub
+
+## BANTER
+
+People: Eric Archer, Shannon Rankin
+
+Models are great. Formatting data for models is less great. We're here to help. 
+
+## Banter sell
+
+Other export functions for you
+
+Tracking workshop? Other classifiers? Whatever you want, I do it once then everyone has access to it
+
+## Dive Depth Analysis
+
+People: Annamaria DeAngelis, Annabel Westell
+
+Work requires clips of clicks with potential echoes. Previously required manual Raven nonsense boxing.
+PAMpal creates clips for you if you give it wav files, eliminates manual step. And because it was done
+in PAMpal we can keep track of the metadata much easier. Creating common outputs - wavs and CSVs
+
+## Dive Depth Sell
+
+PAMpal organizes a lot of information for you
+
+## Beaked Whale Density 
+
+People: Jay Barlow, Jeff Moore, Anne Simonis, Shannon Rankin
+
+Our goal is to make this process reproducible for the future before Jay retires so that we can do this
+for all future surveys.
+
+Show folder of code, highlight that first 6 steps or whatever are already covered in basic PAMpal. Maybe this
+goes first to give example of how make easy?
+
+Soundspped profile needed, easy to compute bc pampal do enviro
+
+Harp on point fo 20 R scripts, hard to reproduce. PAMpal in a few functions, much easier. 
+
+Condense to a handful of lines of code, m
+
+## BW Sell
+
+Steps 1-6 all done easily in PAMpal. THen if you build a more complicated analysis that works off
+that, very simple to reproduce and available to more people. 
+
+## Acknowledgements
+
+Acknowledgements - Taiki- I think you have this, but I found in an old presentation these acknowledgements for script development: 
+-Simone Baumann-Pickering, Annamaria Izzi & Emily Griffiths for click measurements
+-Julie & Mike Oswald for Whistle Measurements
+-Doug Gillespie, Jamie Macaulay, Pamguard
+-Doug Gillespie, Marjolaine Caillat for Wigner Analysis (and maybe Anne as well, not sure)
+
+## Final page of links
+
+1. Slack channel w/in PAMGuard Slack (Links expire in 15 days, email me for one later)
+2. GitHub https://github.com/TaikiSan21/PAMpal
+3. Tutorial website https://taikisan21.github.io/PAMpal/
+4. PSAW recordings
+5. email taiki.sakai@noaa.gov
