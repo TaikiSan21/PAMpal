@@ -30,8 +30,8 @@ standardCepstrumCalcs <- function(data) {
         return(NULL)
     }
     nSlices <- length(data$quefrency)
-    result <- list(ici = median(data$quefrency/data$sr))
+    result <- list(ici = median(data$quefrency))
     result$duration <- max(data$time) - min(data$time)
-    result$iciSlope <- unname(lm(quefrency ~ time, data=data[c('quefrency', 'time')])$coefficients[2] / data$sr)
+    result$iciSlope <- unname(lm(quefrency ~ time, data=data[c('quefrency', 'time')])$coefficients[2])
     result
 }

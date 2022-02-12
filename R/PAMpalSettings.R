@@ -5,7 +5,7 @@
 #'   by default: \link{standardClickCalcs}, \link{roccaWhistleCalcs}, and
 #'   \link{standardCepstrumCalcs}
 #'
-#' @param db the full path to a Pamguard database file
+#' @param db the full path to a Pamguard database file or folder of databases
 #' @param binaries a folder containing Pamguard binary files, all subfolders will
 #'   also be added
 #' @param settings an XML settings file from Pamguard

@@ -233,6 +233,10 @@ doCalcs <- function(data, funs, detSettings=NULL, module, retry=TRUE) {
                        }
                    }
                }
+               for(i in seq_along(data)) {
+                   data[[i]]$quefrency <- data[[i]]$contour / data[[i]]$sr
+                   data[[i]]$time <- sapply(data[[i]]$sliceData, function(s) s$sliceNumber) * fftHop / data[[i]]$sr
+               }
            },
            'GPLDetector' = {
                if(is.null(detSettings)) {

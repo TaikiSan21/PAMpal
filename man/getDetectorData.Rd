@@ -7,6 +7,11 @@
 \alias{getCepstrumData}
 \alias{getGPLData}
 \alias{getMeasures}
+\alias{nDetections}
+\alias{nClicks}
+\alias{nWhistles}
+\alias{nCepstrum}
+\alias{nGPL}
 \title{Extract and Combine Detector Data}
 \usage{
 getDetectorData(x, measures = TRUE)
@@ -20,6 +25,16 @@ getCepstrumData(x, measures = TRUE)
 getGPLData(x, measures = TRUE)
 
 getMeasures(x)
+
+nDetections(x, distinct = FALSE)
+
+nClicks(x, distinct = FALSE)
+
+nWhistles(x)
+
+nCepstrum(x)
+
+nGPL(x)
 }
 \arguments{
 \item{x}{data to extract detector data from, either an \code{AcousticStudy},
@@ -27,6 +42,8 @@ getMeasures(x)
 
 \item{measures}{logical flag whether or not to append measures to detector
 dataframes}
+
+\item{distinct}{logical flag to only return number of distinct click detections}
 }
 \value{
 A list of data frames containing all detection data from \code{x},

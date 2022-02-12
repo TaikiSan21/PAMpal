@@ -162,6 +162,36 @@ head(gps(myStudy))
 head(getClickData(myStudy))
 ```
 
+## Checking Number of Detections
+
+There are functions to help you easily check the number of detections, in 
+an `AcousticStudy` or an `AcousticEvent`, either the total number or the
+number for a specific detector. `nDetections` gets the total number across
+all detector types, while the functions `nClicks`, `nWhistles`, `nCepstrum`,
+and `nGPL` get the numbers for their respective detector types.
+
+```r
+nDetections(myStudy)
+# These should add up to above
+nClicks(myStudy)
+nWhistles(myStudy)
+nCepstrum(myStudy)
+nGPL(myStudy)
+```
+
+Note that for `nClicks` (and thus `nDetections` if your study has clicks), 
+this number will not reflect the number of unique clicks since each click 
+may have multiple channels, and could also belong to multiple click detectors.
+For example, if your event had a single click with 2 channels that was classified
+as Click Detector 1, 2, and 4 then `nClicks` would return `2*3=6`. If you want
+the number of unique clicks, these functions both have an option `distinct` that 
+will return the total number of unique click detections.
+
+```r
+nDetections(myStudy, distinct=TRUE)
+nClicks(myStudy, distinct=TRUE)
+```
+
 ## Gathering Detection Data in a Dataframe
 
 The `AcousticStudy` and `AcousticEvent` classes that `PAMpal` creates

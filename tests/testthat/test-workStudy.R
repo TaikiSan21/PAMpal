@@ -179,6 +179,11 @@ test_that('Test getDetectorData', {
     expect_identical(dets$click, getClickData(exStudy))
     expect_identical(dets$whistle, getWhistleData(exStudy))
     expect_identical(dets$cepstrum, getCepstrumData(exStudy))
+    expect_equal(nDetections(exStudy), 28L)
+    expect_equal(nClicks(exStudy), 4L)
+    expect_equal(nWhistles(exStudy), 14L)
+    expect_equal(nCepstrum(exStudy), 10L)
+    expect_equal(nGPL(exStudy), 0L)
 })
 
 test_that('Test updateFiles', {

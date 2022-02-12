@@ -8,6 +8,7 @@
 #'   \code{AcousticEvent} or list of \code{AcousticEvent} object
 #' @param measures logical flag whether or not to append measures to detector
 #'   dataframes
+#' @param distinct logical flag to only return number of distinct click detections
 #'
 #' @details The purpose of this function is to extract your data out of
 #'   \code{PAMpal}'s S4 classes and put them into an easier format to work with.
@@ -148,4 +149,61 @@ getMeasures <- function(x) {
     }
     # base case one acev
     c(id=id(x), ancillary(x)$measures)
+}
+
+#' @export
+#' @rdname getDetectorData
+#'
+nDetections <- function(x, distinct=FALSE) {
+    sum(c(nClicks(x, distinct),
+          nWhistles(x),
+          nCepstrum(x),
+          nGPL(x)))
+}
+
+#' @export
+#' @rdname getDetectorData
+#'
+nClicks <- function(x, distinct=FALSE) {
+    dets <- getClickData(x)
+    if(is.null(dets)) {
+        return(0L)
+    }
+    if(distinct) {
+        return(length(unique(dets$UID)))
+    }
+    nrow(dets)
+}
+
+#' @export
+#' @rdname getDetectorData
+#'
+nWhistles <- function(x) {
+    dets <- getWhistleData(x)
+    if(is.null(dets)) {
+        return(0L)
+    }
+    nrow(dets)
+}
+
+#' @export
+#' @rdname getDetectorData
+#'
+nCepstrum <- function(x) {
+    dets <- getCepstrumData(x)
+    if(is.null(dets)) {
+        return(0L)
+    }
+    nrow(dets)
+}
+
+#' @export
+#' @rdname getDetectorData
+#'
+nGPL <- function(x) {
+    dets <- getGPLData(x)
+    if(is.null(dets)) {
+        return(0L)
+    }
+    nrow(dets)
 }

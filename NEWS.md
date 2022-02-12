@@ -1,11 +1,26 @@
+## PAMpal 0.16.0
+
+* `addDatabase` can now accept a folder containing databases
+
+* cepstrum calculations handled better internally
+
+* Detection Group Localiser had changed in PAMGuard - reworked code to work with new
+naming scheme and fail less often if some tables are missing
+
+* `filter` has more regular behavior - no longer returns `NULL` if no detections
+are present, was previously causing odd behavior in loops
+
+* Event order is now preserved when doing `mode='time'`
+
+* Added functions `nDetections`, `nClicks`, `nWhistles`, `nCepstrum`, `nGPL` that 
+get total number of detections in an event or study
+
 ## PAMpal 0.15.3
 
 * Trying to stabilize processing against minor errors - should no longer crash entire processing
 if one piece of binary data fails, will try again instead
 
 * Trying to fix some crashes with missing Sound Acquisition data
-
-* `addDatabase` can now accept a folder containing databases
 
 ## PAMpal 0.15.2
 

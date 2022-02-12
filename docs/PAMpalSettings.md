@@ -61,6 +61,9 @@ newDb <- './Data/NewDB.sqlite3'
 newBinaries <- './Data/NewBinaries/'
 myPps <- addDatabase(myPps, newDb)
 myPps <- addBinaries(myPps, newBinaries)
+# Can also add a folder of databases
+dbFolder <- './Data/Databases'
+myPps <- addDatabase(myPps, dbFolder)
 ```
 
 ### Adding Functions

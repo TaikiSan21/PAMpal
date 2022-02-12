@@ -29,18 +29,19 @@ id to label each event. See below for species identification.
 
 ### Optional Columns
 
-There are also three optional columns you can provide: species, db, and sr. The
-species column is simply used to assign a species id to a specific event, if it
+There are also three optional columns you can provide: `species`, `db`, and `sr`. The
+`species` column is simply used to assign a species id to a specific event, if it
 is known (this is entirely optional).
 
-The db and sr columns are slightly more complicated, and usually do not need to
+The `db` and `sr` columns are slightly more complicated, and usually do not need to
 be provided manually. PAMpal uses the Pamguard database to match the appropriate 
 sample rate to a detection based on the time of the detection. Since you can
 add multiple databases to one study, PAMpal needs to sort out which databases
 belong to which events.
 
 It will attempt to do this based on the times of the 
-events and the times in the databases, and if it isn't able to sort it out
+events and the times in the Sound_Acquisition table of the databases (this is currently
+the only table that has any relevant time information), and if it isn't able to sort it out
 you will be prompted to select which event belongs to which database (this will
 happen if you have two databases with overlapping time coverage, for example). If no
 database matches an event (rare), then you will also be asked to supply the
@@ -59,4 +60,48 @@ grouping file to avoid having to select databases again:
 
 ```r
 newStudy <- processPgDetections(myPps, mode='time', grouping=ancillary(myStudy)$grouping)
+```
+
+### All Other Columns
+
+Any other columns in your event grouping file will not be used for anything by PAMpal,
+but they will be stored with the `AcousticStudy` object in case there is other
+useful information there you wish to keep. The entire row of the grouping file for 
+each event is stored in the `ancillary` slot of each `AcousticEvent`, similar to how
+the full grouping dataframe is stored in the `AcousticStudy`.
+
+```r
+# This is just the relevant row for the first event
+oneEventGrouping <- ancillary(myStudy[[1]])$grouping
+```
+
+One example of why you might want to do this is with the dataframe created by the
+`readSpecAnno` function from the PAMmisc package. This function reads in the 
+Spectrogram Annotation tables from a database, and these tables contain
+frequency bounds `fmin` and `fmax` for your annotated boxes. When using this table
+to `processPgDetections` with `mode='time'`, the frequency limits are not used to
+filter out detections outside of that frequency range, but you can access them
+later and use PAMpal's `filter` function to remove detections outside those
+frequency ranges if desired.
+
+```r
+# This contains columns id, start, and end by default
+sa <- readSpecAnno(db)
+myStudy <- processPgDetections(myPps, mode='time', grouping=sa)
+# Now we can use the stored grouping information to filter
+filtStudy <- myStudy
+for(i in seq_along(events(filtStudy))) {
+    # Read out the grouping info for each event, which has fmin and fmax
+    thisGrouping <- ancillary(filtStudy[[i]])$grouping
+    # Filter using whistle detection parameters freqBeg and freqEnd (Hz)
+    # and click detections using peak (kHz)
+    filtStudy[[i]] <- filter(filtStudy[[i]],
+                            freqBeg > thisGrouping$fmin,
+                            freqBeg < thisGrouping$fmax,
+                            freqEnd > thisGrouping$fmin,
+                            freqBeg < thisGrouping$fmax,
+                            peak > thisGrouping$fmin / 1e3,
+                            peak < thisGrouping$fmax / 1e3,
+                            UTC + duration < thisGrouping$end)
+}
 ```

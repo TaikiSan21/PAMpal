@@ -147,7 +147,7 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
     procTime <- round(as.numeric(difftime(endTime, startTime, units='secs')), 0)
     ancillary(result)$processingTime <- procTime
     if(verbose) {
-        cat('\nProcessing took', procTime, 'seconds')
+        cat('\nProcessing took', procTime, 'seconds\n')
     }
     result
 }
@@ -202,7 +202,9 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
                 editGroup <- TRUE
                 myTitle <- paste0('No matching database found for event ', grouping$id[i],
                                   ' based on times, please choose one or select "0" to',
-                                  ' leave as NA.')
+                                  ' leave as NA.\n',
+                                  '\nAlternatively, you may exit and add database names to ',
+                                  'a "db" column in your event file before reprocessing.')
                 myChoice <- menu(title = myTitle, choices = c(allDbs, 'Exit function call (no processing will occur)'))
                 if(myChoice == length(allDbs) + 1) {
                     stop('Exiting function call', call.=FALSE)
@@ -254,6 +256,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     #     if(is.na(grouping$db[d])) next
     #     grouping$sr[d] <- saByDb[grouping$db[d]]
     # }
+    grouping$TEMPORDERIX <- 1:nrow(grouping)
     grouping <- bind_rows(lapply(split(grouping, grouping$db), function(d) {
         if(!any(is.na(d$sr))) {
             return(d)
@@ -274,6 +277,8 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
         d$sampleRate <- NULL
         d
     }))
+    grouping <- grouping[grouping$TEMPORDERIX, ]
+    grouping$TEMPORDERIX <- NULL
     # were gonna match SR by database, only need manual input if we have any
     # missing DBs
     if(any(is.na(grouping$sr))) {
@@ -449,6 +454,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
         acousticEvents[[i]] <-
             AcousticEvent(id=evName[i], detectors = thisData, settings = list(sr = thisSr, source = thisSource),
                           files = list(binaries=binariesUsed, db=thisDb, calibration=calibrationUsed))
+        ancillary(acousticEvents[[i]])$grouping <- grouping[i, ]
     }
     if(length(noDetEvent) > 0) {
         pamWarning('No detections in Event(s) ', noDetEvent, n=6)
@@ -682,22 +688,25 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
                evName <- 'OE'
            },
            'detGroup' = {
-               modules <- dbReadTable(con, 'PamguardModules')
-               dgTables <- modules %>%
-                   mutate(Module_Name=str_trim(.data$Module_Name),
-                          Module_Type=str_trim(.data$Module_Type)) %>%
-                   filter(.data$Module_Name == 'Detection Group Localiser') %>%
-                   distinct(.data$Module_Type, .data$Module_Name)
-               dgNames <- gsub(' ',  '_', dgTables$Module_Type)
-               detTables <- sapply(dgNames, function(x) grep(x, tables, value=TRUE))
-               eventTables <- detTables[!grepl('Children', detTables)]
-               detTables <- detTables[grepl('Children', detTables)]
+               # modules <- dbReadTable(con, 'Pamguard_Settings_Last')
+               # dgTables <- modules %>%
+               #     mutate(unitName=str_trim(.data$unitName),
+               #            unitType=str_trim(.data$unitType)) %>%
+               #     filter(.data$unitType == 'Detection Group Localiser') %>%
+               #     distinct(.data$unitType, .data$unitName)
+               # dgNames <- gsub(' ',  '_', dgTables$unitName)
+               dgNames <- findModuleNames(con, 'Detection Group Localiser')
+               # detTables <- sapply(dgNames, function(x) grep(x, tables, value=TRUE))
+               # eventTables <- detTables[!grepl('Children', detTables)]
+               # detTables <- detTables[grepl('Children', detTables)]
+               eventTables <- dgNames
+               detTables <- paste0(eventTables, '_Children')
                # eventColumns <- c('UID', 'Text_Annotation')
                if(is.character(eventTables)) {
                    dglCols <- dbListFields(con, eventTables[1])
                    label <- parseDglLabel(label, dglCols)
                } else {
-                   label <- NA
+                   label <- NULL
                }
 
                eventColumns <- c('Id', label)
@@ -774,7 +783,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
     # rename column to use as label - standardize across event group types
     colnames(allDetections)[which(colnames(allDetections)==label)] <- 'eventLabel'
     if(!('eventLabel' %in% colnames(allDetections))) {
-        allDetections$eventLabel <- 'NOLABELFOUND'
+        allDetections$eventLabel <- NA
     }
     if(doSR) {
         allDetections <- matchSR(allDetections, db, extraCols=c('SystemType'))
@@ -978,10 +987,14 @@ wavToGroup <- function(db) {
     con <- dbConnect(db, drv=SQLite())
     on.exit(dbDisconnect(con))
     if(!('Sound_Acquisition' %in% dbListTables(con))) {
-        pamWarning('No Sound_Acquisition table in database')
+        pamWarning('No Sound_Acquisition table in database ', db)
         return(NULL)
     }
     sa <- dbReadTable(con, 'Sound_Acquisition')
+    if(nrow(sa) < 2) {
+        pamWarning('No Sound_Acquisition table in database ', db)
+        return(NULL)
+    }
     sa$Status <- str_trim(sa$Status)
     sa$UTC <- pgDateToPosix(sa$UTC)
     # sa <- filter(sa, .data$Status != 'Continue')
@@ -1093,7 +1106,7 @@ parseDglLabel <- function(x, colnames) {
     standardCols <- ppVars()$dglCols
     newCols <- colnames[!(colnames %in% standardCols)]
     if(length(newCols) == 0) {
-        return(NA)
+        return(NULL)
     }
     if(!is.null(x) &&
        x %in% newCols) {
@@ -1118,4 +1131,32 @@ parseDglLabel <- function(x, colnames) {
         return(newCols[isId])
     }
     newCols[1]
+}
+
+findModuleNames <- function(con, module='Detection Group Localiser') {
+    tbls <- c('Pamguard_Settings', 'Pamguard_Settings_Last', 'Pamguard_Settings_Viewer', 'PamguardModules')
+    typeCols <- c('unitType','unitType', 'unitType', 'Module_Name')
+    nameCols <- c('unitName','unitName', 'unitName', 'Module_Type')
+    result <- vector('list', length=length(tbls))
+    for(i in seq_along(result)) {
+        if(!tbls[i] %in% dbListTables(con)) next
+        mods <- dbReadTable(con, tbls[i])
+        if(nrow(mods) == 0) next
+        dgTables <- mods[c(typeCols[i], nameCols[i])]
+        names(dgTables) <- c('type', 'name')
+        dgTables$type <- str_trim(dgTables$type)
+        dgTables$name <- str_trim(dgTables$name)
+        dgTables <- dgTables[dgTables$type == module, ]
+        if(nrow(dgTables) == 0) next
+        dgTables <- distinct(dgTables)
+        result[[i]] <- dgTables
+    }
+    result <- bind_rows(result)
+    if(is.null(result) ||
+       nrow(result) == 0) {
+        return(NULL)
+    }
+    result <- distinct(result)
+    result$name <- gsub(' ', '_', result$name)
+    result$name[result$name %in% dbListTables(con)]
 }

@@ -14,7 +14,7 @@ PAMpalSettings(
 )
 }
 \arguments{
-\item{db}{the full path to a Pamguard database file}
+\item{db}{the full path to a Pamguard database file or folder of databases}
 
 \item{binaries}{a folder containing Pamguard binary files, all subfolders will
 also be added}

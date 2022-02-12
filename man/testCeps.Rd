@@ -7,7 +7,7 @@
 \format{
 A list with three items:
 \describe{
-  \item{quefrency}{a vector of the cepstrum contour bin numbers, not actually quefrency}
+  \item{quefrency}{a vector of the cepstrum contour quefrency values}
   \item{time}{a vector of the time values of the cepsturm contour in seconds}
   \item{sr}{the sample rate of the recording}
 }
