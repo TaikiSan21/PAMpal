@@ -60,8 +60,9 @@ the same object as \code{x}, with ICI data added to the "ancillary" slot
   ICI using all the combined data. $measures will also have a ICI measurement added
   for each detector, this will be the single modal value. Data in the $measures spot
   can be exported easily to modeling algorithms. \code{getICI} will just return either
-  the values stored in $ici for \code{type = 'data'} or the values stored in
-  $measures for \code{type = 'value'}
+  the values stored in $measures for \code{type = 'value'} or a dataframe of the
+  individual ICI values used to calculate these (with columns indicating separate Channels,
+  eventIds, and detectorNames) for \code{type = 'data'}
 }
 \description{
 Calculate inter-click interval for click data

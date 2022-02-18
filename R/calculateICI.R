@@ -23,8 +23,9 @@
 #'   ICI using all the combined data. $measures will also have a ICI measurement added
 #'   for each detector, this will be the single modal value. Data in the $measures spot
 #'   can be exported easily to modeling algorithms. \code{getICI} will just return either
-#'   the values stored in $ici for \code{type = 'data'} or the values stored in
-#'   $measures for \code{type = 'value'}
+#'   the values stored in $measures for \code{type = 'value'} or a dataframe of the
+#'   individual ICI values used to calculate these (with columns indicating separate Channels,
+#'   eventIds, and detectorNames) for \code{type = 'data'}
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
@@ -86,11 +87,11 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
     time <- match.arg(time)
     for(d in detNames) {
         thisIci <- dfICI(detData[detData$detectorName == d, ], time)
-        thisIci$name <- d
+        thisIci$detectorName <- d
         iciList[[d]] <- thisIci
     }
     allIci <- dfICI(detData, time)
-    allIci$name <- 'All'
+    allIci$detectorName <- 'All'
     iciList[['All']] <- allIci
 
     oldIci <- ancillary(x)$ici
@@ -188,6 +189,9 @@ getICI <- function(x, type=c('value', 'data')) {
         if(any(noICI)) {
             pamWarning('No ICI data found in event(s) ', names(result)[noICI], n=6)
         }
+        if(type == 'data') {
+            result <- bind_rows(result, .id='eventId')
+        }
         return(result)
     }
     if(!is.AcousticEvent(x)) {
@@ -207,7 +211,7 @@ getICI <- function(x, type=c('value', 'data')) {
                    pamWarning('No ICI data found in event ', id(x), ' run "calculateICI" first.')
                    return(NULL)
                }
-               ancillary(x)$ici
+               bind_rows(ancillary(x)$ici)
            })
 }
 

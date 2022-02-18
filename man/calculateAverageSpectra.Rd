@@ -20,12 +20,13 @@ calculateAverageSpectra(
   decimate = 1,
   sort = FALSE,
   mode = "spec",
-  label = NULL,
+  title = NULL,
   ylim = NULL,
   flim = NULL,
   brightness = 0,
   contrast = 0,
   q = 0.01,
+  showBreaks = TRUE,
   ...
 )
 }
@@ -83,7 +84,8 @@ reducing \code{wl} can help get a more accurate noise floor.}
 
 \item{mode}{one of \code{'spec'} or \code{'ceps'} to plot the spectrum or cepstrum}
 
-\item{label}{optional label before plot titles}
+\item{title}{replacement titles for plots, can be length vector of length two to provide
+separate titles}
 
 \item{ylim}{optional y limits for mean spectra plot}
 
@@ -100,6 +102,9 @@ Or if a single value, then quantiles \code{q} and \code{1-q} will be used. Ex.
 if \code{q=.01}, then the bottom 1% and top 1% of values are truncated before
 plotting the image. This is done purely for cosmetic reasons, no output data is
 affected}
+
+\item{showBreaks}{logical flag to show lines separating events when plotting
+multiple events}
 
 \item{\dots}{optional args}
 }

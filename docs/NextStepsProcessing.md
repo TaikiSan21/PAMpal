@@ -269,7 +269,7 @@ myStudy <- calculateICI(myStudy, time='peakTime')
 ```
 
 This calculation is done for every event, and is done separately for
-each click detector in the event (note that `PAMpal` splits click
+each channel and each click detector in the event (note that `PAMpal` splits click
 detections up by click classification number, so you have
 Click_Detector_0, Click_Detector_1, etc.), and also calculated combining
 all the detectors in an event. These data are stored within the
@@ -292,18 +292,14 @@ iciValues[[1]]
 
 `type='data'` will return all the individual time differences used to
 calculate the number returned by 'value', this can be useful for making
-plots or if you have your own way of doing things
+plots or if you have your own way of doing things. These are returned
+as a single large dataframe with columns `Channel`, `eventId`, and
+`detectorName` indiciating different sets of ICI data. The actual
+ici values are in column `ici`.
 
 ```r
 iciData <- getICI(myStudy, type='data')
-```
-
-These are similarly returned as a list for each event, and the result is
-a list of dataframes for each click detector that just contain the name
-of the detector and the time difference values used
-
-```r
-str(iciData[[1]])
+str(iciData)
 ```
 
 Looking at the actual numbers for the ICI data that combines all the

@@ -147,6 +147,10 @@ safeListAdd <- function(x, value) {
     if(is.null(value)) {
         return(x)
     }
+    if(is.list(value) &&
+       length(value) == 0) {
+        return(x)
+    }
     if(!is.list(value) ||
        is.null(names(value))) {
         stop('Can only add named lists ')

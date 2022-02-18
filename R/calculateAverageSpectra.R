@@ -41,7 +41,8 @@
 #' @param decimate integer factor to reduce sample rate by
 #' @param sort logical flag to sort concatenated spectrogram by peak frequency
 #' @param mode one of \code{'spec'} or \code{'ceps'} to plot the spectrum or cepstrum
-#' @param label optional label before plot titles
+#' @param title replacement titles for plots, can be length vector of length two to provide
+#'   separate titles
 #' @param ylim optional y limits for mean spectra plot
 #' @param flim optional frequency limits for both plots
 #' @param brightness value from -255 to 255, positive values increase brightness,
@@ -53,6 +54,8 @@
 #'   if \code{q=.01}, then the bottom 1% and top 1% of values are truncated before
 #'   plotting the image. This is done purely for cosmetic reasons, no output data is
 #'   affected
+#' @param showBreaks logical flag to show lines separating events when plotting
+#'   multiple events
 #' @param \dots optional args
 #'
 #' @return invisibly returns a list with six items: \code{freq} - the frequency,
@@ -87,12 +90,13 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                                     sr=NULL, snr=0, norm=TRUE, plot=TRUE, noise=FALSE,
                                     decimate=1,
                                     sort=FALSE, mode='spec',
-                                    label=NULL,
+                                    title=NULL,
                                     ylim=NULL,
                                     flim=NULL,
                                     brightness=0,
                                     contrast=0,
                                     q=.01,
+                                    showBreaks=TRUE,
                                     ...) {
     if(is.AcousticEvent(x)) {
         ev <- x
@@ -226,7 +230,13 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                    title2 <- 'Average Cepstrum'
                    maxZ <- 5
                })
-
+        if(!is.null(title)) {
+            if(length(title) == 1) {
+                title <- rep(title, 2)
+            }
+            title1 <- title[1]
+            title2 <- title[2]
+        }
         # change y axis
         if(is.null(flim)) {
             plotFreq <- rep(TRUE, length(freq))
@@ -270,11 +280,11 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                   z=t(plotMat), xaxt='n', yaxt='n', ylab=unitLab, xlab='Click Number', useRaster=TRUE,
                   col = hcl.colors(30, "YlOrRd", rev = TRUE),
                   breaks=seq(from=0, to=255, length.out=31))
-            title(paste0(label, title1))
+            title(title1)
             xPretty <- pretty(1:ncol(plotMat), n=5)
             axis(1, at = xPretty, labels = xPretty)
             axis(2, at = freqPretty, labels = freqPretty)
-            if(isFALSE(sort) & length(evNum) > 1) {
+            if(isTRUE(showBreaks) & isFALSE(sort) & length(evNum) > 1) {
                 evBreaks <- table(clickData$eventId)[sapply(events(ev), id)]
                 evStarts <- cumsum(evBreaks)
                 for(b in 1:(length(evStarts)-1)) {
@@ -294,7 +304,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                 # legend('topright', inset=c(0, 0), xpd=TRUE, legend=c('Signal', 'Noise'), lty=1:2, bty='n')
             }
 
-            title(paste0(label, title2))
+            title(title2)
             axis(1, at = freqPretty/unitFactor, labels=freqPretty)
             yRange <- range(averageSpec)
             if(!is.null(ylim)) {

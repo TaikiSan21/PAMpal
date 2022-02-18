@@ -15,6 +15,13 @@ are present, was previously causing odd behavior in loops
 * Added functions `nDetections`, `nClicks`, `nWhistles`, `nCepstrum`, `nGPL` that 
 get total number of detections in an event or study
 
+* `getICI` for `type='data'` returns one big dataframe instead of lists of lists of dataframes
+
+* Added `showBreaks` option to `calculateAverageSpectra` to toggle showing line breaks for 
+multiple events in concatenated spectrogram
+
+* Added `bindStudies` function to combine multiple `AcousticStudy` objects
+
 ## PAMpal 0.15.3
 
 * Trying to stabilize processing against minor errors - should no longer crash entire processing
