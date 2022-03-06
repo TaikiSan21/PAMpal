@@ -68,6 +68,7 @@ addBinaries <- function(pps, folder=NULL, verbose=TRUE) {
         # warning overflow later
         binList <- list.files(folder, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans|GPL).*pgdf$')
     }
+    binList <- binList[!grepl('GPL_State', binList)]
     if(verbose) {
         cat('Adding', length(binList), 'binary files from', length(folder), 'folders\n')
     }

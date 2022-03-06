@@ -424,7 +424,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
         })
         # Check possible DBs by start/end time of events in sa list earlier
         thisData <- thisData[sapply(thisData, function(x) !is.null(x))]
-        binariesUsed <- sapply(thisData, function(x) unique(x$BinaryFile)) %>%
+        binariesUsed <- lapply(thisData, function(x) unique(x$BinaryFile)) %>%
             unlist(recursive = FALSE) %>% unique()
         # binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE), USE.NAMES = FALSE))
         # Check and warning here for empty event
