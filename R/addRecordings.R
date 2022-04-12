@@ -117,7 +117,7 @@ addRecordings <- function(x, folder=NULL, log=FALSE, progress=TRUE) {
                     }
                 }
             }
-            
+
             isMapped <- c(isMapped, folder[d])
         }
         dbMap[[d]] <- wavMap
@@ -138,6 +138,11 @@ addRecordings <- function(x, folder=NULL, log=FALSE, progress=TRUE) {
         }
         x
     }))
+    if(any(is.na(allFiles$startSample))) {
+        pamWarning('Unable to find "startSample" for some wav files, ',
+                   'wav folder must contain all files processed if "Merge Contiguous Files" ',
+                   'was selected in PAMGuard.')
+    }
     files(x)$recordings <- allFiles
     # for(e in seq_along(events(x))) {
     #     thisFiles <- dbMap[[files(x[[e]])$db]]

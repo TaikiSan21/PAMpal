@@ -167,29 +167,7 @@ safeListAdd <- function(x, value) {
     x
 }
 
-# clip of fixed length, zeropads if needed and deals with edge case
-clipAroundPeak <- function(wave, length, noise=FALSE) {
-    if(length(wave) < length) {
-        return(c(wave, rep(0, length - length(wave))))
-    }
-    peak <- which.max(abs(wave))
-    low <- peak - floor(length/2)
-    high <- ceiling(peak + length/2) -1
-    if(low < 1) {
-        return(wave[1:length])
-    }
-    if(high > length(wave)) {
-        return(wave[(length(wave)-length+1):length(wave)])
-    }
-    if(noise) {
-        if(low - length > 1) {
-            return(wave[(low-length):(low-1)])
-        } else {
-            return(wave[1:length])
-        }
-    }
-    wave[low:high]
-}
+
 
 printN <- function(x, n=6, collapse=', ') {
     nItems <- length(x)

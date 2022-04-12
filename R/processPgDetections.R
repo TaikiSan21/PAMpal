@@ -709,7 +709,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
                    label <- NULL
                }
 
-               eventColumns <- c('Id', label)
+               eventColumns <- unique(c('Id', label, 'Text_Annotation'))
                evName <- 'DGL'
            },
            {
@@ -782,6 +782,12 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
 
     # rename column to use as label - standardize across event group types
     colnames(allDetections)[which(colnames(allDetections)==label)] <- 'eventLabel'
+    if(grouping == 'detGroup' &&
+       length(eventColumns) > 2 &&
+       'Text_Annotation' %in% colnames(allDetections)) {
+        colnames(allDetections)[colnames(allDetections) == 'Text_Annotation'] <- 'comment'
+    }
+
     if(!('eventLabel' %in% colnames(allDetections))) {
         allDetections$eventLabel <- NA
     }
@@ -1114,6 +1120,9 @@ parseDglLabel <- function(x, colnames) {
     }
     if(length(newCols) == 1) {
         return(newCols)
+    }
+    if('eventType' %in% newCols) {
+        return('eventType')
     }
     if('Text_Annotation' %in% newCols) {
         return('Text_Annotation')

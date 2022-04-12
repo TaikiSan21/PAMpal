@@ -80,11 +80,11 @@ functionParser <- function(fun, skipArgs = c('data', 'calibration', '...'), ...)
     if(length(toSet) > 0) {
         for(a in toSet) {
             cat('Set a value for parameter "', a, '", please put quotes around strings', sep='')
-            if(class(argList[[a]]) == 'name') {
+            if(inherits(argList[[a]], 'name')) {
                 cat(' (no default value found):')
-            } else if(class(argList[[a]]) == 'NULL') {
+            } else if(inherits(argList[[a]], 'NULL')) {
                 cat(' (default value is NULL):')
-            } else if(class(argList[[a]]) == 'call') {
+            } else if(inherits(argList[[a]], 'call')) {
                 cat(' (default value is ', deparse(argList[[a]]), '):', sep='')
             } else {
                 cat(' (default value is ', argList[[a]], '):', sep = '')
@@ -182,7 +182,7 @@ cepstrumChecker <- function(fun) {
 gplChecker <- function(fun) {
     good <- TRUE
     testThisGpl <- try(fun(data=PAMpal::testGPL))
-    
+
     if(inherits(testThisGpl, 'try-error')) {
         message('GPL function did not run successfully.')
         message('Error: ', attr(testThisGpl, 'condition')$message)
@@ -197,4 +197,4 @@ gplChecker <- function(fun) {
         return(FALSE)
     }
     good
-}    
+}

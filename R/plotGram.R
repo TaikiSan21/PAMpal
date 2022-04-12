@@ -27,13 +27,13 @@
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
 #' @examples
-#' 
+#'
 #' data(exStudy)
 #' recs <- system.file('extdata', 'Recordings', package='PAMpal')
 #' exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
 #' # No detections will appear on plot because included recordings are heavily decimated
 #' plotGram(exStudy)
-#' 
+#'
 #' @importFrom dplyr bind_rows
 #' @importFrom tuneR readWave downsample
 #' @importFrom grDevices gray.colors
@@ -82,6 +82,7 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1, wl=512, hop=.
     if(sr != wav@samp.rate) {
         wav <- downsample(wav, sr)
     }
+    mode <- match.arg(mode)
     timeStart <- thisRec$start[fileCheck] + start
     timeEnd <- timeStart - start + end
 
@@ -89,18 +90,13 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1, wl=512, hop=.
         stop('Specified channel is not present in wav file.', call.=FALSE)
     }
     wav <- wav@.Data[, channel]
-    nSlices <- ceiling((length(wav) - wl)/(hop)) + 1
-    slices <- seq(from=1, by=hop, length.out=nSlices)
-    data <- apply(as.matrix(slices), 1, function(s) {
-        thisWav <- wav[s:(s+wl-1)]
-        thisGram <- myGram(thisWav, mode=mode, wl=wl, channel=channel, sr=sr)
-        thisGram[, 2]
-    })
+
+    data <- wavToGram(wav, wl=wl, hop=hop, sr=sr, mode=mode)
 
     x <- filter(x, UTC <= timeEnd, UTC >= timeStart)
 
     yAxis <- myGram(wav[1:wl], mode=mode, wl=wl, channel=channel, sr=sr)[, 1]
-    switch(match.arg(mode),
+    switch(mode,
            'spec' = {
                title <- 'Spectrogram'
                yName = 'Frequency (kHz)'
@@ -115,7 +111,7 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1, wl=512, hop=.
            }
     )
     xName <- paste0('Seconds after ', timeStart)
-    image(t(plotMat), col = gray.colors(64, start=1, end=0), xaxt='n', yaxt='n',
+    image(plotMat, col = gray.colors(64, start=1, end=0), xaxt='n', yaxt='n',
           xlab = xName, ylab=yName, useRaster=TRUE)
     tPretty <- pretty((start:end) - start, n=5)
     # tLabs <- files(x)$recordings$start[fileCheck] + tPretty
@@ -155,6 +151,7 @@ plotCeps <- function(x, tMin, tMax) {
                     yMin=0, yMax=settings$wl/2, tMin=tMin, tMax=tMax)
     }
 }
+
 plotWhistle <- function(x, tMin, tMax) {
     UIDs <- getWhistleData(x)$UID
     if(is.null(UIDs) ||
@@ -190,6 +187,7 @@ plotClick <- function(x, tMin, tMax, yMin, yMax) {
     yPlot <- scaleToOne(yVals, yMin, yMax)
     points(x=xPlot, y=yPlot, pch=1, col='blue')
 }
+
 scaleToOne <- function(vals, min, max) {
     vals <- as.numeric(vals)
     min <- as.numeric(min)
