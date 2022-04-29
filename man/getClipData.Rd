@@ -36,7 +36,9 @@ longer}
 
 \item{verbose}{logical flag to show summary messages}
 
-\item{FUN}{optional function to apply to wav clips}
+\item{FUN}{optional function to apply to wav clips. This function takes default inputs \code{wav},
+a Wave class object, \code{name} the name of the detection or event, \code{time} the start and end
+time of the clip, \code{channel} as above, \code{mode} as above, and additional args \dots}
 
 \item{\dots}{optional arguments to pass to \code{FUN}}
 }

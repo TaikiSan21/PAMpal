@@ -13,7 +13,8 @@ plotGram(
   wl = 512,
   hop = 0.25,
   mode = c("spec", "ceps"),
-  detections = c("whistle", "click", "cepstrum"),
+  detections = c("cepstrum", "click", "whistle"),
+  detCol = c("red", "blue", "blue"),
   sr = NULL
 )
 }
@@ -41,8 +42,11 @@ of \code{wl} or number of samples}
 \item{mode}{one of \code{'spec'} or \code{'ceps'} to plot either spectrogram
 or cepstrogram}
 
-\item{detections}{vector containing any of \code{'whistle'}, \code{'click'},
-and/or \code{'cepstrum'} indicating which detections to overlay on the plot}
+\item{detections}{vector containing any of \code{'cepstrum'}, \code{'click'},
+and/or \code{'whistle'} indicating which detections to overlay on the plot}
+
+\item{detCol}{vector containing colors to use for plotting detections. Order matches
+order of detections (default alphabetical - cepstrum, click, whistle)}
 
 \item{sr}{sample rate}
 }
@@ -58,6 +62,9 @@ Plots either a spectrogram or cepstrogram and also overlays
 data(exStudy)
 recs <- system.file('extdata', 'Recordings', package='PAMpal')
 exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
+exStudy <- updateFiles(exStudy,
+                       bin=system.file('extdata', 'Binaries', package='PAMpal'),
+                       db = system.file('extdata', 'Example.sqlite3', package='PAMpal'))
 # No detections will appear on plot because included recordings are heavily decimated
 plotGram(exStudy)
 

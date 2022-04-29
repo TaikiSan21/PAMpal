@@ -1,3 +1,10 @@
+## PAMpal 0.16.1
+
+* Changing `addRecordings` to return NA values when reads are not possible instead of omitting
+
+* Some fixes to `plotGram` - previously whistle contours could plot at wrong frequnecy and
+time scale could be thrown off
+
 ## PAMpal 0.16.0
 
 * `addDatabase` can now accept a folder containing databases

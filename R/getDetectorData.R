@@ -62,6 +62,7 @@ getDetectorData <- function(x, measures=TRUE) {
     for(d in seq_along(dets)) {
         dets[[d]]$eventId <- id(x)
         dets[[d]]$detectorName <- names(dets)[d]
+        # dets[[d]]$db <- files(x)$db
 
         if(is.null(species(x)$id)) {
             dets[[d]]$species <- NA_character_
@@ -102,28 +103,28 @@ getCallType <- function(x) {
 #' @rdname getDetectorData
 #'
 getClickData <- function(x, measures=TRUE) {
-    getDetectorData(x)$click
+    getDetectorData(x, measures)$click
 }
 
 #' @export
 #' @rdname getDetectorData
 #'
 getWhistleData <- function(x, measures=TRUE) {
-    getDetectorData(x)$whistle
+    getDetectorData(x, measures)$whistle
 }
 
 #' @export
 #' @rdname getDetectorData
 #'
 getCepstrumData <- function(x, measures=TRUE) {
-    getDetectorData(x)$cepstrum
+    getDetectorData(x, measures)$cepstrum
 }
 
 #' @export
 #' @rdname getDetectorData
 #'
 getGPLData <- function(x, measures=TRUE) {
-    getDetectorData(x)$gpl
+    getDetectorData(x, measures)$gpl
 }
 
 #' @export

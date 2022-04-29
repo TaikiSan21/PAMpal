@@ -41,11 +41,6 @@ addBinaries <- function(pps, folder=NULL, verbose=TRUE) {
     }
     if(is.null(folder)) {
         cat('Please select the folder where the binaries are stored.\n')
-        # if(!rstudioapi::isAvailable('1.1.287')) {
-        #     binFolder <- choose.dir(caption = 'Choose Binary Folder:')
-        # } else {
-        #     binFolder <- rstudioapi::selectDirectory(caption = 'Choose Binary Folder:', path = getwd())
-        # }
         folder <- tk_choose.dir(caption = 'Choose Binary Folder:',default = getwd())
     }
     # Case when cancelled, dont error

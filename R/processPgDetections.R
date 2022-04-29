@@ -96,7 +96,8 @@
 #' @export
 #'
 processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NULL, grouping=NULL,
-                                format='%Y-%m-%d %H:%M:%OS', progress=TRUE, verbose=TRUE, ...) {
+                                format=c('%m/%d/%Y %H:%M:%OS', '%m-%d-%Y %H:%M:%OS',
+                                         '%Y/%m/%d %H:%M:%OS', '%Y-%m-%d %H:%M:%OS'), progress=TRUE, verbose=TRUE, ...) {
     # auto check for mode
     if(missing(mode)) {
         mode <- autoMode(pps, grouping)
@@ -121,6 +122,18 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
     if(!is.PAMpalSettings(pps)) {
         stop(paste0(pps, ' is not a PAMpalSettings object. Please create one with',
                     ' function "PAMpalSettings()"'), call.=FALSE)
+    }
+    nDb <- length(pps@db)
+    if(nDb == 0) {
+        warning('No database(s) found in PAMpalSettings object.')
+    }
+    nBin <- length(pps@binaries$list)
+    if(nBin == 0) {
+        warning('No binary files found in PAMpalSettings object.')
+    }
+    if(nDb == 0 ||
+       nBin == 0) {
+        stop('Add with "addDatabase" or "addBinaries", or create a new PAMpalSettings object to continue processing.')
     }
     startTime <- Sys.time()
     result <- switch(mode,
@@ -886,25 +899,15 @@ checkGrouping <- function(grouping, format) {
         # if times arent posix, convert and check that it worked
         if(!inherits(grouping$start, 'POSIXct') ||
            !inherits(grouping$end, 'POSIXct')) {
-
             grouping$start <- parseUTC(grouping$start, format)
             grouping$end <- parseUTC(grouping$end, format)
-
-            if(any(is.na(grouping$start)) ||
-               any(is.na(grouping$end))) {
-                stop('Some event start/end times were not able to be converted, please check to',
-                        ' ensure that format argument matches date format in provided file.')
-            }
-            # checkDate <- menu(title = paste0('\nThe first event start time is ', grouping$start[1],
-            #                                  ', does this look okay?'),
-            #                   choices = c('Yes, continue processing.',
-            #                               "No. I'll stop and check grouping data and the time format argument.")
-            # )
-            # if(checkDate != 1) {
-            #     stop('Stopped due to invalid event times.')
-            # }
         }
         grouping$id <- as.character(grouping$id)
+    }
+    if(any(is.na(grouping$start)) ||
+       any(is.na(grouping$end))) {
+        stop('Some event start/end times are "NA", most likely cause is that "format"',
+             ' was not specified properly.')
     }
     evName <- as.character(grouping$id)
     evTable <- table(evName)

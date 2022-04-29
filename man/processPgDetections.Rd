@@ -9,7 +9,8 @@ processPgDetections(
   mode = c("db", "time", "recording"),
   id = NULL,
   grouping = NULL,
-  format = "\%Y-\%m-\%d \%H:\%M:\%OS",
+  format = c("\%m/\%d/\%Y \%H:\%M:\%OS", "\%m-\%d-\%Y \%H:\%M:\%OS",
+    "\%Y/\%m/\%d \%H:\%M:\%OS", "\%Y-\%m-\%d \%H:\%M:\%OS"),
   progress = TRUE,
   verbose = TRUE,
   ...

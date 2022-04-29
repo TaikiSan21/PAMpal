@@ -126,7 +126,20 @@ addRecordings <- function(x, folder=NULL, log=FALSE, progress=TRUE) {
     # allFiles <- unique(sapply(dbMap, function(d) d$file))
     allFiles <- bind_rows(dbMap, .id = 'db')
     # combine with old then re-check for consecutive files within each db
-    allFiles <- bind_rows(files(x)$recordings, allFiles)
+    sameFile <- files(x)$recordings$file[files(x)$recordings$file %in% allFiles$file]
+    for(f in seq_along(sameFile)) {
+        whichNew <- allFiles$file == sameFile[f]
+        newNA <- recNA(allFiles[whichNew, ])
+        if(!newNA) {
+            next
+        }
+        whichOrig <- files(x)$recordings$file == sameFile[f]
+        origNA <- recNA(files(x)$recordings[whichOrig, ])
+        if(!origNA) {
+            allFiles[whichNew, ] <- files(x)$recordings[whichOrig, colnames(allFiles)]
+        }
+    }
+    allFiles <- bind_rows(allFiles, files(x)$recordings)
     allFiles <- bind_rows(lapply(split(allFiles, allFiles$db), function(x) {
         checkConsecutive(x)
     }))
@@ -195,15 +208,21 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
         pb <- txtProgressBar(min=0, max=length(wav), style = 3)
         wix <- 1
     }
-    badWav <- character(0)
+    noRead <- character(0)
+    noReadMsg <- character(0)
     wavMap <- bind_rows(lapply(wav, function(x) {
-        header <- try(readWave(x, header = TRUE))
+        header <- try(readWave(x, header = TRUE), silent=TRUE)
         if(inherits(header, 'try-error')) {
-            badWav <<- c(badWav, x)
-            return(NULL)
+            noRead <<- c(noRead, x)
+            noReadMsg <<- c(noReadMsg, attr(header, 'condition')$message)
+            len <- NA
+            sampleLength <- NA
+            sr <- NA
+        } else {
+            sr <- header$sample.rate
+            len <- header$samples / sr
+            sampleLength <- header$samples
         }
-        len <- header$samples / header$sample.rate
-        sampleLength <- header$samples
         format <- c(FOUNDFORMAT, c('pamguard', 'pampal', 'soundtrap', 'sm3', 'icListens1', 'icListens2'))
         for(f in format) {
             switch(
@@ -270,27 +289,36 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
             setTxtProgressBar(pb, value=wix)
             wix <<- wix + 1
         }
-        if(is.na(posix)) {
-            pamWarning('Could not convert the name of the wav file ',
-                    x, ' to time properly.')
-            return(NULL)
-        }
+        # if(is.na(posix)) {
+        #     pamWarning('Could not convert the name of the wav file ',
+        #             x, ' to time properly.')
+        #     return(NULL)
+        # }
         if(FOUNDFORMAT == 'soundtrap') {
             hasLog <- which(gsub('\\.wav$', '', basename(x)) == log$file)
             if(length(hasLog) == 1) {
                 len <- len + log$gap[hasLog]
-                sampleLength <- sampleLength + log$gap[hasLog] * header$sample.rate
+                sampleLength <- sampleLength + log$gap[hasLog] * sr
             }
         }
         rng <- c(0, len) + posix + millis
-        if(any(is.na(rng))) {
-            return(NULL)
-        }
+        # if(any(is.na(rng))) {
+        #     return(NULL)
+        # }
 
-        list(start=rng[1], end=rng[2], file=x, length=len, sampleLength = sampleLength, sr=header$sample.rate)
+        list(start=rng[1], end=rng[2], file=x, length=len, sampleLength = sampleLength, sr=sr)
     }))
-    if(length(badWav) > 0) {
-        pamWarning('Unable to read wav files ', badWav, ' these are possibly corrupt.', n=6)
+    # if(length(badWav) > 0) {
+    #     pamWarning('Unable to read wav files ', badWav, ' these are possibly corrupt.', n=6)
+    # }
+    noConvert <- is.na(wavMap$start)
+    if(any(noConvert)) {
+        pamWarning('Could not convert wav names to time properly for files ',
+                   wavMap$file[noConvert], n=6)
+    }
+    if(length(noRead) > 0) {
+        pamWarning('Could not read wav files ', noRead, n=6)
+        pamWarning('Read failed with error messages ', noReadMsg, n=6)
     }
     wavMap
 }

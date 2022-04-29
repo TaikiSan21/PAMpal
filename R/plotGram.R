@@ -18,8 +18,10 @@
 #'   of \code{wl} or number of samples
 #' @param mode one of \code{'spec'} or \code{'ceps'} to plot either spectrogram
 #'   or cepstrogram
-#' @param detections vector containing any of \code{'whistle'}, \code{'click'},
-#'   and/or \code{'cepstrum'} indicating which detections to overlay on the plot
+#' @param detections vector containing any of \code{'cepstrum'}, \code{'click'},
+#'   and/or \code{'whistle'} indicating which detections to overlay on the plot
+#' @param detCol vector containing colors to use for plotting detections. Order matches
+#'   order of detections (default alphabetical - cepstrum, click, whistle)
 #' @param sr sample rate
 #'
 #' @return nothing, just plots
@@ -31,6 +33,9 @@
 #' data(exStudy)
 #' recs <- system.file('extdata', 'Recordings', package='PAMpal')
 #' exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
+#' exStudy <- updateFiles(exStudy,
+#'                        bin=system.file('extdata', 'Binaries', package='PAMpal'),
+#'                        db = system.file('extdata', 'Example.sqlite3', package='PAMpal'))
 #' # No detections will appear on plot because included recordings are heavily decimated
 #' plotGram(exStudy)
 #'
@@ -42,12 +47,12 @@
 #' @export
 #'
 plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1, wl=512, hop=.25, mode=c('spec', 'ceps'),
-                     detections = c('whistle', 'click', 'cepstrum'), sr=NULL) {
+                     detections = c('cepstrum', 'click', 'whistle'), detCol=c('red', 'blue', 'blue'), sr=NULL) {
     # Needs to be one event at a time
     x <- x[evNum]
-    fileExists <- checkRecordings(x)
-    thisRec <- files(x)$recordings
-    thisRec <- thisRec[thisRec$db == files(x[[1]])$db, ]
+    thisRec <- checkRecordings(x)
+    # thisRec <- files(x)$recordings
+    thisRec <- thisRec[basename(thisRec$db) == basename(files(x[[1]])$db), ]
     if(hop <=1) {
         hop <- hop * wl
     }
@@ -55,8 +60,6 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1, wl=512, hop=.
         list(UTC = d$UTC, UID = d$UID)
     }))
 
-    fileCheck <- checkIn(min(dets$UTC), thisRec)
-    if(is.na(fileCheck)) return(x)
     if(is.null(start)) {
         start <- min(dets$UTC)
     }
@@ -69,22 +72,34 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1, wl=512, hop=.
     if(is.numeric(end)) {
         end <- min(dets$UTC) + end
     }
-    if(inherits(start, 'POSIXct')) {
-        start <- as.numeric(difftime(start, thisRec$start[fileCheck], units='secs'))
-    }
-    if(inherits(end, 'POSIXct')) {
-        end <- as.numeric(difftime(end, thisRec$start[fileCheck], units='secs'))
-    }
-    wav <- readWave(thisRec$file[fileCheck], from=start, to=end, units='seconds', toWaveMC = TRUE)
+    # startIn <- checkIn(start, thisRec)
+    # if(is.na(startIn)) {
+    #     stop('Could not find valid matching recording files for these detections')
+    # }
+    # if(inherits(start, 'POSIXct')) {
+    #     start <- as.numeric(difftime(start, thisRec$start[fileCheck], units='secs'))
+    # }
+    # if(inherits(end, 'POSIXct')) {
+    #     end <- as.numeric(difftime(end, thisRec$start[fileCheck], units='secs'))
+    # }
+    # wav <- readWave(thisRec$file[fileCheck], from=start, to=end, units='seconds', toWaveMC = TRUE)
+    startBuff <- as.numeric(difftime(min(dets$UTC), start, units='secs'))
+    endBuff <- as.numeric(difftime(end, max(dets$UTC), units='secs'))
+    wav <- getClipData(x, buffer=c(startBuff, endBuff), mode='event', channel=channel, verbose=FALSE, progress=FALSE)[[1]]
     if(is.null(sr)) {
         sr <- wav@samp.rate
+    }
+    if(sr > wav@samp.rate) {
+        stop('Chosen sampling rate is higher than the wav files sample rate, cannot upsample.')
     }
     if(sr != wav@samp.rate) {
         wav <- downsample(wav, sr)
     }
     mode <- match.arg(mode)
-    timeStart <- thisRec$start[fileCheck] + start
-    timeEnd <- timeStart - start + end
+    # timeStart <- thisRec$start[fileCheck] + start
+    # timeEnd <- timeStart - start + end
+    timeStart <- start
+    timeEnd <- timeStart + length(wav) / sr
 
     if(channel > ncol(wav@.Data)) {
         stop('Specified channel is not present in wav file.', call.=FALSE)
@@ -113,29 +128,32 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1, wl=512, hop=.
     xName <- paste0('Seconds after ', timeStart)
     image(plotMat, col = gray.colors(64, start=1, end=0), xaxt='n', yaxt='n',
           xlab = xName, ylab=yName, useRaster=TRUE)
-    tPretty <- pretty((start:end) - start, n=5)
+    timeNum <- c(as.numeric(timeStart), as.numeric(timeEnd)) - as.numeric(timeStart)
+    tPretty <- pretty(timeNum, n=5)
     # tLabs <- files(x)$recordings$start[fileCheck] + tPretty
     tLabs <- tPretty
-    tLocs <- (tPretty)/(end-start)
+    tLocs <- (tPretty)/(diff(timeNum))
     axis(1, at=tLocs, labels=tLabs)
 
     yPretty <- pretty(yAxis, n=5)
     axis(2, at=yPretty/max(yAxis), labels = yPretty)
     title(main=title)
-
+    if(length(detCol) < length(detections)) {
+        detCol <- rep(detCol, length.out=length(detections))
+    }
     if('cepstrum' %in% detections) {
-        plotCeps(x, timeStart, timeEnd)
+        plotCeps(x, timeStart, timeEnd, col=detCol[detections == 'cepstrum'])
     }
     if('whistle' %in% detections) {
-        plotWhistle(x, timeStart, timeEnd)
+        plotWhistle(x, timeStart, timeEnd, plotSr = sr, col=detCol[detections == 'whistle'])
     }
     if('click' %in% detections) {
-        plotClick(x, timeStart, timeEnd, yMin=0, yMax = sr / 2 / 1e3)
+        plotClick(x, timeStart, timeEnd, yMin=0, yMax = sr / 2 / 1e3, col=detCol[detections == 'click'])
     }
     invisible(data)
 }
 
-plotCeps <- function(x, tMin, tMax) {
+plotCeps <- function(x, tMin, tMax, col='blue') {
     UIDs <- getCepstrumData(x)$UID
 
     if(is.null(UIDs) ||
@@ -148,11 +166,11 @@ plotCeps <- function(x, tMin, tMax) {
     settings$wl <- settings$wl * 2
     for(i in seq_along(binData)) {
         plotOneCeps(binData[[i]], hop=settings$hop, sr=settings$sr,
-                    yMin=0, yMax=settings$wl/2, tMin=tMin, tMax=tMax)
+                    yMin=0, yMax=settings$wl/2, tMin=tMin, tMax=tMax, col=col)
     }
 }
 
-plotWhistle <- function(x, tMin, tMax) {
+plotWhistle <- function(x, tMin, tMax, plotSr, col='blue') {
     UIDs <- getWhistleData(x)$UID
     if(is.null(UIDs) ||
        length(UIDs) == 0) {
@@ -161,21 +179,22 @@ plotWhistle <- function(x, tMin, tMax) {
     binData <- getBinaryData(x, UIDs, type='whistle')
     settings <- getPamFft(binData)
     for(i in seq_along(binData)) {
+        binData[[i]]$contour <- binData[[i]]$contour * settings$sr / plotSr
         plotOneCeps(binData[[i]], hop=settings$hop, sr=settings$sr,
-                    yMin=0, yMax=settings$wl/2, tMin=tMin, tMax=tMax)
+                    yMin=0, yMax=settings$wl/2, tMin=tMin, tMax=tMax, col=col)
     }
 }
 
-plotOneCeps <- function(x, hop, sr, yMin=0, yMax, tMin, tMax) {
+plotOneCeps <- function(x, hop, sr, yMin=0, yMax, tMin, tMax, col='blue') {
     xVals <- x$date + seq(from=0, by=hop/sr, length.out=x$nSlices)
     yVals <- x$contour
 
     xPlot <- scaleToOne(xVals, tMin, tMax)
     yPlot <- scaleToOne(yVals, yMin, yMax)
-    lines(x=xPlot, y=yPlot, col='blue', lwd=2)
+    lines(x=xPlot, y=yPlot, col=col, lwd=2)
 }
 
-plotClick <- function(x, tMin, tMax, yMin, yMax) {
+plotClick <- function(x, tMin, tMax, yMin, yMax, col='blue') {
     clickData <- getClickData(x)[, c('UTC', 'peak', 'peakTime')]
     if(is.null(clickData) ||
        nrow(clickData) == 0) {
@@ -185,7 +204,7 @@ plotClick <- function(x, tMin, tMax, yMin, yMax) {
     yVals <- clickData$peak
     xPlot <- scaleToOne(xVals, tMin, tMax)
     yPlot <- scaleToOne(yVals, yMin, yMax)
-    points(x=xPlot, y=yPlot, pch=1, col='blue')
+    points(x=xPlot, y=yPlot, pch=1, col=col)
 }
 
 scaleToOne <- function(vals, min, max) {

@@ -181,15 +181,27 @@ printN <- function(x, n=6, collapse=', ') {
 }
 
 checkRecordings <- function(x) {
-    if(is.null(files(x)$recordings)) {
+    recs <- files(x)$recordings
+    if(is.null(recs)) {
         stop('No recordings found, use function "addRecordings" first.', call.=FALSE)
     }
-    exists <- file.exists(files(x)$recordings$file)
+    exists <- file.exists(recs$file)
     if(all(!exists)) {
         stop('Recording files could not be located on disk, try ',
              '"updateFiles" first.', call.=FALSE)
     }
-    exists
+    # check if any important cols have NAs from partially failed addRecordings
+    isNA <- recNA(recs)
+    if(any(isNA)) {
+        pamWarning('Recording files ', recs$file[isNA], ' do not have all necessary',
+                   ' information and cannot be used, add these again with "addRecordings".')
+    }
+    recs[!isNA, ]
+}
+
+# check if important cols have NAs from partially failed addRecordings
+recNA <- function(rec) {
+    is.na(rec$start) | is.na(rec$end) | is.na(rec$sr)
 }
 
 getPamFft <- function(data) {
@@ -356,4 +368,87 @@ doOneSr <- function(x, type=c('click', 'whistle', 'cepstrum'), name=NULL) {
         return(possSr)
     }
     NA
+}
+
+# returns named vector for AcEv, or named list of named vectors for AcSt
+getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
+    mode <- match.arg(mode)
+    # if(is.AcousticStudy(x)) {
+    #     return(lapply(events(x), function(e) {
+    #         getTimeRange(e, mode)
+    #     }))
+    # }
+    allDets <- lapply(events(x), function(e) {
+        dets <- distinct(
+            bind_rows(lapply(detectors(e), function(d) {
+                d[, c('UID', 'UTC'), drop = FALSE]
+            }))
+        )
+        if(mode == 'event') {
+            if(sample) {
+                minUID <- dets$UID[which.min(dets$UTC)[1]]
+                maxUID <- dets$UID[which.max(dets$UTC)[1]]
+                minUTC <- min(dets$UTC)
+                maxUTC <- max(dets$UTC)
+                recMap <- files(x)$recordings
+                minIx <- checkIn(minUTC, recMap)
+                if(is.na(minIx) ||
+                   (length(minIx) != 1) ||
+                   is.na(recMap$startSample[minIx])) {
+                    evResult <- list(start = minUTC)
+                } else {
+                    binMin <- getBinaryData(x, minUID)[[1]]
+                    binSr <- ifelse(is.na(binMin$sr), recMap$sr[minIx], binMin$sr)
+                    evResult <- list(start = recMap$start[minIx] +
+                                         binMin$startSample/binSr - recMap$startSample[minIx]/recMap$sr[minIx])
+                }
+                maxIx <- checkIn(maxUTC, recMap)
+                if(is.na(maxIx) ||
+                   (length(maxIx) != 1) ||
+                   is.na(recMap$startSample[maxIx])) {
+                    evResult$end <- maxUTC
+                } else {
+                    binMax <- getBinaryData(x, maxUID)[[1]]
+                    binSr <- ifelse(is.na(binMax$sr), recMap$sr[maxIx], binMax$sr)
+                    evResult$end <- recMap$start[maxIx] +
+                        binMax$startSample / binSr - recMap$startSample[maxIx] / recMap$sr[maxIx]
+                }
+                return(evResult)
+            }
+            return(list(start=min(dets$UTC), end=max(dets$UTC)))
+        }
+        if(mode == 'detection') {
+            if(sample) {
+                recMap <- files(x)$recordings
+                result <- lapply(getBinaryData(x, dets$UID), function(b) {
+                    thisDate <- b$date
+                    wavIx <- checkIn(thisDate, recMap)
+                    if(is.na(wavIx) ||
+                       (length(wavIx) != 1) ||
+                       is.na(recMap$startSample[wavIx])) {
+                        return(list(start=thisDate, end=thisDate))
+                    }
+                    binSr <- ifelse(is.na(b$sr), recMap$sr[wavIx], b$sr)
+                    out <- list(start=recMap$start[wavIx] +
+                                    b$startSample / binSr - recMap$startSample[wavIx] / recMap$sr[wavIx])
+                    out$end <- out$start
+                    if('sampleDuration' %in% names(b)) {
+                        out$end <- out$end + b$sampleDuration / recMap$sr[wavIx]
+                    }
+                    out
+                })
+
+            } else {
+                result <- lapply(dets$UTC, function(d) {
+                    list(start = d, end = d)
+                })
+                names(result) <- dets$UID
+            }
+            return(result)
+        }
+    })
+    if(mode == 'detection') {
+        allDets <- unlist(allDets, recursive=FALSE)
+    }
+    allDets
 }

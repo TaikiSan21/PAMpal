@@ -176,25 +176,64 @@ wavToGram <- function(wav, sr=NULL, wl=1024, hop=.5, mode=c('spec', 'ceps'), axe
 }
 
 # clip of fixed length, zeropads if needed and deals with edge case
-clipAroundPeak <- function(wave, length, noise=FALSE) {
+clipAroundPeak <- function(wave, length, noise=FALSE, ixReturn=FALSE) {
     if(length(wave) < length) {
+        if(ixReturn) {
+            return(list(wav=c(wave, rep(0, length - length(wave))),
+                        ix=1:length))
+        }
         return(c(wave, rep(0, length - length(wave))))
     }
     peak <- which.max(abs(wave))
     low <- peak - floor(length/2)
-    high <- ceiling(peak + length/2) -1
     if(low < 1) {
-        return(wave[1:length])
+        low <- 1
     }
+    high <- low + length - 1
     if(high > length(wave)) {
-        return(wave[(length(wave)-length+1):length(wave)])
+        high <- length(wave)
+        low <- high - length + 1
     }
+    ix <- low:high
     if(noise) {
-        if(low - length > 1) {
-            return(wave[(low-length):(low-1)])
+        before <- if(low == 1) {
+            numeric(0)
         } else {
-            return(wave[1:length])
+            # (low-1):1
+            1:(low-1)
         }
+        after <- if(high == length(wave)) {
+            numeric(0)
+        } else {
+            length(wave):(high+1)
+        }
+        during <- low:high
+        ix <- c(before, after, during)[1:length]
+        ix <- sort(ix)
+        # return(wave[c(before, after, during)[1:length]])
+        # if(low - length > 1) {
+        #     return(wave[(low-length):(low-1)])
+        # } else {
+        #     return(wave[1:length])
+        # }
     }
-    wave[low:high]
+    # if(low < 1) {
+    #     return(wave[1:length])
+    # }
+    # if(high > length(wave)) {
+    #     return(wave[(length(wave)-length+1):length(wave)])
+    # }
+    if(ixReturn) {
+        return(list(wav=wave[ix], ix=ix))
+    }
+    wave[ix]
+}
+
+checkIn <- function(time, map) {
+    time <- as.numeric(time)
+    possible <- (time >= map$numStart) & (time <= map$numEnd)
+    if(!any(possible)) {
+        return(NA)
+    }
+    which(possible)
 }
