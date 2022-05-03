@@ -379,7 +379,8 @@ checkConsecutive <- function(wavMap) {
             # # if(wavMap$end[i-1] != wavMap$start[i]) {
             #     fg <- fg + 1
             # }
-            if(wavMap$timeDiff[i] > .02 ||
+            if(is.na(wavMap$timeDiff[i]) ||
+               wavMap$timeDiff[i] > .02 ||
                wavMap$timeDiff[i] < -.05) {
                 fg <- fg + 1
             }

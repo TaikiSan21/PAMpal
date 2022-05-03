@@ -1,3 +1,7 @@
+## PAMpal 0.16.2
+
+* Missed a bug in new `addRecordings`
+
 ## PAMpal 0.16.1
 
 * Changing `addRecordings` to return NA values when reads are not possible instead of omitting
