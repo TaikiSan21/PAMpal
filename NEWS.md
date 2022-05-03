@@ -2,6 +2,8 @@
 
 * Missed a bug in new `addRecordings`
 
+* `addBinaries` now works with vector of folders
+
 ## PAMpal 0.16.1
 
 * Changing `addRecordings` to return NA values when reads are not possible instead of omitting

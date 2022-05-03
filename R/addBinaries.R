@@ -44,12 +44,17 @@ addBinaries <- function(pps, folder=NULL, verbose=TRUE) {
         folder <- tk_choose.dir(caption = 'Choose Binary Folder:',default = getwd())
     }
     # Case when cancelled, dont error
-    if(is.null(folder) || is.na(folder)) {
+    if(all(is.null(folder)) || all(is.na(folder))) {
         message('No folder chosen')
         return(pps)
     }
-    if(!dir.exists(folder)) {
-        warning(paste0('Binary folder ', folder, ' does not exist'))
+    foldExist <- sapply(folder, dir.exists)
+    if(!all(foldExist)) {
+        warning(paste0('Binary folder ', printN(folder[!foldExist]), ' does not exist'))
+        folder <- folder[foldExist]
+    }
+    if(length(folder) == 0) {
+        message('No folders to add binaries from.')
         return(pps)
     }
     folder <- normalizePath(folder)
@@ -61,7 +66,10 @@ addBinaries <- function(pps, folder=NULL, verbose=TRUE) {
         }
         # only have functions for Clicks & Whistles right now, filter out so we dont get garbage
         # warning overflow later
-        binList <- list.files(folder, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans|GPL).*pgdf$')
+        for(f in folder) {
+            binList <- c(binList,
+                         list.files(f, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans|GPL).*pgdf$'))
+        }
     }
     binList <- binList[!grepl('GPL_State', binList)]
     if(verbose) {
