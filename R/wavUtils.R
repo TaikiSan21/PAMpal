@@ -237,3 +237,27 @@ checkIn <- function(time, map) {
     }
     which(possible)
 }
+
+checkRecordings <- function(x) {
+    recs <- files(x)$recordings
+    if(is.null(recs)) {
+        stop('No recordings found, use function "addRecordings" first.', call.=FALSE)
+    }
+    exists <- file.exists(recs$file)
+    if(all(!exists)) {
+        stop('Recording files could not be located on disk, try ',
+             '"updateFiles" first.', call.=FALSE)
+    }
+    # check if any important cols have NAs from partially failed addRecordings
+    isNA <- recNA(recs)
+    if(any(isNA)) {
+        pamWarning('Recording files ', recs$file[isNA], ' do not have all necessary',
+                   ' information and cannot be used, add these again with "addRecordings".')
+    }
+    recs[!isNA, ]
+}
+
+# check if important cols have NAs from partially failed addRecordings
+recNA <- function(rec) {
+    is.na(rec$start) | is.na(rec$end) | is.na(rec$sr)
+}

@@ -414,7 +414,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     }
     binData <- binData[sapply(binData, function(x) !is.null(x))]
     if(length(binData) == 0) {
-        stop(paste0('None of the binary files contained data for any of the events.',
+        warning(paste0('None of the binary files contained data for any of the events.',
                     ' Please check that times are in UTC and the correct binary folder was supplied.'), call.=FALSE)
     }
     # for clicks we have split the broad detector into separate ones by classification
@@ -436,7 +436,14 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
             data
         })
         # Check possible DBs by start/end time of events in sa list earlier
-        thisData <- thisData[sapply(thisData, function(x) !is.null(x))]
+        hasDat <- sapply(thisData, function(x) !is.null(x))
+        # looks unnecessary but subset breaks if thisData is already list()
+        if(!any(hasDat)) {
+            thisData <- list()
+        } else {
+            thisData <- thisData[hasDat]
+        }
+        # thisData <- thisData[sapply(thisData, function(x) !is.null(x))]
         binariesUsed <- lapply(thisData, function(x) unique(x$BinaryFile)) %>%
             unlist(recursive = FALSE) %>% unique()
         # binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE), USE.NAMES = FALSE))
@@ -624,6 +631,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                     x$BinaryFile <- basename(x$BinaryFile)
                     thisType <- unique(x$callType)
                     x <- dropCols(x, colsToDrop)
+                    x <- distinct(x)
                     attr(x, 'calltype') <- thisType
                     x
                 })

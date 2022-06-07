@@ -180,30 +180,6 @@ printN <- function(x, n=6, collapse=', ') {
     paste0(paste(x, collapse=collapse))
 }
 
-checkRecordings <- function(x) {
-    recs <- files(x)$recordings
-    if(is.null(recs)) {
-        stop('No recordings found, use function "addRecordings" first.', call.=FALSE)
-    }
-    exists <- file.exists(recs$file)
-    if(all(!exists)) {
-        stop('Recording files could not be located on disk, try ',
-             '"updateFiles" first.', call.=FALSE)
-    }
-    # check if any important cols have NAs from partially failed addRecordings
-    isNA <- recNA(recs)
-    if(any(isNA)) {
-        pamWarning('Recording files ', recs$file[isNA], ' do not have all necessary',
-                   ' information and cannot be used, add these again with "addRecordings".')
-    }
-    recs[!isNA, ]
-}
-
-# check if important cols have NAs from partially failed addRecordings
-recNA <- function(rec) {
-    is.na(rec$start) | is.na(rec$end) | is.na(rec$sr)
-}
-
 getPamFft <- function(data) {
     if(inherits(data, 'PamBinary')) {
         # data$data <- contourToFreq(data$data)
@@ -379,8 +355,15 @@ getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
     #     }))
     # }
     allDets <- lapply(events(x), function(e) {
+        if(length(detectors(e)) == 0) {
+            return(NULL)
+        }
         dets <- distinct(
             bind_rows(lapply(detectors(e), function(d) {
+                if(is.null(d) ||
+                   nrow(d) == 0) {
+                    return(NULL)
+                }
                 d[, c('UID', 'UTC'), drop = FALSE]
             }))
         )

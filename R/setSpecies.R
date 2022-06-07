@@ -138,7 +138,7 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
            },
            'am' = {
                specDf <- bind_rows(lapply(acev, function(oneAe) {
-                   list(event = id(oneAe), 
+                   list(event = id(oneAe),
                                   eventType = str_trim(getClickData(oneAe)$eventLabel[1]),
                                   comment = ancillary(oneAe)$eventComment)
                    # dbs <- files(oneAe)$db
@@ -174,7 +174,7 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                                                                              ' ', simplify=TRUE)[, 1]
                specDf$species <- tolower(specDf$species)
                specDf$species[specDf$species %in% c('mmme', 'mm')] <- 'unid'
-               
+
                # specToAssign <- unique(specDf[specDf$event %in% sapply(acev, id), 'species'])
                specToAssign <- unique(specDf$species)
                if(length(specToAssign) > 0) {
@@ -195,7 +195,15 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                unchanged <- vector('character', length=0)
                for(i in seq_along(acev)) {
                    oldSpec <- species(acev[[i]])[[type]]
-                   newSpec <- value[value$old == oldSpec, c('new')]
+                   if(is.na(oldSpec)) {
+                       if(any(is.na(value$old))) {
+                           newSpec <- value$new[is.na(value$old)[1]]
+                       } else {
+                           newSpec <- NA
+                       }
+                   } else {
+                       newSpec <- value[value$old == oldSpec, c('new')]
+                   }
                    if(length(newSpec) == 0) {
                        unchanged <- c(unchanged, oldSpec)
                        newSpec <- oldSpec

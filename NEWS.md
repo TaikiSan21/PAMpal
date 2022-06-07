@@ -1,3 +1,7 @@
+## PAMpal 0.16.3
+
+* Minor adjustment to `mode='db'` to not repeat UIDs within a single event
+
 ## PAMpal 0.16.2
 
 * Missed a bug in new `addRecordings`
