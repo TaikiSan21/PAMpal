@@ -10,6 +10,10 @@
 #' @param mode either \code{'event'} or \code{'detection'} specifying whether to create
 #'   wav clips of entire events or individual detections
 #' @param channel channel(s) of clips to write
+#' @param filter filter to apply to wav clips before writing, values in kHz. A value of \code{0}
+#'   applies no filter. A single value applies a highpass filter at that value. A vector of two
+#'   values applies a lowpass filter if the first number is \code{0}, or a bandpass filter if
+#'   both are non-zero.
 #' @param useSample logical flag to use startSample information in binaries instead of UTC
 #'   time for start of detections. This can be slightly more accurate (~1ms) but will take
 #'   longer
@@ -41,7 +45,7 @@
 #' @export
 #'
 writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', 'detection'),
-                            channel = 1, useSample=FALSE, progress=TRUE, verbose=TRUE) {
+                            channel = 1, filter=0, useSample=FALSE, progress=TRUE, verbose=TRUE) {
     if(!dir.exists(outDir)) dir.create(outDir)
     if(length(channel) > 2) {  #### WAV CLIP SPECIFIC
         message('R can only write wav files with 2 or less channels, channels will be split',
@@ -54,21 +58,37 @@ writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', '
             } else {
                 thisChan <- channel[ix]
             }
-            allFiles <- c(allFiles, writeEventClips(x, buffer=buffer, outDir=outDir, mode=mode,
+            allFiles <- c(allFiles, writeEventClips(x, buffer=buffer, outDir=outDir, mode=mode, filter=filter,
                                                     channel = thisChan, useSample=useSample,progress=progress, verbose=verbose))
         }
         return(allFiles)
     }
     getClipData(x, buffer=buffer, mode=mode, channel=channel, useSample=useSample,
-                progress=progress, verbose=verbose, FUN=writeOneClip, outDir=outDir)
+                progress=progress, verbose=verbose, FUN=writeOneClip, outDir=outDir, filter=filter)
 }
 
-writeOneClip <- function(wav, name, time, channel, mode, outDir='.') {
+writeOneClip <- function(wav, name, time, channel, mode, outDir='.', filter) {
     fileName <- paste0(oneUpper(mode), '_', name, 'CH', paste0(channel, collapse=''))
     fileName <- paste0(fileName, '_',psxToChar(time[1]))
     fileName <- paste0(gsub('\\.wav$', '', fileName), '.wav')
     # timeRange[1] is actual start time in posix
     fileName <- file.path(outDir, fileName)
+    if(length(filter) == 1) {
+        filterFrom <- filter * 1e3
+        filterTo <- NULL
+    } else {
+        filterFrom <- filter[1] *1e3
+        filterTo <- filter[2] * 1e3
+    }
+    if(filterFrom == 0) {
+        filterFrom <- NULL
+    }
+    if(!is.null(filterFrom) ||
+       !is.null(filterTo)) {
+        for(i in 1:ncol(wav@.Data)) {
+            wav@.Data[, i] <- round(seewave::bwfilter(wav@.Data[, i], f=wav@samp.rate, from=filterFrom, to=filterTo)[, 1], 0)
+        }
+    }
     writeWave(wav, fileName, extensible = FALSE)
     fileName
 }

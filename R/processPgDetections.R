@@ -576,6 +576,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                         noMatch <- which(!(x$UID %in% binData$UID))
                         x$UID[noMatch] <- x$newUID[noMatch]
                         x$BinaryFile <- NULL
+                        x$BinaryUsed <- thisBin$fileInfo$fileName
                         binData %>%
                             # select(-.data$BinaryFile) %>%
                             inner_join(x, by='UID') %>%
@@ -607,13 +608,13 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             # in the list, but is this reliable? Probably not
 
             colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentID',
-                            'sr', 'callType', 'newUID', tarMoCols)
+                            'sr', 'callType', 'newUID', tarMoCols, 'BinaryUsed')
 
             acousticEvents <- lapply(dbData, function(ev) {
                 ev <- ev[sapply(ev, function(x) !is.null(x))]
-                binariesUsed <- sapply(ev, function(x) unique(x$BinaryFile)) %>%
+                binariesUsed <- sapply(ev, function(x) unique(x$BinaryUsed)) %>%
                     unlist(recursive = FALSE) %>% unique()
-                binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE, fixed=TRUE), USE.NAMES = FALSE))
+                # binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE, fixed=TRUE), USE.NAMES = FALSE))
 
                 evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentID))
                 if(all(tarMoCols %in% colnames(ev[[1]]))) {
@@ -851,6 +852,9 @@ getMatchingBinaryData <- function(dbData, binList, dbName, idCol = 'UID') {
         if(bin == 1) {
             result <- thisBin
         } else {
+            if(length(thisBin$data) > length(result$data)) {
+                result$fileInfo <- thisBin$fileInfo
+            }
             result$data <- c(result$data, thisBin$data)
         }
         if(all(dbData$matched)) {
@@ -1047,7 +1051,7 @@ wavToGroup <- function(db) {
     }
 
     if(is.na(wavCol)) {
-        pamWarning('Wav file names not saved in database, events will be labelled')
+        pamWarning('Wav file names not saved in database, events will be labelled numerically')
         saGrp <- select(sa, c('UTC', 'Status', 'SystemType'))
         saGrp <- filter(saGrp, .data$Status != 'Continue')
         saGrp <- distinct(arrange(saGrp, UTC))

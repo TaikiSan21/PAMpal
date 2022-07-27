@@ -26,10 +26,10 @@
 #'
 #'   If \code{x} is an \linkS4class{AcousticEvent} or \linkS4class{AcousticStudy},
 #'   then \code{depth} can be omitted and will be read from the databases contained
-#'   in the \code{files} slot of \code{x}. 
+#'   in the \code{files} slot of \code{x}.
 #'
 #' @return the same data as \code{x}, with depth data added. All AcousticEvents will
-#'   have depth data added to all detector dataframes
+#'   have depth data added to all detector dataframes as column \code{hpDepth}
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
@@ -102,11 +102,12 @@ depthToDf <- function(x, depth, thresh) {
     pamWarning('Data needs column UTC.')
     return(x)
   }
+  depth <- rename(depth, 'hpDepth' = depth)
   if(!('POSIXct' %in% class(x$UTC))) x$UTC <- pgDateToPosix(x$UTC)
   # dummies for calculating time difference for threshold check later
-  
+
   # setDT(x)
-  x <- dropCols(x, 'depth')
+  x <- dropCols(x, 'hpDepth')
   x <- as.data.table(x)
   x$dataTime <- x$UTC
   # depth <- checkGpsKey(depth)
@@ -114,15 +115,15 @@ depthToDf <- function(x, depth, thresh) {
     setDT(depth)
   }
   depth$depthTime <- depth$UTC
- 
+
   setkeyv(x, 'UTC')
   setkeyv(depth, 'UTC') # removing channel key from gps if its there i guess
-  
+
   result <- depth[x, roll='nearest']
-  result[abs(dataTime - depthTime) > thresh, c('depth') := NA]
+  result[abs(dataTime - depthTime) > thresh, c('hpDepth') := NA]
   result$UTC <- result$dataTime
   result[, c('depthTime', 'dataTime') := NULL]
-  if(any(is.na(result$depth))) {
+  if(any(is.na(result$hpDepth))) {
     pamWarning('Some depth matches exceeded time threshold, setting',
                'value to NA.')
   }

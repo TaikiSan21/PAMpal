@@ -28,7 +28,7 @@ whereUID <- function(study, UID, quiet=FALSE) {
     whereNA <- is.na(where)
     if(!quiet && any(whereNA)) {
         pamWarning('UID(s) ', paste0(UID[whereNA], collapse=', '),
-                ' not found in any events.')
+                   ' not found in any events.')
     }
     where
 }
@@ -228,7 +228,7 @@ ppVars <- function() {
                                      'Blainvilles', 'Blainvilles',
                                      'MmMe', 'MmMe', 'MmMe')),
          dglCols = c('Id', 'UID', 'UTC', 'UTCMilliseconds', 'PCLocalTime', 'PCTime',
-                      'ChannelBitmap', 'SequenceBitmap', 'EndTime', 'DataCount')
+                     'ChannelBitmap', 'SequenceBitmap', 'EndTime', 'DataCount')
     )
 }
 
@@ -249,7 +249,7 @@ findWavCol <- function(sa) {
 }
 
 
-getSr <- function(x, type=c('click', 'whistle', 'cepstrum'), name=NULL, UTC=NULL) {
+getSr <- function(x, type=c('click', 'whistle', 'cepstrum'), name=NULL, data=NULL) {
     # need to vectorize better this will do matchSR over and over again FML
     # if(length(name) > 1) {
     #     return(sapply(name, function(n) {
@@ -261,22 +261,39 @@ getSr <- function(x, type=c('click', 'whistle', 'cepstrum'), name=NULL, UTC=NULL
         return(NULL)
     }
     # type <- match.arg(type)
-    if(length(name) != length(UTC)) {
+    if(length(name) != length(data$UTC)) {
         if(length(name) == 1 &&
-           length(UTC) > 1) {
-            name <- rep(name, length(UTC))
+           length(data$UTC) > 1) {
+            name <- rep(name, length(data$UTC))
         }
-        if(length(UTC) == 1 &&
-           length(name) > 1) {
-            UTC <- rep(UTC, length(name))
-        }
+        # if(length(data$UTC) == 1 &&
+        #    length(name) > 1) {
+        #     UTC <- rep(UTC, length(name))
+        # }
     }
     srOut <- rep(NA, max(1, length(name)))
     if(is.AcousticEvent(x)) {
-        if(length(settings(x)$sr) != 1) {
-            return(NULL)
+        if(length(settings(x)$sr) == 1) {
+            return(rep(settings(x)$sr, length(srOut)))
         }
-        return(rep(settings(x)$sr, length(srOut)))
+        if(!is.null(data)) {
+            # srDf <- bind_rows(lapply(files(x)$db, function(d) {
+            #     utcDf <- data.frame(ix=1:length(UTC), UTC=UTC)
+            #     utcDf <- matchSR(utcDf, d, safe=TRUE, fixNA=FALSE)
+            #     arrange(utcDf, ix)[c('UTC', 'sampleRate')]
+            # }))
+            data$ix <- 1:nrow(data)
+            srDf <- bind_rows(lapply(split(data, data$db), function(d) {
+                utcDf <- matchSR(d, d$db[1], safe=TRUE, fixNA=FALSE)
+                utcDf
+            }))
+            srDf <- arrange(srDf, .data$ix)
+            srOut <- srDf$sampleRate
+            if(!all(is.na(srOut))) {
+                return(srOut)
+            }
+        }
+        return(NULL)
     }
     for(i in seq_along(srOut)) {
         srOut[i] <- doOneSr(x, type, name[i])
@@ -290,10 +307,19 @@ getSr <- function(x, type=c('click', 'whistle', 'cepstrum'), name=NULL, UTC=NULL
     # PORBABLY NEED TO RETURN NA INSTEAD OF NULL, NEED TO CHECK OTHER
     # FUNS THAT USE GETSR TO SEE WHAT THEY CHECK ON FAILURE
     # if we are trying to match by times, do it from the database
-    if(!is.null(UTC)) {
-        srDf <- bind_rows(lapply(files(x)$db, function(d) {
-            matchSR(UTC[srNa], d, safe=TRUE, fixNA=FALSE)
+    if(!is.null(data)) {
+        # srDf <- bind_rows(lapply(files(x)$db, function(d) {
+        #     utcDf <- data.frame(ix=1:length(UTC[srNa]), UTC=UTC[srNa])
+        #     utcDf <- matchSR(utcDf, d, safe=TRUE, fixNA=FALSE)
+        #     arrange(utcDf, ix)[c('UTC', 'sampleRate')]
+        #     # matchSR(UTC[srNa], d, safe=TRUE, fixNA=FALSE)
+        # }))
+        data$ix <- 1:nrow(data)
+        srDf <- bind_rows(lapply(split(data, data$db), function(d) {
+            utcDf <- matchSR(d[srNa, ], d$db[srNa][1], safe=TRUE, fixNA=FALSE)
+            utcDf
         }))
+        srDf <- arrange(srDf, .data$ix)
         srOut[srNa] <- srDf$sampleRate
     }
     # giv eup
@@ -364,7 +390,17 @@ getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
                    nrow(d) == 0) {
                     return(NULL)
                 }
-                d[, c('UID', 'UTC'), drop = FALSE]
+                out <- d[, c('UID', 'UTC', 'duration'), drop = FALSE]
+                if('duration' %in% colnames(d)) {
+                    switch(attr(d, 'calltype'),
+                           'whistle' = out$duration <- d$duration,
+                           'click' = out$duration <- d$duration / 1e6,
+                           'cepstrum' = out$duration <- d$duration
+                    )
+                } else {
+                    out$duration <- 0
+                }
+                out
             }))
         )
         if(mode == 'event') {
@@ -409,7 +445,7 @@ getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
                     if(is.na(wavIx) ||
                        (length(wavIx) != 1) ||
                        is.na(recMap$startSample[wavIx])) {
-                        return(list(start=thisDate, end=thisDate))
+                        return(list(start=thisDate, end=thisDate + dets$duration[dets$UID == b$UID][1]))
                     }
                     binSr <- ifelse(is.na(b$sr), recMap$sr[wavIx], b$sr)
                     out <- list(start=recMap$start[wavIx] +
@@ -422,8 +458,11 @@ getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
                 })
 
             } else {
-                result <- lapply(dets$UTC, function(d) {
-                    list(start = d, end = d)
+                # result <- lapply(dets$UTC, function(d) {
+                #     list(start = d, end = d)
+                # })
+                result <- lapply(1:nrow(dets), function(d) {
+                    list(start = dets$UTC[d], end = dets$UTC[d] + dets$duration[d])
                 })
                 names(result) <- dets$UID
             }

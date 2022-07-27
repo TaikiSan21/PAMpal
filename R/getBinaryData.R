@@ -7,7 +7,7 @@
 #'   objects, or a single \linkS4class{AcousticEvent} object
 #' @param UID the UID(s) of the individual detections to fetch the binary
 #'   data for
-#' @param type detection type 
+#' @param type detection type
 #' @param quiet logical flag to quiet some warnings, used internally and should generally
 #'   not be changed from default \code{FALSE}
 #' @param \dots additional arguments to pass to
@@ -64,12 +64,12 @@ getBinaryData <- function(x, UID, type=c('click', 'whistle', 'cepstrum', 'gpl'),
         return(NULL)
     }
     # fr
-    
+
     allBinaries <- unique(files(x)$binaries)
     # find matching UID from dets
     bins <- bind_rows(
         lapply(getDetectorData(x), function(df) {
-            df[df[['UID']] %in% UID, c('UTC', 'UID', 'BinaryFile', 'detectorName')]
+            df[df[['UID']] %in% UID, c('UTC', 'UID', 'BinaryFile', 'detectorName', 'db')]
         }))
     # bins$detectorName <- gsub('_[0-9]{0,3}$', '', bins$detectorName)
     typeMatch <- vector('character', length=length(type))
@@ -94,8 +94,8 @@ getBinaryData <- function(x, UID, type=c('click', 'whistle', 'cepstrum', 'gpl'),
     # just doing this bec i goofed earlier and some people had data where this
     # never happened in processing. BinaryFile should already be basename
     bins$BinaryFile <- basename(bins$BinaryFile)
-    if(!is.null(getSr(x, type=type, name=bins$detectorName[1], bins$UTC))) {
-        bins$sr <- getSr(x, type, bins$detectorName, bins$UTC)
+    if(!is.null(getSr(x, type=type, name=bins$detectorName[1], bins))) {
+        bins$sr <- getSr(x, type, bins$detectorName, bins)
     # } else if(length(settings(x)$sr) == 1) {
     #     bins$sr <- settings(x)$sr
     # } else if(length(settings(x)$sr) > 1) {

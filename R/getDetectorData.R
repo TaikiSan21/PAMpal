@@ -42,14 +42,14 @@ getDetectorData <- function(x, measures=TRUE) {
         return(x)
     }
     if(is.AcousticStudy(x)) {
-        return(getDetectorData(events(x)))
+        return(getDetectorData(events(x), measures=measures))
     }
     if(is.list(x)) {
         if(length(x) == 0) {
             return(NULL)
         }
         result <- lapply(x[sapply(x, is.AcousticEvent)], function(e) {
-            getDetectorData(e)
+            getDetectorData(e, measures=measures)
         })
         names(result) <- NULL
         result <- unlist(result, recursive=FALSE)
@@ -62,7 +62,7 @@ getDetectorData <- function(x, measures=TRUE) {
     for(d in seq_along(dets)) {
         dets[[d]]$eventId <- id(x)
         dets[[d]]$detectorName <- names(dets)[d]
-        # dets[[d]]$db <- files(x)$db
+        dets[[d]]$db <- files(x)$db
 
         if(is.null(species(x)$id)) {
             dets[[d]]$species <- NA_character_

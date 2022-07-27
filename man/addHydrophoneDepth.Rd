@@ -28,7 +28,7 @@ depth value will be set to \code{NA}}
 }
 \value{
 the same data as \code{x}, with depth data added. All AcousticEvents will
-  have depth data added to all detector dataframes
+  have depth data added to all detector dataframes as column \code{hpDepth}
 }
 \description{
 Add hydrophone depth to an AcousticStudy or AcousticEvent

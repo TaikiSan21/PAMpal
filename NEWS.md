@@ -1,3 +1,13 @@
+## PAMpal 0.16.4
+
+* Changing added column fro `depth` to `hpDepth` in `addHydrophoneDepth`
+
+* `writeEventClips` now has a `filter` option to apply low/high/bandpass filters
+
+* `getSr` and `matchSR` functions were not working properly in some edge cases
+
+* changed `getDetectorData` to return `db` for more usefulness
+
 ## PAMpal 0.16.3
 
 * Minor adjustment to `mode='db'` to not repeat UIDs within a single event
