@@ -171,5 +171,7 @@ getBinaryData <- function(x, UID, type=c('click', 'whistle', 'cepstrum', 'gpl'),
         data
     })
     # list named by UID as result
-    unlist(result, recursive = FALSE)
+    result <- unlist(result, recursive = FALSE)
+    UID <- as.character(unique(UID))
+    result[UID[UID %in% names(result)]]
 }

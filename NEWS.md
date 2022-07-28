@@ -8,6 +8,8 @@
 
 * changed `getDetectorData` to return `db` for more usefulness
 
+* `getBinaryData` returns UIDs in the order given
+
 ## PAMpal 0.16.3
 
 * Minor adjustment to `mode='db'` to not repeat UIDs within a single event
