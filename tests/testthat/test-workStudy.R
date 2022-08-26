@@ -223,3 +223,11 @@ test_that('Test bindStudies', {
     bind2list <- expect_warning(bindStudies(list(exStudy, exStudy)))
     expect_equal(nClicks(exStudy)*2, nClicks(bind2list))
 })
+
+test_that('Test hydrophone depth', {
+    data(exStudy)
+    exStudy <- addHydrophoneDepth(exStudy, depth=10)
+    clicks <- getClickData(exStudy)
+    expect_true('hpDepth' %in% colnames(clicks))
+    expect_equal(10, clicks$hpDepth[1])
+})

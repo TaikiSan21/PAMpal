@@ -1,3 +1,7 @@
+## PAMpal 0.16.5
+
+* Updating `addHydrophoneDepth` to be able to take numeric input for constant depth
+
 ## PAMpal 0.16.4
 
 * Changing added column fro `depth` to `hpDepth` in `addHydrophoneDepth`
