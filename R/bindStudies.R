@@ -62,14 +62,14 @@ bindStudies <- function(...) {
     }
 
     events(newAc) <- newEv
-    newGps <- doAcCombine(dots, gps, unique=TRUE)
+    newGps <- doAcCombine(dots, gps, unique=TRUE, df=TRUE)
     if(is.list(newGps) && length(newGps) == 0) {
         newGps <- data.frame()
     }
     gps(newAc) <- newGps
     files(newAc) <- doAcCombine(dots, files, unique=TRUE)
     settings(newAc) <- doAcCombine(dots, settings, unique=TRUE)
-    newEffort <- doAcCombine(dots, effort)
+    newEffort <- doAcCombine(dots, effort, df=TRUE)
     if(is.list(newEffort) && length(newEffort) == 0) {
         newEffort <- data.frame()
     }
@@ -84,6 +84,10 @@ bindStudies <- function(...) {
 
 #' @importFrom PAMmisc squishList
 #'
-doAcCombine <- function(dots, FUN, unique=FALSE) {
-    squishList(unlist(lapply(dots, FUN), recursive = FALSE), unique=unique)
+doAcCombine <- function(dots, FUN, unique=FALSE, df=TRUE) {
+    data <- lapply(dots, FUN)
+    if(df) {
+        return(bind_rows(data))
+    }
+    squishList(data, unique=unique)
 }

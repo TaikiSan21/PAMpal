@@ -75,6 +75,8 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
                                                     ...) {
     callType <- match.arg(callType)
     detData <- getDetectorData(x)[[callType]]
+    time <- match.arg(time)
+    detData <- detData[!is.na(detData[[time]]), ]
     if(is.null(detData)) {
         if(verbose) {
             message('No detector data found for call type "', callType, '" in event "', id(x), '"\n')
@@ -84,7 +86,6 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
     detNames <- unique(detData$detectorName)
     iciList <- vector('list', length = length(detNames) + 1)
     names(iciList) <- c(detNames, 'All')
-    time <- match.arg(time)
     for(d in detNames) {
         thisIci <- dfICI(detData[detData$detectorName == d, ], time)
         thisIci$detectorName <- d
