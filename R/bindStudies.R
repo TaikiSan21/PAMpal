@@ -84,10 +84,13 @@ bindStudies <- function(...) {
 
 #' @importFrom PAMmisc squishList
 #'
-doAcCombine <- function(dots, FUN, unique=FALSE, df=TRUE) {
+doAcCombine <- function(dots, FUN, unique=FALSE, df=FALSE) {
     data <- lapply(dots, FUN)
     if(df) {
+        if(unique) {
+            return(distinct(bind_rows(data)))
+        }
         return(bind_rows(data))
     }
-    squishList(data, unique=unique)
+    squishList(unlist(data, recursive = FALSE), unique=unique)
 }
