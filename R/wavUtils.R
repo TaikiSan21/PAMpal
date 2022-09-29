@@ -44,7 +44,7 @@ myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
     }
     wave <- clipAroundPeak(wave, wl, noise=noise)
     if(window) {
-        wave <- wave * hanning(length(wave)) / mean(hanning(length(wave)))
+        wave <- wave * hanning(length(wave)) / mean(hanning(length(wave))^2)
     }
 
     switch(match.arg(mode),

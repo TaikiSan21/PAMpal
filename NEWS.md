@@ -1,3 +1,8 @@
+## PAMpal 0.16.6
+
+* Changing `myGram` function used for power spectrum calculations to normalize by average window
+*energy* instead of average window *amplitude* because we are almost always using power spectra
+
 ## PAMpal 0.16.5
 
 * Updating `addHydrophoneDepth` to be able to take numeric input for constant depth
