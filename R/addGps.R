@@ -103,13 +103,13 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, ...) {
         setkeyv(gps, 'UTC') # removing channel key from gps if its there i guess
     }
     result <- gps[x, roll='nearest']
-    result[abs(dataTime - gpsTime) > thresh, c('Latitude', 'Longitude') := NA]
+    result[abs(as.numeric(difftime(dataTime, gpsTime, units='secs'))) > thresh, c('Latitude', 'Longitude') := NA]
     # result[, UTC := dataTime]
     result$UTC <- result$dataTime
     result[, c('gpsTime', 'dataTime') := NULL]
     if(any(is.na(result$Longitude))) {
         pamWarning('Some GPS coordinate matches exceeded time threshold, setting',
-                'value to NA.')
+                ' value to NA.')
     }
     attr(result, 'calltype') <- thisType
     setDF(result)
@@ -167,15 +167,15 @@ setMethod('addGps', 'AcousticStudy', function(x, gps=NULL, thresh = 3600, ...) {
         gps <- checkGpsKey(gps)
         # setkeyv(gps, c(key(gps), 'db'))
         events(x) <- lapply(events(x), function(y) {
-            thisGps <- gps[db %in% files(y)$db, c('UTC', 'Latitude', 'Longitude'), with=FALSE]
+            thisGps <- gps[gps$db %in% files(y)$db, c('UTC', 'Latitude', 'Longitude'), with=FALSE]
             addGps(y, thisGps, thresh, ...)
         })
 
     } else {
         gps <- checkGpsKey(gps)
         events(x) <- lapply(events(x), function(y) {
-            if(db %in% colnames(gps)) {
-                thisGps <- gps[db %in% files(y)$db, c('UTC', 'Latitude', 'Longitude'), with=FALSE]
+            if('db' %in% colnames(gps)) {
+                thisGps <- gps[gps$db %in% files(y)$db, c('UTC', 'Latitude', 'Longitude'), with=FALSE]
             } else {
                 thisGps <- gps
             }

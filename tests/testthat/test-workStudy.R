@@ -14,7 +14,7 @@ test_that('Test working with AcousticStudy object', {
     exData <- processPgDetections(exPps, mode='db', id='Example', progress = FALSE, verbose = FALSE)
 
     # check adding gps
-    exData <- addGps(exData)
+    exData <- addGps(exData, thresh=365*24*3600)
     expect_equal(nrow(gps(exData)), 200)
     expect_true(!any(
         is.na(gps(exData)[['Latitude']])
@@ -40,7 +40,13 @@ test_that('Test working with AcousticStudy object', {
     expect_true(!any(
         is.na(exData[[1]][[3]][['Longitude']])
     ))
-
+    gps <- data.frame(Latitude = 32, Longitude=-118, UTC = as.POSIXct('2020-01-30 00:00:00', tz='UTC'))
+    expect_warning(addGps(exData, gps=gps, thresh=3600),
+                   'Some GPS coordinate matches exceeded')
+    exData <- addGps(exData, gps=gps, thresh=Inf)
+    expect_equal(nrow(gps(exData)), 1)
+    expect_equal(getClickData(exData)$Latitude[1], 32)
+    # add gps from DF
     # check ici
     expect_warning(iciData <- getICI(exData), 'No ICI data')
     expect_null(iciData)

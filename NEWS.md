@@ -1,3 +1,7 @@
+## PAMpal 0.16.7
+
+* Bug fixes for `addGps` when using a dataframe as the source, `thresh` argument was not doing anything
+
 ## PAMpal 0.16.6
 
 * Changing `myGram` function used for power spectrum calculations to normalize by average window
