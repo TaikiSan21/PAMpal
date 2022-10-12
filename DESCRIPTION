@@ -42,6 +42,6 @@ Imports:
     rlang,
     reticulate,
     lubridate
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Suggests: 
     testthat
