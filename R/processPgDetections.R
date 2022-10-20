@@ -459,20 +459,20 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
             x
         })
         thisSr <- grouping$sr[[i]]
-        if(is.na(grouping$db[i])) {
-            thisSource <- 'Not Found'
-        } else {
-            filtSa <- saList[[grouping$db[i]]]
-            if(is.null(filtSa)) {
-                thisSource <- 'Not Found'
-            } else {
-                filtSa <- filter(filtSa, filtSa$UTC <= grouping$end[i], filtSa$UTC >= grouping$start[i])
-                thisSource <- unique(filtSa$SystemType)
-            }
-        }
+        # if(is.na(grouping$db[i])) {
+        #     thisSource <- 'Not Found'
+        # } else {
+        #     filtSa <- saList[[grouping$db[i]]]
+        #     if(is.null(filtSa)) {
+        #         thisSource <- 'Not Found'
+        #     } else {
+        #         filtSa <- filter(filtSa, filtSa$UTC <= grouping$end[i], filtSa$UTC >= grouping$start[i])
+        #         thisSource <- unique(filtSa$SystemType)
+        #     }
+        # }
         thisDb <- allDbs[grepl(basename(grouping$db[i]), allDbs)]
         acousticEvents[[i]] <-
-            AcousticEvent(id=evName[i], detectors = thisData, settings = list(sr = thisSr, source = thisSource),
+            AcousticEvent(id=evName[i], detectors = thisData, settings = list(sr = thisSr),# source = thisSource),
                           files = list(binaries=binariesUsed, db=thisDb, calibration=calibrationUsed))
         ancillary(acousticEvents[[i]])$grouping <- grouping[i, ]
     }
@@ -545,7 +545,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                 pamWarning('More than 1 sample rate found in database ',
                         basename(db),'.')
             }
-            thisSource <- unique(dbData$SystemType)
+            # thisSource <- unique(dbData$SystemType)
             dbData <- select(dbData, -.data$SystemType)
             calibrationUsed <- names(pps@calibration[[1]])
             if(length(calibrationUsed)==0) calibrationUsed <- 'None'
@@ -619,9 +619,10 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                 evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentID))
                 if(all(tarMoCols %in% colnames(ev[[1]]))) {
                     evTarMo <- ev[[1]][1, tarMoCols]
+                    colnames(evTarMo) <- ppVars()$locCols
                 } else {
                     evTarMo <- data.frame(matrix(NA, nrow=1, ncol=length(tarMoCols)))
-                    colnames(evTarMo) <- tarMoCols
+                    colnames(evTarMo) <- ppVars()$locCols
                 }
 
                 evComment <- unique(ev[[1]]$comment)
@@ -636,7 +637,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                     attr(x, 'calltype') <- thisType
                     x
                 })
-                acEv <- AcousticEvent(id = evId, detectors = ev, settings = list(sr = thisSr, source=thisSource),
+                acEv <- AcousticEvent(id = evId, detectors = ev, settings = list(sr = thisSr),#, source=thisSource),
                               files = list(binaries=binariesUsed, db=db, calibration=calibrationUsed),
                               localizations = list(PGTargetMotion = evTarMo))
                 ancillary(acEv)$eventComment <- evComment

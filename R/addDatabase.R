@@ -35,21 +35,20 @@ addDatabase <- function(pps, db=NULL, verbose=TRUE) {
     # Case when cancelled or some weirdness
     if(length(db) == 0) return(pps)
 
+    if(length(db) == 1 &&
+       dir.exists(db)) {
+        db <- list.files(db, pattern='\\.sqlite', full.names=TRUE, recursive=FALSE)
+        if(length(db) == 0) {
+            warning('No databases found in directory ', db)
+            return(pps)
+        }
+    }
     exists <- file.exists(db)
     if(any(!exists)) {
-        if(length(db) == 1 &&
-           dir.exists(db)) {
-            db <- list.files(db, pattern='\\.sqlite', full.names=TRUE, recursive=FALSE)
-            if(length(db) == 0) {
-                warning('No databases found in directory ', db)
-                return(pps)
-            }
-        } else {
-            warning(paste0('Database(s) ',
-                           paste0(db[!exists], collapse=', ')
-                           , ' do(es) not exist.'))
-            db <- db[exists]
-        }
+        warning(paste0('Database(s) ',
+                       paste0(db[!exists], collapse=', ')
+                       , ' do(es) not exist.'))
+        db <- db[exists]
     }
     isSqlite <- grepl('\\.sqlite3$', db)
     if(any(!isSqlite)) {

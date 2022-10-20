@@ -115,7 +115,8 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
                 ancillary(x)$environmental
             }))
 
-            filteredEv <- doFilter(evDf[, !(names(evDf) %in% c('UTC', 'Longitude', 'Latitude')), drop=FALSE], ...)
+            filteredEv <- doFilter(evDf[, !(names(evDf) %in% c('UTC', 'Longitude', 'Latitude')), drop=FALSE],
+                                   dotChars = dotChars, ...)
             events(.data) <- events(.data)[names(events(.data)) %in% unique(filteredEv$event)]
             if(length(events(.data)) == 0) {
                 .data <- .addPamWarning(.data)
@@ -125,7 +126,7 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
     }
 
     events(.data) <- lapply(events(.data), function(x) {
-        filter(x, ...)
+        filter(x, ..., dotChars=dotChars)
     })
     isNull <- sapply(events(.data), is.null)
     events(.data) <- events(.data)[!isNull]
@@ -135,9 +136,11 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
 
 #' @export
 #'
-filter.AcousticEvent <- function(.data, ..., .preserve=FALSE) {
+filter.AcousticEvent <- function(.data, ..., .preserve=FALSE, dotChars=NULL) {
     # browser()
-    dotChars <- sapply(quos(...), as_label)
+    if(is.null(dotChars)) {
+        dotChars <- sapply(quos(...), as_label)
+    }
     # isDetector <- grepl('^.{0,3}detector|^.{0,3}Detector', dotChars)
     isDetector <- grepl('\\b[Dd]etector\\b', dotChars, ignore.case=TRUE)
     detKeep <- rep(TRUE, length(detectors(.data)))
@@ -154,7 +157,7 @@ filter.AcousticEvent <- function(.data, ..., .preserve=FALSE) {
         detectors(.data) <- detectors(.data)[detKeep]
     }
     detectors(.data) <- lapply(detectors(.data), function(x) {
-        doFilter(x, ...)
+        doFilter(x, dotChars = dotChars, ...)
     })
     detNums <- sapply(detectors(.data), nrow)
     # if(all(detNums == 0)) {
@@ -164,8 +167,8 @@ filter.AcousticEvent <- function(.data, ..., .preserve=FALSE) {
     .data
 }
 
-doFilter <- function(.x, ...) {
-    dotChars <- sapply(quos(...), as_label)
+doFilter <- function(.x, dotChars, ...) {
+    # dotChars <- sapply(quos(...), as_label)
     hasCol <- sapply(dotChars, function(d) any(sapply(colnames(.x), function(c) grepl(c, d))))
     if(!any(hasCol)) {
         return(.x)

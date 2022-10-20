@@ -1,3 +1,23 @@
+## PAMpal 0.17.0
+
+* Removing the `$source` item in the `settings` slot for each `AcousticEvent`. These were not
+used for anything, and when the source was wav files it would end up with a huge repetitive list
+for every event. Ended up taking up a huge amount of memory, removing this results in `AcousticStudy`s
+that are half the size.
+
+* Updated `filter` function for a 2x speed increase. Turns out quos(...) is expensive when you need
+to do it thousands of times, so now passing along the character version of `dots` when we can instead
+of recomputing it.
+
+* Updated `localizations` slot to use more standardized names for imported PGTargetMotion locs. Currently
+using latitude, longitude, perpDist, perpDistErr, depth, depthErr. These seem like good standard
+localization columns going forward. Changed the `ppVars()$tarMoCols` to pull in only columns corresponding
+to these, and added new `ppVars()$locCols` to reflect new standard column names
+
+## PAMpal 0.16.8
+
+* `addDatabase` not working properly for directory of dbs
+
 ## PAMpal 0.16.7
 
 * Bug fixes for `addGps` when using a dataframe as the source, `thresh` argument was not doing anything
