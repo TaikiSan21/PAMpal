@@ -157,7 +157,7 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
     checkStudy(result)
     result <- .addPamWarning(result)
     nWarns <- nrow(getWarnings(result))
-    if(nWarns > 0) {
+    if(!is.null(nWarns) && nWarns > 0) {
         result <- addNote(result, 'study', 'Processing Warnings',
                           note = paste0('There were ', nWarns, ' warnings during processing,',
                                         ' use "getWarnings(x)" to see them.'))
