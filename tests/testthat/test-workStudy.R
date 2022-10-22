@@ -122,34 +122,42 @@ test_that('Test filter', {
     data(exStudy)
     # test filtering
     filterNone <- filter(exStudy, VARDNE == 'DNE')
-    expect_identical(events(exStudy), events(filterNone))
+    # expect_identical(events(exStudy), events(filterNone))
+    expect_true(checkSameDetections(exStudy, filterNone))
     exStudy <- setSpecies(exStudy, method='manual', value=letters[1:2])
     spFilter <- filter(exStudy, species == 'a')
     expect_equal(length(events(spFilter)), 1)
     expect_equal(species(spFilter[[1]])$id, 'a')
     spFilter <- filter(exStudy, species %in% letters[1:3])
-    expect_identical(events(spFilter), events(exStudy))
+    # expect_identical(events(spFilter), events(exStudy))
+    expect_true(checkSameDetections(spFilter, exStudy))
     peakFilter <- filter(exStudy, peak < 20)
     expect_true(all(detectors(peakFilter)$click$peak < 20))
     peakFilter <- filter(exStudy, peak < 2000)
-    events(peakFilter) <- lapply(events(peakFilter), function(x) {
-        detectors(x) <- lapply(detectors(x), function(y) {
-            row.names(y) <- NULL
-            y
-        })
-        x
-    })
-    events(exStudy) <- lapply(events(exStudy), function(x) {
-        detectors(x) <- lapply(detectors(x), function(y) {
-            row.names(y) <- NULL
-            y
-        })
-        x
-    })
-    expect_identical(events(peakFilter), events(exStudy))
+    # events(peakFilter) <- lapply(events(peakFilter), function(x) {
+    #     detectors(x) <- lapply(detectors(x), function(y) {
+    #         row.names(y) <- NULL
+    #         y
+    #     })
+    #     x
+    # })
+    # events(exStudy) <- lapply(events(exStudy), function(x) {
+    #     detectors(x) <- lapply(detectors(x), function(y) {
+    #         row.names(y) <- NULL
+    #         y
+    #     })
+    #     x
+    # })
+    # expect_identical(events(peakFilter), events(exStudy))
+    expect_warning(filter(exStudy, detector == 'Click_Detector_1'))
+    detFilter <- filter(exStudy, detectorName == 'Cepstrum_Detector')
+    expect_equal(nClicks(detFilter), 0)
+    expect_equal(getCepstrumData(exStudy), getCepstrumData(detFilter))
+    expect_true(checkSameDetections(peakFilter, exStudy))
 
     dbFilter <- filter(exStudy, database == files(exStudy)$db)
-    expect_identical(events(exStudy), events(dbFilter))
+    # expect_identical(events(exStudy), events(dbFilter))
+    expect_true(checkSameDetections(exStudy, dbFilter))
     dbNone <- filter(exStudy, database == 'NODB.sqlite3')
     expect_equal(length(events(dbNone)), 0)
 })

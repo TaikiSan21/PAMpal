@@ -181,6 +181,12 @@ setMethod('show', 'AcousticEvent',
               cat('AcousticEvent object "', id(object), '" with ',
                   length(object@detectors), ' detector(s): \n', sep='')
               cat(paste(names(object@detectors), collapse=', '))
+              notes <- getNotes(object)
+              if(!is.null(notes)) {
+                  cat('\nAnd ', length(unlist(notes)), ' notes:\n',
+                      printN(formatNotes(notes, n=6), n=6, collapse='\n'),
+                      sep = '')
+              }
           }
 )
 
@@ -316,5 +322,11 @@ setMethod('show', 'AcousticStudy',
           function(object) {
               cat('AcousticStudy object named ', id(object), ' with ',
                   length(events(object)), ' AcousticEvents.\n', sep='')
+              notes <- getNotes(object)
+              if(!is.null(notes)) {
+                  cat('And ', length(unlist(notes)), ' notes:\n',
+                      printN(formatNotes(notes, n=6), n=6, collapse='\n'),
+                      sep='')
+              }
           }
 )

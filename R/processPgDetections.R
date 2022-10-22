@@ -156,6 +156,12 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
     )
     checkStudy(result)
     result <- .addPamWarning(result)
+    nWarns <- nrow(getWarnings(result))
+    if(nWarns > 0) {
+        result <- addNote(result, 'study', 'Processing Warnings',
+                          note = paste0('There were ', nWarns, ' warnings during processing,',
+                                        ' use "getWarnings(x)" to see them.'))
+    }
     endTime <- Sys.time()
     procTime <- round(as.numeric(difftime(endTime, startTime, units='secs')), 0)
     ancillary(result)$processingTime <- procTime
@@ -546,7 +552,8 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                         basename(db),'.')
             }
             # thisSource <- unique(dbData$SystemType)
-            dbData <- select(dbData, -.data$SystemType)
+            # dbData <- select(dbData, -SystemType)
+            dbData <- dropCols(dbData, 'SystemType')
             calibrationUsed <- names(pps@calibration[[1]])
             if(length(calibrationUsed)==0) calibrationUsed <- 'None'
 
@@ -823,7 +830,8 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
     for(i in whichChar) {
         allDetections[, i] <- str_trim(allDetections[, i])
     }
-    allDetections <- select(allDetections, -.data$UTC)
+    # allDetections <- select(allDetections, -.data$UTC)
+    allDetections <- dropCols(allDetections, 'UTC')
     allDetections$UID <- as.character(allDetections$UID)
     allDetections$newUID <- as.character(allDetections$newUID)
     allDetections$parentID <- paste0(evName, allDetections$parentID)

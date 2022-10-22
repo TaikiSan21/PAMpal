@@ -9,10 +9,16 @@ that are half the size.
 to do it thousands of times, so now passing along the character version of `dots` when we can instead
 of recomputing it.
 
+* JK pdate again `filter` is actually 10x faster. Way better to pull out all the data into a single df
+and then just reassign everything to the proper event
+
 * Updated `localizations` slot to use more standardized names for imported PGTargetMotion locs. Currently
 using latitude, longitude, perpDist, perpDistErr, depth, depthErr. These seem like good standard
 localization columns going forward. Changed the `ppVars()$tarMoCols` to pull in only columns corresponding
 to these, and added new `ppVars()$locCols` to reflect new standard column names
+
+* Added `addNote`, `getNotes`, `removeNote` functions for adding and viewing notes. Can be added to study or event, and
+will print when they are printed. 
 
 ## PAMpal 0.16.8
 

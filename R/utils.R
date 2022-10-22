@@ -7,8 +7,11 @@ pgDateToPosix <- function(x) {
 
 # drop columns with names cols
 dropCols <- function(x, cols) {
+    ct <- attr(x, 'calltype')
     keepCols <- !(colnames(x) %in% cols)
-    x[, keepCols, drop=FALSE]
+    x <- x[, keepCols, drop=FALSE]
+    attr(x, 'calltype') <- ct
+    x
 }
 
 # what event is a UID in returns named index
@@ -476,4 +479,31 @@ getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
         allDets <- unlist(allDets, recursive=FALSE)
     }
     allDets
+}
+
+checkSameDetections <- function(x, y) {
+    xDet <- getDetectorData(x)
+    yDet <- getDetectorData(y)
+    if(!all(names(xDet) %in% names(yDet)) ||
+       !all(names(yDet) %in% names(xDet))) {
+        warning('Different detectors')
+        return(FALSE)
+    }
+    for(d in names(xDet)) {
+        if(nrow(xDet[[d]]) != nrow(yDet[[d]])) {
+            warning('Different number of detections for detector ', d)
+            return(FALSE)
+        }
+        xy <- nrow(setdiff(xDet[[d]], yDet[[d]]))
+        if(xy != 0) {
+            warning('xy setdiff is ', xy)
+            return(FALSE)
+        }
+        yx <- nrow(setdiff(yDet[[d]], xDet[[d]]))
+        if(yx != 0) {
+            warning('yx setdiff is ', yx)
+            return(FALSE)
+        }
+    }
+    TRUE
 }

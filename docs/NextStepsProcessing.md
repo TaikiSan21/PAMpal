@@ -643,11 +643,14 @@ It is best to check exact names using `names(detectors(myStudy[[1]]))`
 before filtering. Any events left with no detections will be removed
 from the study.
 
+**NOTE** This has changed in PAMpal v0.17.0. Previously you used "detector" to 
+filter by detector, now you use "detectorName" 
+
 ```r
 # Remove Click_Detector_0
-noZero <- filter(myStudy, detector != 'Click_Detector_0')
+noZero <- filter(myStudy, detectorName != 'Click_Detector_0')
 # Just 1 or 2
-justOneTwo <- filter(myStudy, detector %in% c('Click_Detector_1', 'Click_Detector_2'))
+justOneTwo <- filter(myStudy, detectorName %in% c('Click_Detector_1', 'Click_Detector_2'))
 ```
 
 Filtering by function parameters works slightly differently than the

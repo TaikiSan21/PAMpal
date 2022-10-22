@@ -61,10 +61,10 @@ Plots either a spectrogram or cepstrogram and also overlays
 
 data(exStudy)
 recs <- system.file('extdata', 'Recordings', package='PAMpal')
-exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
 exStudy <- updateFiles(exStudy,
                        bin=system.file('extdata', 'Binaries', package='PAMpal'),
                        db = system.file('extdata', 'Example.sqlite3', package='PAMpal'))
+exStudy <- addRecordings(exStudy, folder=recs, log=FALSE, progress=FALSE)
 # No detections will appear on plot because included recordings are heavily decimated
 plotGram(exStudy)
 
