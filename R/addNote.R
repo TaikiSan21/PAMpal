@@ -62,7 +62,7 @@ doNoteAdd <- function(x, label, note) {
     x
 }
 
-formatNotes <- function(x, nchar=50, n=6, nSpace=0) {
+formatNotes <- function(x, nchar=70, n=6, nSpace=0) {
     if(is.AcousticEvent(x) ||
        is.AcousticStudy(x)) {
         x <- getNotes(x)
