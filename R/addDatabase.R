@@ -37,7 +37,7 @@ addDatabase <- function(pps, db=NULL, verbose=TRUE) {
 
     if(length(db) == 1 &&
        dir.exists(db)) {
-        db <- list.files(db, pattern='\\.sqlite', full.names=TRUE, recursive=FALSE)
+        db <- list.files(db, pattern='\\.sqlite[0-9]+$', full.names=TRUE, recursive=FALSE)
         if(length(db) == 0) {
             warning('No databases found in directory ', db)
             return(pps)

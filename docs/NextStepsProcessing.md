@@ -312,10 +312,6 @@ will be exactly the same since Pamguard does not store a separate
 detection time for each channel, but the ICI values should be close but
 slightly different for `time ='peakTime'`
 
-```r
-iciData[[1]]$All
-```
-
 ## Calculate and Plot Average Click Spectra
 
 This is an in-depth topic that has its [own page][avg-spec]
