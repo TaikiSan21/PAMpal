@@ -435,6 +435,10 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
                     'sr', 'callType', 'newUID')
     names(acousticEvents) <- evName
     noDetEvent <- character(0)
+    if(progress) {
+        cat('Organizing events...\n')
+        pb <- txtProgressBar(min=0, max=length(acousticEvents), style=3)
+    }
     for(i in seq_along(acousticEvents)) {
         thisData <- lapply(binData, function(x) {
             data <- filter(x, x$UTC >= grouping$start[i], x$UTC <= grouping$end[i])
@@ -481,6 +485,12 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
             AcousticEvent(id=evName[i], detectors = thisData, settings = list(sr = thisSr),# source = thisSource),
                           files = list(binaries=binariesUsed, db=thisDb, calibration=calibrationUsed))
         ancillary(acousticEvents[[i]])$grouping <- grouping[i, ]
+        if(progress) {
+            setTxtProgressBar(pb, value=i)
+        }
+    }
+    if(progress) {
+        cat('\n')
     }
     if(length(noDetEvent) > 0) {
         pamWarning('No detections in Event(s) ', noDetEvent, n=6)
