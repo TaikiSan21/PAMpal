@@ -76,7 +76,7 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
     if(all(binExists)) {
         bin <- character(0)
     } else {
-        bin <- fileLister(bin, label = 'binary', pattern = '(Clicks|WhistlesMoans).*pgdf$', verbose=verbose)
+        bin <- fileLister(bin, label = 'binary', pattern = ppVars()$binPattern, verbose=verbose)
         updatedBins <- fileMatcher(files(x)$binaries, bin)
         if(verbose) {
             cat(paste0('Updated the locations of ',

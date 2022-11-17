@@ -234,7 +234,8 @@ ppVars <- function() {
                                      'Blainvilles', 'Blainvilles',
                                      'MmMe', 'MmMe', 'MmMe')),
          dglCols = c('Id', 'UID', 'UTC', 'UTCMilliseconds', 'PCLocalTime', 'PCTime',
-                     'ChannelBitmap', 'SequenceBitmap', 'EndTime', 'DataCount')
+                     'ChannelBitmap', 'SequenceBitmap', 'EndTime', 'DataCount'),
+         binPattern = '(Clicks|WhistlesMoans|GPL).*pgdf$'
     )
 }
 

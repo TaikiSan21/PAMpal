@@ -68,7 +68,7 @@ addBinaries <- function(pps, folder=NULL, verbose=TRUE) {
         # warning overflow later
         for(f in folder) {
             binList <- c(binList,
-                         list.files(f, recursive = TRUE, full.names = TRUE, pattern ='(Clicks|WhistlesMoans|GPL).*pgdf$'))
+                         list.files(f, recursive = TRUE, full.names = TRUE, pattern = ppVars()$binPattern))
         }
     }
     binList <- binList[!grepl('GPL_State', binList)]
