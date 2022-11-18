@@ -4,7 +4,14 @@
 \alias{updateFiles}
 \title{Update Location of Files in an AcousticStudy}
 \usage{
-updateFiles(x, bin = NULL, db = NULL, recording = NULL, verbose = TRUE)
+updateFiles(
+  x,
+  bin = NULL,
+  db = NULL,
+  recording = NULL,
+  verbose = TRUE,
+  check = TRUE
+)
 }
 \arguments{
 \item{x}{an \linkS4class{AcousticStudy} or \linkS4class{AcousticEvent}
@@ -23,6 +30,10 @@ If \code{NA}, database files will be skipped.}
 If \code{NA}, recording files will be skipped.}
 
 \item{verbose}{logical flag to print messages about success of replacement}
+
+\item{check}{logical flag to do extra checking. You do not need to set this
+parameter, used internally for speed purposes so certain checks are not
+repeated}
 }
 \value{
 the same \linkS4class{AcousticStudy} and

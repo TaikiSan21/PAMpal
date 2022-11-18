@@ -185,7 +185,7 @@ mapWavFolder <- function(wavFolder=NULL, log=NULL, progress=TRUE) {
         pamWarning('Provided folder ', wavFolder, ' does not exist.')
         return(NULL)
     }
-    wavFolder <- normalizePath(wavFolder)
+    wavFolder <- normalizePath(wavFolder, winslash = '/')
     wavs <- list.files(wavFolder, full.names=TRUE, pattern = '\\.wav$', recursive=TRUE)
     if(length(wavs) == 0) {
         pamWarning('No wav files found in folder ', wavFolder)

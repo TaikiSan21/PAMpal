@@ -20,6 +20,9 @@
 #'   \code{NULL} (default), user will be prompted to select a folder.
 #'   If \code{NA}, recording files will be skipped.
 #' @param verbose logical flag to print messages about success of replacement
+#' @param check logical flag to do extra checking. You do not need to set this
+#'   parameter, used internally for speed purposes so certain checks are not
+#'   repeated
 #'
 #' @return the same \linkS4class{AcousticStudy} and
 #'   \linkS4class{AcousticEvent} object as \code{x} with
@@ -47,7 +50,7 @@
 #'
 #' @export
 #'
-updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
+updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE, check=TRUE) {
     # do databases
     # this check is for weirdness in older v of pampal
     if(is.list(files(x)$db)) {
@@ -57,7 +60,7 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
     if(all(dbExists)) {
         db <- character(0)
     } else {
-        db <- fileLister(db, label = 'database', pattern='sqlite', verbose=verbose)
+        db <- fileLister(db, label = 'database', pattern='sqlite', verbose=verbose, check=check)
         updatedDbs <- fileMatcher(files(x)$db, db)
         if(verbose) {
             cat(paste0('Updated the locations of ',
@@ -76,7 +79,7 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
     if(all(binExists)) {
         bin <- character(0)
     } else {
-        bin <- fileLister(bin, label = 'binary', pattern = ppVars()$binPattern, verbose=verbose)
+        bin <- fileLister(bin, label = 'binary', pattern = ppVars()$binPattern, verbose=verbose, check=check)
         updatedBins <- fileMatcher(files(x)$binaries, bin)
         if(verbose) {
             cat(paste0('Updated the locations of ',
@@ -90,7 +93,7 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
     if(!is.null(files(x)$recordings$file) &&
        any(!file.exists(files(x)$recordings$file))) {
         fileExists <- file.exists(files(x)$recordings$file)
-        recording <- fileLister(recording, label='recording', pattern='wav$', verbose=verbose)
+        recording <- fileLister(recording, label='recording', pattern='wav$', verbose=verbose, check=check)
         updatedRecs <- fileMatcher(files(x)$recordings$file, recording)
         if(verbose) {
             cat(paste0('Updated the locations of ',
@@ -108,9 +111,16 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE) {
         return(x)
     }
     if(is.AcousticStudy(x)) {
+        if(verbose) {
+            cat('Updating files in events...\n')
+            pb <- txtProgressBar(min=0, max=length(events(x)), style=3)
+        }
         for(e in seq_along(events(x))) {
             # be quiet for every event, study level should give best summary
-            events(x)[[e]] <- updateFiles(events(x)[[e]], bin=bin, db=db, recording=recording, verbose=FALSE)
+            events(x)[[e]] <- updateFiles(events(x)[[e]], bin=bin, db=db, recording=recording, verbose=FALSE, check=FALSE)
+            if(verbose) {
+                setTxtProgressBar(pb, value=e)
+            }
         }
     }
     x <- .addPamWarning(x)
@@ -127,19 +137,120 @@ fileMatcher <- function(old, new) {
         old$file <- fileMatcher(old$file, new)
         return(old)
     }
-    new <- normalizePath(new)
-    repIx <- sapply(old, function(x) {
-        rix <- which(grepl(basename(x), basename(new)))
-        if(length(rix) == 0) {
-            return(0)
+    # new <- normalizePath(new, winslash = '/')
+    # old <- normalizePath(old, winslash = '/')
+    old <- normalizePath(old, winslash = '/', mustWork = FALSE)
+    ###
+    toCheck <- rep(TRUE, length(old))
+    nCheck <- sum(toCheck)
+    checkPos <- 1
+    while(nCheck > 0) {
+        # this is only incrementing when things dont work
+        # so just quit eventually so we dont get stuck
+        if(checkPos > 5) {
+            break
         }
-        rix[1]
-    })
-    old[repIx > 0] <- new[repIx[repIx > 0]]
+        pathDiff <- getOnePathDiff(old[toCheck][checkPos], new)
+        # case when somehow no match
+        if(length(pathDiff) == 1 && is.na(pathDiff)) {
+            checkPos <- checkPos + 1
+            next
+        }
+        old[toCheck] <- gsub(pathDiff[1], pathDiff[2], old[toCheck], fixed=TRUE)
+        newToCheck <- !old %in% new
+        newNCheck <- sum(newToCheck)
+        # if we didnt fix any, move one down the line of ones to check
+        # and try using that base directory. If we do this too many times
+        # then just give up
+        if(newNCheck == nCheck) {
+            checkPos <- checkPos + 1
+        }
+        nCheck <- newNCheck
+    }
+    if(nCheck > 0) {
+        warning(nCheck, ' files could not be updated to new locations')
+    }
+    # cat(nReps, 'different base directories used')
     old
+    ###
+    # oldBase <- basename(old)
+    # newBase <- basename(new)
+    # newPoss <- new[newBase %in% oldBase]
+    # newBase <- basename(newPoss)
+    # 
+    # matchFun <- function(x) {
+    #     poss <- which(newBase %in% basename(x))
+    #     if(length(poss) == 0) {
+    #         return(NA)
+    #     }
+    #     if(length(poss) == 1) {
+    #         return(poss)
+    #     }
+    #     dirMatch <- checkNextDir(x, newPoss[poss]) # return ix of poss
+    #     poss[dirMatch]
+    # }
+    # 
+    # repIx <- unlist(purrr::map(old, matchFun))
+    # old[!is.na(repIx)] <- newPoss[repIx[!is.na(repIx)]]
+    # old
 }
 
-fileLister <- function(x, label, pattern, verbose=TRUE) {
+# get path difference for a single old file
+getOnePathDiff <- function(old, new) {
+    oldBase <- basename(old)
+    if(is.null(names(new))) {
+        newBase <- basename(new)
+    } else {
+        newBase <- names(new)
+    }
+    poss <- which(newBase %in% oldBase)
+    if(length(poss) == 0) {
+        return(NA)
+    }
+    if(length(poss) == 1) {
+        matchIx <- poss
+    }
+    if(length(poss) > 1) {
+        dirMatch <- checkNextDir(old, new[poss]) # return ix of poss
+        matchIx <- poss[dirMatch]
+    }    
+    findPathDiff(old, new[matchIx])
+}
+
+# if basenames match, step down through directories until you find actual match
+# eg a/b/c/d.csv matches z/x/c/d.csv and z/x/y/d.csv both at first so find best
+checkNextDir <- function(x,y) {
+    if(x == '.') {
+        return(1)
+    }
+    poss <- which(basename(dirname(y)) %in% basename(dirname(x)))
+    if(length(poss) == 0) {
+        return(1)
+    } 
+    if(length(poss) == 1) {
+        return(poss)
+    }
+    checkNextDir(dirname(x), dirname(y))
+}
+
+# get base parts of paths that differ - c/taiki/files vs c/greg/files
+# use this to gsub c/taiki for c/greg
+findPathDiff <- function(x, y) {
+    splitx <- strsplit(x, '/|\\\\')[[1]]
+    splity <- strsplit(y, '/|\\\\')[[1]]
+    nx <- length(splitx)
+    ny <- length(splity)
+    for(i in 1:(max(nx, ny))) {
+        if(splitx[nx-i+1] != splity[ny-i+1]) {
+            break
+        }
+    }
+    c(
+        paste0(splitx[1:(nx-i+1)], collapse='/'),
+        paste0(splity[1:(ny-i+1)], collapse='/'))
+}
+
+fileLister <- function(x, label, pattern, verbose=TRUE, check=TRUE) {
     if(is.null(x)) {
         downLab <- tolower(label)
         upLab <- paste0(toupper(substr(downLab, 1, 1)),
@@ -164,7 +275,15 @@ fileLister <- function(x, label, pattern, verbose=TRUE) {
            length(files) == 0) {
             cat('No ', downLab, ' files found in this folder.\n', sep='')
         }
+        files <- normalizePath(files, winslash = '/')
+        names(files) <- basename(files)
         return(files)
+    }
+    if(is.null(names(x))) {
+        names(x) <- basename(x)
+    }
+    if(isFALSE(check)) {
+        return(x)
     }
     DNE <- !file.exists(x)
     if(!any(DNE)) {

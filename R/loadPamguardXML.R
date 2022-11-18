@@ -25,7 +25,7 @@ loadPamguardXML <- function(x) {
     warning('File ', x, ' does not exist')
     return(NULL)
   }
-  x <- normalizePath(x)
+  x <- normalizePath(x, winslash = '/')
   pgxml <- read_xml(x)
   psf <- xml_find_all(pgxml, 'INFO') %>% 
     xml_attr('CONFIGURATION')

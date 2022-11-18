@@ -57,7 +57,7 @@ addDatabase <- function(pps, db=NULL, verbose=TRUE) {
                 paste0(db[!isSqlite], collapse = ', '))
         db <- db[isSqlite]
     }
-    db <- normalizePath(db)
+    db <- normalizePath(db, winslash = '/')
     if(verbose) {
         cat(paste0('Adding ', length(db), ' databases:\n  ', printN(basename(db), 6, collapse='\n  '), '\n'))
         # if(length(db) > 6) {

@@ -1,3 +1,10 @@
+## PAMpal 0.17.1
+
+- Converting all paths to use '/' instead of '\\'
+
+- Found out `updateFiles` was unuseably slow, so I fixed it. I dunno, maybe 1000x faster
+depending on how many files you have? 
+
 ## PAMpal 0.17.0
 
 -   Removing the `$source` item in the `settings` slot for each `AcousticEvent`. These were not used for anything, and when the source was wav files it would end up with a huge repetitive list for every event. Ended up taking up a huge amount of memory, removing this results in `AcousticStudy`s that are half the size.
