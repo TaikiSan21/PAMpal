@@ -56,7 +56,12 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE, chec
     if(is.list(files(x)$db)) {
         files(x)$db <- unlist(files(x)$db)
     }
-    dbExists <- file.exists(files(x)$db)
+    # if nothing just set this true to avoid error and cause skip in next check
+    if(is.null(files(x)$db)) {
+        dbExists <- TRUE
+    } else {
+        dbExists <- file.exists(files(x)$db)
+    }
     if(all(dbExists)) {
         db <- character(0)
     } else {
@@ -75,7 +80,11 @@ updateFiles <- function(x, bin=NULL, db=NULL, recording=NULL, verbose=TRUE, chec
     if(is.list(files(x)$binaries)) {
         files(x)$binaries <- unlist(files(x)$binaries)
     }
-    binExists <- file.exists(files(x)$binaries)
+    if(is.null(files(x)$binaries)) {
+        binExists <- TRUE
+    } else {
+        binExists <- file.exists(files(x)$binaries)
+    }
     if(all(binExists)) {
         bin <- character(0)
     } else {
