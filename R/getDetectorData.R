@@ -57,6 +57,9 @@ getDetectorData <- function(x, measures=TRUE) {
     }
     # base case one acev
     dets <- detectors(x)
+    if(length(dets) == 0) {
+        return(NULL)
+    }
     callTypes <- getCallType(dets)
     meas <- ancillary(x)$measures
     for(d in seq_along(dets)) {
