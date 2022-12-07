@@ -2,9 +2,11 @@ library(dplyr)
 library(PamBinaries)
 library(lubridate)
 library(PAMpal)
+library(patchwork)
 
 # v 2.0 updated 5/31
 # v 2.1 updated 6/30/22 changing the "tryFix" mode bc was bad on some data Cory had where it
+# v 2.2 updated 2022-12-6 making plots with ggplot to avoid margin error
 # decided to not duty cycle for a bit
 
 makeBinRanges <- function(x, progress=TRUE) {
@@ -134,22 +136,40 @@ makeTimeEvents <- function(start=NULL, end=NULL, length, units=c('secs', 'mins',
         nOut <- nrow(binRange) - nrow(binFilt)
         n99 <- sum(binFilt$overlapPct < .99)
         tDiff <- as.numeric(difftime(timeRange$start[2:nrow(timeRange)], timeRange$end[1:(nrow(timeRange)-1)], units=units))
-        op <- par(mfrow=c(1,3))
-        on.exit(par(op))
-        hist(binFilt$overlapPct, breaks=seq(from=0, to=1, by=.02),
-             xlim=c(0,1),
-             main=paste0('Pct of each binary file in event ',
-                         '\n(', nOut, ' files outside of time range, ',
-                         n99, ' files < .99)',
-                         '\n(All 1 unless duty cycle mismatch btwn event/recorder)'))
-        hist(timeRange$overlapPct, breaks=seq(from=0, to=1, by=.02), xlim=c(0,1),
-             main='Pct of each event with binary data\n(Should all be 1)')
-        if(max(tDiff) < 1) {
-            breaks <- 'Sturges'
-        } else {
-            breaks <- 0:ceiling(max(tDiff))
-        }
-        hist(tDiff, breaks=breaks, main=paste0('Time between events (', units, ')'), xlim=c(0, max(tDiff) + 1))
+        # op <- par(mfrow=c(1,3))
+        # on.exit(par(op))
+        # hist(binFilt$overlapPct, breaks=seq(from=0, to=1, by=.02),
+        #      xlim=c(0,1),
+        #      main=paste0('Pct of each binary file in event ',
+        #                  '\n(', nOut, ' files outside of time range, ',
+        #                  n99, ' files < .99)',
+        #                  '\n(All 1 unless duty cycle mismatch btwn event/recorder)'))
+        g1 <- ggplot(binFilt, aes(x=overlapPct)) +
+            geom_histogram(binwidth=.02) +
+            xlim(-.03, 1.03) +
+            labs(title=paste0('Pct of each binary file in event ',
+                              '\n(', nOut, ' files outside of time range, ',
+                              n99, ' files < .99)',
+                              '\n(All 1 unless duty cycle mismatch btwn event/recorder)')) +
+            scale_y_continuous(expand=expansion(mult=c(0, .05)))
+        # hist(timeRange$overlapPct, breaks=seq(from=0, to=1, by=.02), xlim=c(0,1),
+        #      main='Pct of each event with binary data\n(Should all be 1)')
+        g2 <- ggplot(timeRange, aes(x=overlapPct)) +
+            geom_histogram(binwidth=.02) +
+            xlim(-.03, 1.03) +
+            labs(title='Pct of each event with binary data\n(Should all be 1)') +
+            scale_y_continuous(expand=expansion(mult=c(0, .05)))
+        # if(max(tDiff) < 1) {
+        #     breaks <- 'Sturges'
+        # } else {
+        #     breaks <- 0:ceiling(max(tDiff))
+        # }
+        # hist(tDiff, breaks=breaks, main=paste0('Time between events (', units, ')'), xlim=c(0, max(tDiff) + 1))
+        g3 <- ggplot(data.frame(timeDiff=tDiff), aes(x=timeDiff)) +
+            geom_histogram(bins=50) +
+            labs(title=paste0('Time between events (', units, ')')) +
+            scale_y_continuous(expand=expansion(mult=c(0, .05)))
+        print(g1/g2/g3)
     }
     list(timeRange=timeRange, binRange=binFilt, allBin=binRange)
 }
