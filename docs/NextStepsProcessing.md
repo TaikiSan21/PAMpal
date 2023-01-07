@@ -447,25 +447,27 @@ myStudy <- matchEnvData(myStudy, nc=dist2shore)
 
 While PAMpal's interactive features can be useful when doing an
 exploratory analysis, or for one-off analyses, it can be a hassle
-for any analysis that might get run multiple times. Getting environmental
-data without any interactive steps just requires slightly more setup.
-This may require directly loading the `PAMmisc`, then we create an `edinfo`
-object as above. This time we use the option `chooseVars = FALSE` to
-avoid the interactive menu, then use the function `varSelect` to manually
-set the variables we wish to download. This requires knowing how many
-total variables there are in your dataset, since the number of values given
-to `varSelect` must match the number of variables present.
+for any analysis that might get run multiple times and is not ideal for
+reproducibility since the code itself leaves no clues as to what actually
+happened. Getting environmental data without any interactive steps just requires 
+us to know the names of the variables we want. If a dataset is on the upwell
+ERDDAP server, the variable name can be given to `matchEnvData` as the `var` 
+argument.
 
 ```r
-# This dataset is on upwell, we'll select only the first of 4 variables
-sst <- erddapToEdinfo(dataset='jplMURSST41',
-                      chooseVars = FALSE)
-sst <- varSelect(sst, select=c(TRUE, FALSE, FALSE, FALSE))
-# this dataset is on a different server, it has a single variable that we will get
+# This dataset is on upwell, we'll select the sst variable by name
+myStudy <- matchEnvData(myStudy, nc='jplMURSST41', var='analysed_sst')
+```
+
+If the dataset is on a different server, or we need to create the `edinfo` object
+separately for some other reason, then we can supply the variable names to
+the `erddapToEdinfo` function as the `chooseVars` argument.
+
+```r
+# this dataset is on a different server, we want the distance variable "dist"
 dist2shore <- erddapToEdinfo(dataset='dist2coast_1deg',
                              baseurl='https://pae-paha.pacioos.hawaii.edu/erddap/',
-                             chooseVars = FALSE)
-dist2shore <- varSelect(dist2shore, select = c(TRUE))
+                             chooseVars = 'dist')
 myStudy <- matchEnvData(myStudy, nc=dist2shore)
 ```
 
