@@ -1,3 +1,7 @@
+## PAMpal 0.17.2
+
+- Smol change to not grab unnecessary columns in `addGps`
+
 ## PAMpal 0.17.1
 
 - Converting all paths to use '/' instead of '\\'

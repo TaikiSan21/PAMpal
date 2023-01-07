@@ -122,7 +122,8 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, ...) {
 setMethod('addGps', signature(x='AcousticEvent'), function(x, gps=NULL, thresh = 3600, ...) {
     if(is.null(gps)) {
         gps <- rbindlist(lapply(files(x)$db, function(db) {
-            gpsFromDb(db, extraCols=c('Speed', 'Heading', 'MagneticVariation', 'db'), ...)
+            # gpsFromDb(db, extraCols=c('Speed', 'Heading', 'MagneticVariation', 'db'), ...)
+            gpsFromDb(db, extraCols = 'db', ...)
         }))
     }
     if(is.null(gps) ||
@@ -157,7 +158,8 @@ setMethod('addGps', 'AcousticStudy', function(x, gps=NULL, thresh = 3600, ...) {
             if(!file.exists(db)) {
                 return(NULL)
             }
-            gpsFromDb(db, extraCols=c('Speed', 'Heading', 'MagneticVariation', 'db'), ...)
+            # gpsFromDb(db, extraCols=c('Speed', 'Heading', 'MagneticVariation', 'db'), ...)
+            gpsFromDb(db, extraCols = 'db', ...)
         }))
         if(is.null(gps) ||
            nrow(gps) == 0) {
