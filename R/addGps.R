@@ -57,6 +57,7 @@ setGeneric('addGps', function(x, gps=NULL, thresh = 3600, ...) standardGeneric('
 #' @importFrom data.table data.table setkeyv key setDT setDF
 #' @importFrom dplyr mutate select
 #' @importFrom utils globalVariables
+#' @importFrom stats approxfun
 #' @export
 #'
 setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, ...) {
@@ -73,6 +74,15 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, ...) {
     }
     if(!('POSIXct' %in% class(x$UTC))) x$UTC <- pgDateToPosix(x$UTC)
     if(!('POSIXct' %in% class(gps$UTC))) gps$UTC <- pgDateToPosix(gps$UTC)
+    # code for just interping:
+    # can just make functions once at start and pass along
+    interpMethod <- ifelse(nrow(gps) > 1, 'linear', 'constant')
+    latFun <- approxfun(x=gps$UTC, y=gps$Latitude, rule=2, method=interpMethod)
+    lonFun <- approxfun(x=gps$UTC, y=gps$Longitude, rule=2, method=interpMethod)
+    # then use these for interpd results
+    # x$Latitude <- latFun(x$UTC)
+    # x$Longitude <- lonFun(x$UTC)
+    # problem with this is that we get nothing about really far apart matches
     # dummies for calculating time difference for threshold check later
     thisType <- attr(x, 'calltype')
     # x$dataTime <- x$UTC
@@ -103,7 +113,12 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, ...) {
         setkeyv(gps, 'UTC') # removing channel key from gps if its there i guess
     }
     result <- gps[x, roll='nearest']
-    result[abs(as.numeric(difftime(dataTime, gpsTime, units='secs'))) > thresh, c('Latitude', 'Longitude') := NA]
+    # result[abs(as.numeric(difftime(dataTime, gpsTime, units='secs'))) > thresh, c('Latitude', 'Longitude') := NA]
+    tooFar <- abs(as.numeric(difftime(result$dataTime, result$gpsTime, units='secs'))) > thresh
+    result$Latitude[tooFar] <- NA
+    result$Longitude[tooFar] <- NA
+    result$Latitude[!tooFar] <- latFun(result$dataTime[!tooFar])
+    result$Longitude[!tooFar] <- lonFun(result$dataTime[!tooFar])
     # result[, UTC := dataTime]
     result$UTC <- result$dataTime
     result[, c('gpsTime', 'dataTime') := NULL]
