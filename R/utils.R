@@ -170,7 +170,12 @@ safeListAdd <- function(x, value) {
     x
 }
 
-
+#' @importFrom lubridate int_standardize
+#' 
+withinLHS <- function(a, int) {
+    int <- int_standardize(int)
+    as.numeric(a) - as.numeric(int@start) < int@.Data & as.numeric(a) - as.numeric(int@start) >= 0
+}
 
 printN <- function(x, n=6, collapse=', ') {
     nItems <- length(x)

@@ -92,7 +92,7 @@
 #' @importFrom stringr str_trim
 #' @importFrom tcltk tk_choose.files
 #' @importFrom purrr transpose
-#' @importFrom lubridate interval %within% int_overlaps
+#' @importFrom lubridate interval int_overlaps
 #' @import dplyr
 #' @export
 #'
@@ -447,7 +447,8 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     for(i in seq_along(acousticEvents)) {
         thisData <- lapply(binData, function(x) {
             # data <- filter(x, x$UTC >= grouping$start[i], x$UTC <= grouping$end[i])
-            data <- x[x$UTC %within% grouping$interval[i], ]
+            # data <- x[x$UTC %within% grouping$interval[i], ]
+            data <- x[withinLHS(x$UTC, grouping$interval[i]), ]
             if(nrow(data) == 0) return(NULL)
             data
         })
