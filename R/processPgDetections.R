@@ -92,6 +92,7 @@
 #' @importFrom stringr str_trim
 #' @importFrom tcltk tk_choose.files
 #' @importFrom purrr transpose
+#' @importFrom lubridate interval %within% int_overlaps
 #' @import dplyr
 #' @export
 #'
@@ -364,11 +365,15 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
             }
             binBounds <- convertPgDate(c(thisBin$data[[1]]$date, thisBin$data[[dataLen]]$date))
         }
+        binInt <- interval(binBounds[1], binBounds[2])
 
-        evPossible <- (binBounds[1] >= grouping$start & binBounds[1] <= grouping$end) |
-            (binBounds[2] >= grouping$start & binBounds[2] <= grouping$end) |
-            (binBounds[1] <= grouping$start & binBounds[2] >= grouping$end)
-
+        # evPossible <- (binBounds[1] >= grouping$start & binBounds[1] <= grouping$end) |
+        #     (binBounds[2] >= grouping$start & binBounds[2] <= grouping$end) |
+        #     (binBounds[1] <= grouping$start & binBounds[2] >= grouping$end)
+        evPossible <- int_overlaps(binInt, grouping$interval)
+        # if(!identical(evPossible2, evPossible)) {
+        #     browser()
+        # }
         # if not overlapping any events, skip doing data part mobetta
         if(!any(evPossible)) {
             if(progress) {
@@ -441,7 +446,8 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     }
     for(i in seq_along(acousticEvents)) {
         thisData <- lapply(binData, function(x) {
-            data <- filter(x, x$UTC >= grouping$start[i], x$UTC <= grouping$end[i])
+            # data <- filter(x, x$UTC >= grouping$start[i], x$UTC <= grouping$end[i])
+            data <- x[x$UTC %within% grouping$interval[i], ]
             if(nrow(data) == 0) return(NULL)
             data
         })
@@ -947,6 +953,7 @@ checkGrouping <- function(grouping, format) {
         evName[evName == i] <- paste0(i, '_',  1:evTable[i])
     }
     grouping$id <- evName
+    grouping$interval <- interval(grouping$start, grouping$end)
     grouping
 }
 
@@ -1082,7 +1089,7 @@ wavToGroup <- function(db) {
         saGrp$id <- rep(1:(nrow(saGrp)/2), each=2)
         saGrp$id <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', saGrp$id)
         saGrp <- tidyr::spread(saGrp, 'Status', 'UTC')
-        saGrp <- saGrp[!is.na(saGrp$Start) && !is.na(saGrp$Stop), ]
+        saGrp <- saGrp[!is.na(saGrp$Start) & !is.na(saGrp$Stop), ]
         if(nrow(saGrp) == 0) {
             pamWarning('Could not find appropriate start and stop times in Sound_Acquisition table')
             return(NULL)

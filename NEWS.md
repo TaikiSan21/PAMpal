@@ -2,6 +2,8 @@
 
 - Smol change to not grab unnecessary columns in `addGps`
 
+- Big speed improvements for processing with `mode='time'` and `mode='recording'`
+
 ## PAMpal 0.17.1
 
 - Converting all paths to use '/' instead of '\\'

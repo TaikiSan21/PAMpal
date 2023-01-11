@@ -78,14 +78,14 @@ matchSR <- function(data, db, extraCols = NULL, safe=FALSE, fixNA=TRUE) {
             distinct() %>%
             data.table()
 
-        setkeyv(soundAcquisition, 'UTC')
+        # setkeyv(soundAcquisition, 'UTC')
 
         data <- data.table(data)
-        setkeyv(data, 'UTC')
+        # setkeyv(data, 'UTC')
 
         # This rolling join rolls to the first time before. Since we filtered to only starts, it goes back
         # to whatever the last Start was.
-        data <- soundAcquisition[data, roll = TRUE] %>%
+        data <- soundAcquisition[data, roll = TRUE, on='UTC'] %>%
             data.frame()
         srNa <- which(is.na(data$sampleRate))
     } else {
