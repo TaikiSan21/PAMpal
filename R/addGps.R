@@ -76,9 +76,10 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, ...) {
     if(!('POSIXct' %in% class(gps$UTC))) gps$UTC <- pgDateToPosix(gps$UTC)
     # code for just interping:
     # can just make functions once at start and pass along
+    gps <- distinct(gps)
     interpMethod <- ifelse(nrow(gps) > 1, 'linear', 'constant')
-    latFun <- approxfun(x=gps$UTC, y=gps$Latitude, rule=2, method=interpMethod)
-    lonFun <- approxfun(x=gps$UTC, y=gps$Longitude, rule=2, method=interpMethod)
+    latFun <- approxfun(x=gps$UTC, y=gps$Latitude, rule=2, method=interpMethod, ties='ordered')
+    lonFun <- approxfun(x=gps$UTC, y=gps$Longitude, rule=2, method=interpMethod, ties='ordered')
     # then use these for interpd results
     # x$Latitude <- latFun(x$UTC)
     # x$Longitude <- lonFun(x$UTC)
@@ -113,19 +114,21 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, ...) {
         setkeyv(gps, 'UTC') # removing channel key from gps if its there i guess
     }
     result <- gps[x, roll='nearest']
-    # result[abs(as.numeric(difftime(dataTime, gpsTime, units='secs'))) > thresh, c('Latitude', 'Longitude') := NA]
     tooFar <- abs(as.numeric(difftime(result$dataTime, result$gpsTime, units='secs'))) > thresh
-    result$Latitude[tooFar] <- NA
-    result$Longitude[tooFar] <- NA
+    result[tooFar, c('Latitude', 'Longitude') := NA]
+    # result[abs(as.numeric(difftime(dataTime, gpsTime, units='secs'))) > thresh, c('Latitude', 'Longitude') := NA]
+    # result$Latitude[tooFar] <- NA
+    # result$Longitude[tooFar] <- NA
     result$Latitude[!tooFar] <- latFun(result$dataTime[!tooFar])
     result$Longitude[!tooFar] <- lonFun(result$dataTime[!tooFar])
-    # result[, UTC := dataTime]
-    result$UTC <- result$dataTime
-    result[, c('gpsTime', 'dataTime') := NULL]
+    result[, UTC := dataTime]
+    # result$UTC <- result$dataTime
     if(any(is.na(result$Longitude))) {
+        avgTime <- mean(abs(as.numeric(difftime(result$dataTime[tooFar], result$gpsTime[tooFar], units='secs'))))
         pamWarning('Some GPS coordinate matches exceeded time threshold, setting',
-                ' value to NA.')
+                ' value to NA. (Average ', round(avgTime,0), ' seconds apart)')
     }
+    result[, c('gpsTime', 'dataTime') := NULL]
     attr(result, 'calltype') <- thisType
     setDF(result)
     result
