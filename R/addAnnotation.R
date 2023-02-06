@@ -80,7 +80,7 @@ prepAnnotation <- function(x, specMap=NULL, mode=c('event', 'detection'), intera
     }
     
     annoList <- getAnnoTemplate(notes=FALSE)
-    
+    noMatchSp <- character(0)
     fillEventAnno <- function(event, anno, interactive=interactive, mode) {
         coordsOnly <- bind_rows(lapply(detectors(event), function(d) {
             d[, c('UTC', 'Longitude', 'Latitude', 'UID')]
@@ -102,7 +102,13 @@ prepAnnotation <- function(x, specMap=NULL, mode=c('event', 'detection'), intera
         
         thisSpec <- species(event)$id
         if(!is.null(specMap)) {
-            thisSpec <- specMap$new[specMap$old == thisSpec]
+            if(is.null(thisSpec) ||
+               is.na(thisSpec) ||
+               !thisSpec %in% specMap$old) {
+                noMatchSp <<- c(noMatchSp, thisSpec)
+            } else {
+                thisSpec <- specMap$new[specMap$old == thisSpec]
+            }
         }
         anno$taxon <- thisSpec
         switch(mode,
@@ -138,7 +144,12 @@ prepAnnotation <- function(x, specMap=NULL, mode=c('event', 'detection'), intera
         }
         allAnno[[d]] <- dotArgs[[d]]
     }
-    
+    if(length(noMatchSp) > 0) {
+        noMatchSp <- unique(noMatchSp)
+        warning(length(noMatchSp), ' species labels were not found in ',
+                '"specMap", they have not been changed: ', 
+                paste0(noMatchSp, collapse=', '), call. = FALSE)
+    }
     allAnno
 }
 
