@@ -245,3 +245,33 @@ test_that('Test hydrophone depth', {
     expect_true('hpDepth' %in% colnames(clicks))
     expect_equal(10, clicks$hpDepth[1])
 })
+
+test_that('Test annotation stuff', {
+    exPps <- new('PAMpalSettings')
+    exPps <- addDatabase(exPps, system.file('extdata', 'Example.sqlite3', package='PAMpal'), verbose=FALSE)
+    exPps <- addBinaries(exPps, system.file('extdata', 'Binaries', package='PAMpal'), verbose=FALSE)
+    exClick <- function(data) {
+        standardClickCalcs(data, calibration=NULL, filterfrom_khz = 0)
+    }
+    exPps <- addFunction(exPps, exClick, module = 'ClickDetector', verbose=FALSE)
+    exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans', verbose=FALSE)
+    exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum', verbose=FALSE)
+    exData <- processPgDetections(exPps, mode='db', id='Example', progress = FALSE, verbose = FALSE)
+    
+    exData <- addGps(exData, thresh=365*24*3600)
+    exData <- setSpecies(exData, 'pamguard')
+    anno <- prepAnnotation(exData)
+    expect_warning(checkAnnotation(anno), 'Fill in data for')
+    anno$source <- 'test'
+    anno$annotator <- 'me'
+    anno$contact <- 'me'
+    recUrl <- data.frame(matchId = names(events(exData)),
+                         filestart = min(getClickData(exData)$UTC),
+                         recording_url = paste0(1:3, 'test.com'))
+    anno <- matchRecordingUrl(anno, recUrl)
+    expect_message(checkAnnotation(anno), 'Also missing')
+    exData <- addAnnotation(exData, anno, verbose = FALSE)
+    expect_identical(anno, getAnnotation(exData))
+    expect_message(export_annomate(exData), 'Also missing')
+    expect_identical(export_annomate(exData), export_annomate(anno))
+})

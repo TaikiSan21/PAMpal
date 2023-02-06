@@ -1,7 +1,10 @@
 #' @title Create Wav Clips of Data
 #'
 #' @description Creates audio clips containing sounds from events or detections
-#'
+#' 
+#' @details \code{parseEventClipName} parses the file names created to pull out
+#'   event names or file start times
+#' 
 #' @param x \linkS4class{AcousticStudy} object containing data to make wav clips for
 #' @param buffer amount before and after each event to also include in the clip, in seconds.
 #'   Can either be a vector of length two specifying how much to buffer before and after
@@ -109,6 +112,37 @@ psxToChar <- function(x) {
     paste0(substr(psFloor, 1, 8), '_',
            substr(psFloor, 9, 14), '_',
            gsub('^0\\.', '', psMilli))
+}
+
+#' @rdname writeEventClips
+#' 
+#' @param file file name to parse
+#' @param part part of file name to return
+#' 
+#' @export
+#' 
+parseEventClipName <- function(file, part=c('event', 'time')) {
+    pattern <- '(Event|Detection)_(.*)CH[0-9]{1,2}_([0-9]{14}_[0-9]{3}|[0-9]{8}_[0-9]{6}_[0-9]{3})\\.wav$'
+    switch(match.arg(part),
+           'event' = {
+               return(gsub(pattern, '\\2', file))
+           },
+           'time' = {
+               result <- gsub(pattern, '\\3', file)
+               milli <- gsub('(.*)_([0-9]{3})$', '\\2', result)
+               result <- gsub('(.*)_([0-9]{3})$', '\\1', result)
+               result <- gsub('_', '', result)
+               result <- as.POSIXct(result, format='%Y%m%d%H%M%S', tz='UTC')
+               result <- result + as.numeric(milli)/1e3
+               result
+               # result <- sapply(strsplit(result, '_'), function(t) {
+               #     time <- as.POSIXct(t[1], format='%Y%m%d%H%M%S', tz='UTC')
+               #     time <- time + as.numeric(t[2])/1e3
+               #     time
+               # })
+               # as.POSIXct(result, origin='1970-01-01 00:00:00', tz='UTC')
+           }
+    )
 }
 
 # writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', 'detection'),

@@ -66,11 +66,16 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
     isSpecies <- grepl('species|Species', dotChars)
     if(any(isSpecies)) {
         # do species filtering first
-        naSp <- sapply(events(.data), function(x) is.na(species(x)$id))
+        naSp <- sapply(events(.data), function(x) is.null(species(x)$id) || is.na(species(x)$id))
         if(any(naSp)) {
             pamWarning('Attempting to filter by species, but ', sum(naSp),
                     ' species have not been set. These will be removed from',
                     ' the filtered results.')
+            events(.data) <- events(.data)[!naSp]
+            if(length(events(.data)) == 0) {
+                .data <- .addPamWarning(.data)
+                return(.data)
+            }
         }
         spKeep <- rep(TRUE, length(events(.data)))
         # exprText <- gsub('(^species|^Species)', 'species(x)$id', dotChars[isSpecies])

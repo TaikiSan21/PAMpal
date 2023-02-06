@@ -1,3 +1,10 @@
+## PAMpal 0.18.0
+
+- Adding `addAnnotation` and related functions for annomate exporting
+
+- Explicitly marking joins that are expected to have multiple matches re:
+`dplyr::join`'s new behavior
+
 ## PAMpal 0.17.2
 
 - Smol change to not grab unnecessary columns in `addGps`

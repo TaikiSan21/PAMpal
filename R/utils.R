@@ -406,7 +406,8 @@ getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
                 if('duration' %in% colnames(d)) {
                     switch(attr(d, 'calltype'),
                            'whistle' = out$duration <- d$duration,
-                           'click' = out$duration <- d$duration / 1e6,
+                           # 'click' = out$duration <- d$duration / 1e6,
+                           'click' = out$duration <- 0, # duration is not reliable for clicks
                            'cepstrum' = out$duration <- d$duration
                     )
                 } else {

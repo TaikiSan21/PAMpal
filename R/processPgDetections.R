@@ -603,7 +603,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                         x$BinaryUsed <- thisBin$fileInfo$fileName
                         binData %>%
                             # select(-.data$BinaryFile) %>%
-                            inner_join(x, by='UID') %>%
+                            inner_join(x, by='UID', multiple='all') %>%
                             distinct()
                     }
                 }

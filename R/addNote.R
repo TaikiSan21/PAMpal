@@ -112,7 +112,9 @@ getNotes <- function(x) {
     if(is.AcousticStudy(x)) {
         out <- list(studyNotes = ancillary(x)$notes)
         evNotes <- lapply(events(x), getNotes)
-        evNotes <- evNotes[sapply(evNotes, function(e) !is.null(e))]
+        if(length(evNotes) > 0) {
+            evNotes <- evNotes[sapply(evNotes, function(e) !is.null(e))]
+        }
         if(length(evNotes) > 0) {
             out$eventNotes <- evNotes
         }
