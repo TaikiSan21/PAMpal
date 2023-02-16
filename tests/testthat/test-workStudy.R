@@ -42,7 +42,7 @@ test_that('Test working with AcousticStudy object', {
     ))
     gps <- data.frame(Latitude = 32, Longitude=-118, UTC = as.POSIXct('2020-01-30 00:00:00', tz='UTC'))
     expect_warning(addGps(exData, gps=gps, thresh=3600),
-                   'Some GPS coordinate matches exceeded')
+                   '3 events had GPS matches')
     exData <- addGps(exData, gps=gps, thresh=Inf)
     expect_equal(nrow(gps(exData)), 1)
     expect_equal(getClickData(exData)$Latitude[1], 32)
