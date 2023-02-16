@@ -2,6 +2,8 @@
 
 - Updated to warnings in `addGps` to now be less overwhelming
 
+- Fixed bug for displaying some notes after combining with `bindStudies`
+
 ## PAMpal 0.18.0
 
 - Adding `addAnnotation` and related functions for annomate exporting
