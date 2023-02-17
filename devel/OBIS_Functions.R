@@ -5,6 +5,8 @@ library(PAMpal)
 library(lubridate)
 library(worrms)
 
+# converts GPS dataframe to spatial linestring, only taking a point
+# every "interval" days
 gpsToLinestring <- function(x, interval=1) {
     x <- arrange(x, UTC)
     x$dayDiff <- as.numeric(difftime(x$UTC, x$UTC[1], units='days'))
@@ -15,6 +17,7 @@ gpsToLinestring <- function(x, interval=1) {
     st_linestring(matrix(c(less$Longitude, less$Latitude), ncol=2))
 }
 
+# return just some summary data for each event in acousticstudy
 eventSummary <- function(x, measures=TRUE) {
     evData <- lapply(events(x), function(e) {
         result <- list()
@@ -49,6 +52,7 @@ eventSummary <- function(x, measures=TRUE) {
     bind_rows(evData)
 }
 
+# create obis event dataframe from PAMpal
 formatObisEvent <- function(gps, dbPattern, ...) {
     result <- bind_rows(lapply(split(gps, gps$db), function(d) {
         start <- min(d$UTC)
@@ -86,6 +90,7 @@ formatObisEvent <- function(gps, dbPattern, ...) {
     result
 }
 
+# create obis occurrence re ords from PAMpal
 formatObisOccur <- function(eventSummary, speciesMap, dbPattern, ...) {
     wormsRecords <- bind_rows(wm_record(unique(speciesMap$aphia)))
     wr <- select(wormsRecords, 
@@ -133,6 +138,8 @@ formatObisOccur <- function(eventSummary, speciesMap, dbPattern, ...) {
     obOc
 }
 
+# do all event and occurrence steps directly from acoustic study
+# and match their IDs appropriately
 export_obis <- function(x, speciesMap, dbPattern=NULL, ...) {
     if(is.null(dbPattern) ||
        length(dbPattern) == 0) {

@@ -1,9 +1,9 @@
 source('./devel/OBIS_Functions.R')
-cces <- readRDS('../../beaker-wigner-class/rds/ccesStudy.rds')
-table(species(cces))
-# must have "ours" for every species in study we want to exprot record of
+data <- readRDS('../../beaker-wigner-class/rds/ccesStudy.rds')
+table(species(data))
+# must have "ours" for every species in study we want to export record of
 # lookup aphia id here https://www.marinespecies.org/aphia.php?p=search
-# coord might be different for each species
+# coord might be different for each species, roughly max detection distance
 speciesMap <- tribble(
     ~ours, ~aphia, ~coordinateUncertaintyInMeters,
     'BB', 242608, 4000,
@@ -23,8 +23,14 @@ otherFields <- list(
     samplingProtocol = 'https://doi.org/10.6084/m9.figshare.19358036',
     countryCode = 'US',
     geodeticDatum = 'WGS84')
-
-obis <- export_obis(cces, speciesMap, dbPattern=c('.*(Drift-[0-9]{1,2}).*', 'CCES_\\1'), otherFields)
+# dbPattern tells how to convert basename(db) into the event ID using
+# gsub(dbPattern[1], dbPattern[2], basename(db))
+obis <- export_obis(data, 
+                    speciesMap, 
+                    dbPattern=c('.*(Drift-[0-9]{1,2}).*', 'CCES_\\1'), 
+                    otherFields)
+# "export_obis" outputs a list of two dataframes, "event" for event data
+# and "occurrence" for occurrence data
 
 library(obistools)
 # this gives an error message about parentEventID, I dont fully udnerstand
