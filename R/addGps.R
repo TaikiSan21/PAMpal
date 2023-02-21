@@ -60,6 +60,7 @@ setGeneric('addGps', function(x, gps=NULL, thresh = 3600, ...) standardGeneric('
 #' @importFrom dplyr mutate select
 #' @importFrom utils globalVariables
 #' @importFrom stats approxfun
+#' @importFrom geosphere distGeo
 #' @export
 #'
 setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, keepDiff=FALSE, ...) {
@@ -79,6 +80,7 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, keepDiff=FALSE
     # code for just interping:
     # can just make functions once at start and pass along
     gps <- distinct(gps)
+    gpsRange <- range(gps$UTC, na.rm=TRUE)
     interpMethod <- ifelse(nrow(gps) > 1, 'linear', 'constant')
     latFun <- approxfun(x=gps$UTC, y=gps$Latitude, rule=2, method=interpMethod, ties='ordered')
     lonFun <- approxfun(x=gps$UTC, y=gps$Longitude, rule=2, method=interpMethod, ties='ordered')
@@ -116,6 +118,10 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, keepDiff=FALSE
         setkeyv(gps, 'UTC') # removing channel key from gps if its there i guess
     }
     result <- gps[x, roll='nearest']
+    result$closeLat <- result$Latitude
+    result$closeLon <- result$Longitude
+    # result[, closeLat := Latitude]
+    # result[, closeLon := Longitude]
     tooFar <- abs(as.numeric(difftime(result$dataTime, result$gpsTime, units='secs'))) > thresh
     if(keepDiff) {
         result$timeDiff <- abs(as.numeric(difftime(result$dataTime, result$gpsTime, units='secs')))
@@ -126,14 +132,23 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, keepDiff=FALSE
     # result$Longitude[tooFar] <- NA
     result$Latitude[!tooFar] <- latFun(result$dataTime[!tooFar])
     result$Longitude[!tooFar] <- lonFun(result$dataTime[!tooFar])
+    result$gpsUncertainty <- NA
+    result$gpsUncertainty[!tooFar] <- 
+        distGeo(matrix(c(result$Longitude[!tooFar], result$Latitude[!tooFar]), ncol=2),
+                           matrix(c(result$closeLon[!tooFar], result$closeLat[!tooFar]), ncol=2))
     result[, UTC := dataTime]
+    # if were interp'ing out of bounds this ends up at 0 which is incorrect
+    if(interpMethod == 'linear') {
+        result$gpsUncertainty[result$UTC <= gpsRange[1]] <- NA
+        result$gpsUncertainty[result$UTC >= gpsRange[2]] <- NA
+    }
     # result$UTC <- result$dataTime
     if(any(is.na(result$Longitude))) {
         avgTime <- mean(abs(as.numeric(difftime(result$dataTime[tooFar], result$gpsTime[tooFar], units='hours'))))
         warning('Some GPS coordinate matches exceeded time threshold, setting',
                 ' value to NA. (Average ', round(avgTime,1), ' hours apart)')
     }
-    result[, c('gpsTime', 'dataTime') := NULL]
+    result[, c('gpsTime', 'dataTime', 'closeLat', 'closeLon') := NULL]
     attr(result, 'calltype') <- thisType
     setDF(result)
     result

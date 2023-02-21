@@ -4,6 +4,9 @@
 
 - Fixed bug for displaying some notes after combining with `bindStudies`
 
+- `addGps` now adds `gpsUncertainty` which says how many meters since to
+the closest GPS point. Useful to catch points where we have interpolated a lot.
+
 ## PAMpal 0.18.0
 
 - Adding `addAnnotation` and related functions for annomate exporting

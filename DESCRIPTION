@@ -41,7 +41,8 @@ Imports:
     xml2,
     rlang,
     reticulate,
-    lubridate
+    lubridate,
+    geosphere
 RoxygenNote: 7.2.3
 Suggests: 
     testthat
