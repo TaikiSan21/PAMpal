@@ -833,6 +833,10 @@ names(trainTest)
 nrow(trainTest$train$events)
 nrow(trainTest$test$events)
 ```
+## Plotting Call Presence or Density Summaries
+
+This is a longer topic with [its own page][plot-pres]
 
 [avg-spec]: AvgSpec.html
 [banter-guide]: banterGuide.html
+[plot-pres]: plotPres.html
