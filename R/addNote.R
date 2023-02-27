@@ -63,11 +63,15 @@ doNoteAdd <- function(x, label, note) {
 }
 
 formatNotes <- function(x, nchar=70, n=6, nSpace=0) {
+    # notes are formatted as list of title: note
     if(is.AcousticEvent(x) ||
        is.AcousticStudy(x)) {
         x <- getNotes(x)
     }
+    # expecting single character note per title, this
+    # is formatting taht case
     if(is.character(x)) {
+        x <- paste0(x, collapse=', ')
         if(nchar(x) > nchar) {
             x <- paste0(substr(x, 1, nchar), '...')
         }
@@ -112,7 +116,9 @@ getNotes <- function(x) {
     if(is.AcousticStudy(x)) {
         out <- list(studyNotes = ancillary(x)$notes)
         evNotes <- lapply(events(x), getNotes)
-        evNotes <- evNotes[sapply(evNotes, function(e) !is.null(e))]
+        if(length(evNotes) > 0) {
+            evNotes <- evNotes[sapply(evNotes, function(e) !is.null(e))]
+        }
         if(length(evNotes) > 0) {
             out$eventNotes <- evNotes
         }

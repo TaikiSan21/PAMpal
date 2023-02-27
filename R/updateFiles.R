@@ -176,32 +176,38 @@ fileMatcher <- function(old, new) {
         }
         nCheck <- newNCheck
     }
-    if(nCheck > 0) {
-        warning(nCheck, ' files could not be updated to new locations')
+    if(nCheck == 0) {
+        return(old)
     }
+    
     # cat(nReps, 'different base directories used')
-    old
-    ###
-    # oldBase <- basename(old)
-    # newBase <- basename(new)
-    # newPoss <- new[newBase %in% oldBase]
-    # newBase <- basename(newPoss)
-    # 
-    # matchFun <- function(x) {
-    #     poss <- which(newBase %in% basename(x))
-    #     if(length(poss) == 0) {
-    #         return(NA)
-    #     }
-    #     if(length(poss) == 1) {
-    #         return(poss)
-    #     }
-    #     dirMatch <- checkNextDir(x, newPoss[poss]) # return ix of poss
-    #     poss[dirMatch]
-    # }
-    # 
-    # repIx <- unlist(purrr::map(old, matchFun))
-    # old[!is.na(repIx)] <- newPoss[repIx[!is.na(repIx)]]
     # old
+    ###
+    oldBase <- basename(old)
+    newBase <- basename(new)
+    newPoss <- new[newBase %in% oldBase]
+    newBase <- basename(newPoss)
+
+    matchFun <- function(x) {
+        poss <- which(newBase %in% basename(x))
+        if(length(poss) == 0) {
+            return(NA)
+        }
+        if(length(poss) == 1) {
+            return(poss)
+        }
+        dirMatch <- checkNextDir(x, newPoss[poss]) # return ix of poss
+        poss[dirMatch]
+    }
+
+    repIx <- unlist(purrr::map(old, matchFun))
+    old[!is.na(repIx)] <- newPoss[repIx[!is.na(repIx)]]
+    notIn <- !old %in% new
+    nNot <- sum(notIn)
+    if(nNot > 0) {
+        warning(nNot, ' files could not be updated to new locations')
+    }
+    old
 }
 
 # get path difference for a single old file

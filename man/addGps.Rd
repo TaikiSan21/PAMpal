@@ -11,7 +11,7 @@
 \usage{
 addGps(x, gps = NULL, thresh = 3600, ...)
 
-\S4method{addGps}{data.frame}(x, gps = NULL, thresh = 3600, ...)
+\S4method{addGps}{data.frame}(x, gps, thresh = 3600, keepDiff = FALSE, ...)
 
 \S4method{addGps}{AcousticEvent}(x, gps = NULL, thresh = 3600, ...)
 
@@ -37,6 +37,9 @@ data, if the closest coordinate is more than \code{thresh} apart then the
 Latitude and Longitude values will be set to \code{NA}}
 
 \item{\dots}{additional arguments for other methods}
+
+\item{keepDiff}{logical flag to keep time difference column (between GPS time
+and data time)}
 }
 \value{
 the same data as \code{x}, with Lat/Long data added. AcousticStudy objects

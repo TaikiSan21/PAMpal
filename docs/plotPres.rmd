@@ -1,0 +1,169 @@
+---
+output: html_document
+title: Plotting Call Presence and Density
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load, echo=FALSE, cache=TRUE, include=FALSE}
+library(here)
+data <- readRDS(here('../Data/BadCCES/ccesStudy.rds'))
+```
+
+As of version 1.11.1, the `PAMmisc` package has two new functions to plot
+summaries of your detection data, `plotPresBar` and `plotPresGrid`. The
+only requirement for these functions is a dataframe with a `UTC` column,
+so they can easily be used with `AcousticStudy` objects from `PAMpal`.
+It is best if `UTC` is already converted to POSIXct format, but if it is
+a character you must provide the date format with the `format` argument
+according to the details in `?strptime`.
+
+## Basic Functionality - plotPresBar
+
+First we'll pull out the click detection data from our `AcousticStudy`. This
+already has a `UTC` column, so it can immediately be used for the plotting 
+functions. The `plotPresBar` function can be used to create a bar graph of
+calls across time. The `bin` argument controls the time bins for plotting.
+Let's create a plot that shows how many hours of each day have detections
+by setting `bin='hours/day'`.
+
+```{r}
+library(PAMpal)
+clicks <- getClickData(data)
+library(PAMmisc)
+plotPresBar(clicks, bin='hours/day')
+```
+
+We can also show the number of calls per day by changing bin to just
+`bin='day'` to show the density of calls rather than just the presence
+of calls. This can also be specified as `bin='calls/day'`
+
+```{r}
+plotPresBar(clicks, bin='day')
+# plotPresBar(clicks, bin='calls/day') # this is the same
+```
+
+`bin` can accept time units of `minute`, `hour`, `day`, `week`, and `month`. 
+Plural forms of these are also accepted. The
+output is a `ggplot` object, so we can also use the `patchwork` package to organize
+the plot outputs. 
+
+**NOTE** If the time scale of the bins is too small relative 
+to the overall timescale of your data, it is likely that the plot will be incorrect.
+The `minutes/hour` plot below is probably missing a lot of bars since there are
+more hours than can be reasonably shown across the 4 months of our entire dataset.
+
+```{r}
+library(patchwork)
+# Using patchwork to organize the plots
+(plotPresBar(clicks, bin='days/week') +
+    plotPresBar(clicks, bin='hour/week')) /
+    (plotPresBar(clicks, bin='minutes/hour') +
+         plotPresBar(clicks, bin='days/month'))
+```
+
+We can also color the bars by another variable in the dataset using the `by` 
+argument to specify the column to color by. Here we show the 
+presence of calls of different species by setting `by='species'`. 
+
+**NOTE** This stacks the bars for each species, so it is possible for the
+total height of the bar to be greater than 24 hours for a given day. 
+
+```{r}
+plotPresBar(clicks, bin='hour/day', by='species')
+```
+
+## Basic Functionality - plotPresGrid
+
+The `plotPresGrid` function can be useful to visualize the distribution of
+detections across the course of a day. Additionally, if GPS data is present
+in the dataframe (or provided separately), it can display dawn/dusk to
+investigate diurnal patterns.
+
+The data we've been working with so far cover a range of deployments along
+the coast of California, so we'll filter these down to a single deployment
+so that the GPS data is for a single location.
+
+```{r, cache=TRUE}
+clicks$Drift <- gsub('.*(Drift-[0-9]{1,2}).*', '\\1', basename(clicks$db))
+drift4 <- clicks[clicks$Drift == 'Drift-4', ]
+```
+
+The data we are working with already has GPS data from earlier in the analysis
+(added with `addGps` prior to this tutorial). The gray shaded background marks
+the times from dusk to dawn, note that times are always in UTC. With 
+`type='presence'`, the blue boxes represent hours that have detections.
+
+```{r}
+plotPresGrid(drift4, bin = 'hour', type='presence')
+```
+
+With `type='density'` we can see the number of detections in each hour.
+
+```{r}
+plotPresGrid(drift4, bin='hour', type='density')
+```
+
+For `plotPresGrid`, the `bin` argument can be one of `hour`, `30min`, `15min`, or
+`min`.
+
+```{r}
+(plotPresGrid(drift4, bin='hour', type='presence') +
+     plotPresGrid(drift4, bin='30min', type='presence')) /
+    (plotPresGrid(drift4, bin='15min', type='presence') +
+         plotPresGrid(drift4, bin='min', type='presence'))
+```
+
+## More Options - Both Functions
+
+Both plotting functions can change the default color of the bars/boxes with the
+`fill` argument.
+
+```{r}
+plotPresBar(drift4, bin='hour/day', fill='orange') +
+    plotPresGrid(drift4, bin='hour', fill='darkgreen')
+```
+
+Both plotting functions can add custom titles to the plot with the `title` 
+argument.
+
+```{r}
+plotPresBar(drift4, bin='hour/day', title='Bar Title') +
+    plotPresGrid(drift4, bin='hour', title='Grid Title')
+```
+
+Both plotting functions can change the start and end times of the plots with the
+`start` and `end` arguments (default is min/max time in the dataset).
+
+```{r}
+newStart <- min(drift4$UTC) - 12 * 24 * 3600
+newEnd <- max(drift4$UTC) + 7 * 24 * 3600
+plotPresBar(drift4, bin='hour/day', start=newStart, end=newEnd) +
+    plotPresGrid(drift4, bin='hour', start=newStart, end=newEnd)
+```
+
+## More Options - plotPresGrid
+
+The dawn/dusk shading only works if GPS data are provided. In our earlier example,
+columns `Longitude` and `Latitude` are already part of the dataframe, so we did 
+not need to do anything else. You can also provide GPS coordinates directly using
+the `gps` argument if they are not already attached to your data. This should be a
+dataframe with columns `UTC`, `Longitude`, and `Latitude`. Here we'll provide coordinates
+from a different part of the world to show the difference.
+
+```{r}
+newGps <- data.frame(UTC = min(drift4$UTC), Longitude=0, Latitude=56)
+plotPresGrid(drift4, bin='hour', title='California') +
+    plotPresGrid(drift4, bin='hour', gps=newGps, title='North Sea')
+```
+
+In addition to changing the color of the box when plotting presence, we can also change
+the box outline color with the `color` argument, and we can change the colormap
+used to plot call density with the `cmap` argument.
+
+```{r}
+plotPresGrid(drift4, bin='hour', type='presence', color='lightblue', fill='blue') +
+    plotPresGrid(drift4, bin='hour', type='density', cmap=viridis::inferno(25))
+```

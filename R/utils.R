@@ -170,7 +170,12 @@ safeListAdd <- function(x, value) {
     x
 }
 
-
+#' @importFrom lubridate int_standardize
+#' 
+withinLHS <- function(a, int) {
+    int <- int_standardize(int)
+    as.numeric(a) - as.numeric(int@start) < int@.Data & as.numeric(a) - as.numeric(int@start) >= 0
+}
 
 printN <- function(x, n=6, collapse=', ') {
     nItems <- length(x)
@@ -401,7 +406,8 @@ getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
                 if('duration' %in% colnames(d)) {
                     switch(attr(d, 'calltype'),
                            'whistle' = out$duration <- d$duration,
-                           'click' = out$duration <- d$duration / 1e6,
+                           # 'click' = out$duration <- d$duration / 1e6,
+                           'click' = out$duration <- 0, # duration is not reliable for clicks
                            'cepstrum' = out$duration <- d$duration
                     )
                 } else {

@@ -147,9 +147,10 @@ getMeasures <- function(x) {
         result <- lapply(x[sapply(x, is.AcousticEvent)], function(e) {
             getMeasures(e)
         })
-        names(result) <- NULL
-        result <- unlist(result, recursive=FALSE)
-        return(squishList(result))
+        return(bind_rows(result))
+        # names(result) <- NULL
+        # result <- unlist(result, recursive=FALSE)
+        # return(squishList(result))
     }
     # base case one acev
     c(id=id(x), ancillary(x)$measures)

@@ -42,7 +42,7 @@ checkStudy <- function(x, maxLength=Inf, maxSep=60*60*2) {
         pamWarning('No events in AcousticStudy')
         return(NULL)
     }
-    dets <- getDetectorData(x)
+    dets <- getDetectorData(x, measures = FALSE)
     peak0Msg <- doCheck(checkPeakZero, dets)
     timeMsg <- doCheck(checkTime, x, length=maxLength, between=maxSep)
     NAmsg <- doCheck(checkNAVals, dets)
