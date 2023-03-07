@@ -339,6 +339,10 @@ getSoundtrapLog <- function(log) {
     }
 
     xFold <- list.files(log, full.names = TRUE, pattern = 'xml')
+    if(length(xFold) == 0) {
+        pamWarning('Log folder ', log, ' has no XML log files.')
+        return(data.frame(gap=0, sample=1, file='DNE'))
+    }
     missing <- lapply(xFold, function(x) {
         xml <- read_xml(x)
         info <- as.character(xml_find_all(xml, '//@Info'))
