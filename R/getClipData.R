@@ -91,8 +91,9 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
     })
     # one DB at a time
     for(d in seq_along(dbMap)) {
-        thisDbData <- x[which(evDbs == names(dbMap)[d])]
-        if(length(events(thisDbData)) == 0) next
+        thisDbMatch <- which(evDbs == names(dbMap)[d])
+        if(length(thisDbMatch) == 0) next
+        thisDbData <- x[thisDbMatch]
         wavMap <- dbMap[[d]]
         allTimes <- getTimeRange(thisDbData, mode=mode, sample=useSample)
         allResult <- vector('list', length = length(allTimes))
