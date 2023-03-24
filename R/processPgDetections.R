@@ -998,18 +998,6 @@ getModuleType <- function(x) {
     moduleType
 }
 
-#' @importFrom lubridate parse_date_time
-#'
-parseUTC <- function(x, format) {
-    if(inherits(x, 'factor')) {
-        x <- as.character(x)
-    }
-    if(is.character(x)) {
-        x <- parse_date_time(x, orders=format, tz='UTC', exact=TRUE, truncated=2, quiet=TRUE)
-    }
-    x
-}
-
 autoMode <- function(pps, grouping) {
     if(is.data.frame(grouping) ||
        (is.character(grouping) && file.exists(grouping))) {

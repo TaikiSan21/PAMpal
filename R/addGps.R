@@ -75,8 +75,8 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, keepDiff=FALSE
         pamWarning('Data needs column UTC.')
         return(x)
     }
-    if(!('POSIXct' %in% class(x$UTC))) x$UTC <- pgDateToPosix(x$UTC)
-    if(!('POSIXct' %in% class(gps$UTC))) gps$UTC <- pgDateToPosix(gps$UTC)
+    if(!('POSIXct' %in% class(x$UTC))) x$UTC <- parseUTC(x$UTC)
+    if(!('POSIXct' %in% class(gps$UTC))) gps$UTC <- parseUTC(gps$UTC)
     # code for just interping:
     # can just make functions once at start and pass along
     gps <- distinct(gps)
@@ -97,7 +97,7 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, keepDiff=FALSE
     # x[, dataTime := UTC]
     x$dataTime <- x$UTC
     gps <- checkGpsKey(gps)
-    
+
     if('Channel' %in% colnames(gps)) {
         gpsCols <- c('Channel', needCols)
         # gps <- gps[, c('Channel', 'gpsTime', needCols), with=FALSE]
@@ -105,7 +105,7 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, keepDiff=FALSE
         gpsCols <- needCols
         # gps <- gps[, c('gpsTime', needCols), with=FALSE]
     }
-    
+
     gps <- gps[, gpsCols, with=FALSE]
     # gps[, gpsTime := UTC]
     gps$gpsTime <- gps$UTC
@@ -133,7 +133,7 @@ setMethod('addGps', 'data.frame', function(x, gps, thresh = 3600, keepDiff=FALSE
     result$Latitude[!tooFar] <- latFun(result$dataTime[!tooFar])
     result$Longitude[!tooFar] <- lonFun(result$dataTime[!tooFar])
     result$gpsUncertainty <- NA
-    result$gpsUncertainty[!tooFar] <- 
+    result$gpsUncertainty[!tooFar] <-
         distGeo(matrix(c(result$Longitude[!tooFar], result$Latitude[!tooFar]), ncol=2),
                            matrix(c(result$closeLon[!tooFar], result$closeLat[!tooFar]), ncol=2))
     result[, UTC := dataTime]
@@ -227,7 +227,7 @@ setMethod('addGps', 'AcousticStudy', function(x, gps=NULL, thresh = 3600, ...) {
         #     thisGps <- gps[gps$db %in% files(y)$db, c('UTC', 'Latitude', 'Longitude'), with=FALSE]
         #     addGps(y, thisGps, thresh, ...)
         # })
-        
+
     } #else {
     #     gps <- checkGpsKey(gps)
     #     events(x) <- lapply(events(x), function(y) {
@@ -316,6 +316,9 @@ checkGpsKey <- function(gps) {
     }
     if(!inherits(gps, 'data.table')) {
         setDT(gps)
+    }
+    if(!inherits(gps$UTC, 'POSIXct')) {
+        gps$UTC <- parseUTC(gps$UTC)
     }
     if('Channel' %in% colnames(gps)) {
         if(is.null(key(gps)) ||

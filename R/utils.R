@@ -5,6 +5,19 @@ pgDateToPosix <- function(x) {
     as.POSIXct(as.character(x), format='%Y-%m-%d %H:%M:%OS', tz='UTC')
 }
 
+#' @importFrom lubridate parse_date_time
+#'
+parseUTC <- function(x, format=c('%m/%d/%Y %H:%M:%OS', '%m-%d-%Y %H:%M:%OS',
+                                 '%Y/%m/%d %H:%M:%OS', '%Y-%m-%d %H:%M:%OS')) {
+    if(inherits(x, 'factor')) {
+        x <- as.character(x)
+    }
+    if(is.character(x)) {
+        x <- parse_date_time(x, orders=format, tz='UTC', exact=TRUE, truncated=2, quiet=TRUE)
+    }
+    x
+}
+
 # drop columns with names cols
 dropCols <- function(x, cols) {
     ct <- attr(x, 'calltype')
@@ -171,7 +184,7 @@ safeListAdd <- function(x, value) {
 }
 
 #' @importFrom lubridate int_standardize
-#' 
+#'
 withinLHS <- function(a, int) {
     int <- int_standardize(int)
     as.numeric(a) - as.numeric(int@start) < int@.Data & as.numeric(a) - as.numeric(int@start) >= 0
