@@ -1,6 +1,8 @@
 ---
 output: html_document
 title: Plotting Call Presence and Density
+layout: default
+theme: default
 ---
 
 ```{css, echo=FALSE}
@@ -30,6 +32,9 @@ font-weight: bold;
 }
 .hljs-string {
 color: #90a959;
+}
+section {
+width: 652px;
 }
 ```
 
