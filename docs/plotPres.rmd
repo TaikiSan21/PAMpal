@@ -34,7 +34,7 @@ font-weight: bold;
 color: #90a959;
 }
 section {
-width: 652px;
+width: 652px ! important;
 }
 ```
 
