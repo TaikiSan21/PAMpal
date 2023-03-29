@@ -3,25 +3,25 @@ output: html_document
 title: Plotting Call Presence and Density
 ---
 
-```{css, echo=FALSE}
-.hljs-literal {
-color: #990073;
-}
-.hljs-number {
-color: #099;
-}
-.hljs-comment {
-color: #998;
-font-style: italic;
-}
-.hljs-keyword {
-color: #efef8f;
-font-weight: bold;
-}
-.hljs-string {
-color: #90a959;
-}
-```
+<!-- ```{css, echo=FALSE} -->
+<!-- .hljs-literal { -->
+<!-- color: #990073; -->
+<!-- } -->
+<!-- .hljs-number { -->
+<!-- color: #099; -->
+<!-- } -->
+<!-- .hljs-comment { -->
+<!-- color: #998; -->
+<!-- font-style: italic; -->
+<!-- } -->
+<!-- .hljs-keyword { -->
+<!-- color: #efef8f; -->
+<!-- font-weight: bold; -->
+<!-- } -->
+<!-- .hljs-string { -->
+<!-- color: #90a959; -->
+<!-- } -->
+<!-- ``` -->
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
