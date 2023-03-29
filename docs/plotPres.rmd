@@ -3,6 +3,26 @@ output: html_document
 title: Plotting Call Presence and Density
 ---
 
+```{css, echo=FALSE}
+.hljs-literal {
+color: #990073;
+}
+.hljs-number {
+color: #099;
+}
+.hljs-comment {
+color: #998;
+font-style: italic;
+}
+.hljs-keyword {
+color: #efef8f;
+font-weight: bold;
+}
+.hljs-string {
+color: #90a959;
+}
+```
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -29,7 +49,7 @@ calls across time. The `bin` argument controls the time bins for plotting.
 Let's create a plot that shows how many hours of each day have detections
 by setting `bin='hours/day'`.
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 library(PAMpal)
 clicks <- getClickData(data)
 library(PAMmisc)
@@ -114,6 +134,30 @@ For `plotPresGrid`, the `bin` argument can be one of `hour`, `30min`, `15min`, o
      plotPresGrid(drift4, bin='30min', type='presence')) /
     (plotPresGrid(drift4, bin='15min', type='presence') +
          plotPresGrid(drift4, bin='min', type='presence'))
+```
+
+Similar to `plotPresBar`, we can also use the `by` argument to create a plot that
+contains some kind of label information. For `type='presence'` this will create
+boxes of different colors for each label, with a level of transparency controlled
+by the `alpha` parameter so that times with multiple labels present can be seen. If
+there is a lot of overlap, this can create a messy plot that is hard to read. In this
+case the plot can be split into multiple panels using `ggplot2`'s `facet_wrap`.
+
+```{r}
+plotPresGrid(drift4, bin='hour', type='presence', by='species')
+library(ggplot2)
+plotPresGrid(drift4, bin='hour', type='presence', by='species') +
+    facet_wrap(vars(species))
+```
+
+For `type='density'` using the `by` argument will create a multi-panel plot with `facet_wrap`
+since the color is already being used to show the number of calls. You can change the arrangement
+of the plot by using `facet_wrap` again and changing the parameters.
+
+```{r}
+plotPresGrid(drift4, type='density', by='species')
+plotPresGrid(drift4, type='density', by='species') +
+    facet_wrap(vars(species), nrow=1)
 ```
 
 ## More Options - Both Functions
