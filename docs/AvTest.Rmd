@@ -1,7 +1,6 @@
 ---
 title: "RMDTest"
 author: "Taiki Sakai"
-date: "12/30/2020"
 output: html_document
 ---
 

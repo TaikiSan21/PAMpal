@@ -1,8 +1,9 @@
 defaults:
   -
     scope:
-      path: "*.html"
+      path: ""
     values:
       layout: "default"
       theme: "default"
+
 theme: jekyll-theme-leap-day
