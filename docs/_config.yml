@@ -4,6 +4,6 @@ defaults:
       path: ""
     values:
       layout: default
-      theme: default
+      theme: jekyll-theme-leap-day
 
 theme: jekyll-theme-leap-day
