@@ -3,7 +3,7 @@ defaults:
     scope:
       path: ""
     values:
-      layout: "default"
-      theme: "default"
+      layout: default
+      theme: default
 
 theme: jekyll-theme-leap-day
