@@ -6,4 +6,4 @@ defaults:
       layout: default
       theme: jekyll-theme-leap-day
 
-theme: jekyll-theme-leap-day
+theme: default
