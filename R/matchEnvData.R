@@ -59,7 +59,7 @@ setMethod('matchEnvData',
                   FUN <- list(FUN)
                   names(FUN) <- tmpName
               }
-              eventStart <- getEventStart(data)
+              eventStart <- getEventStart(data, extraCols = c('Latitude', 'Longitude'))
               if(is.null(eventStart)) {
                   return(data)
               }
@@ -76,9 +76,10 @@ setMethod('matchEnvData',
           'AcousticStudy',
           function(data, nc=NULL, var=NULL, buffer=c(0,0,0), FUN = c(mean),
                    fileName = NULL, progress=TRUE, depth=0, ...) {
-              eventStart <- do.call(rbind, lapply(events(data), function(x) {
-                  getEventStart(x)
-              }))
+              # eventStart <- do.call(rbind, lapply(events(data), function(x) {
+              #     getEventStart(x)
+              # }))
+              eventStart <- getEventStart(data, extraCols = c('Latitude', 'Longitude'))
               if(is.null(eventStart)) {
                   return(data)
               }
@@ -118,8 +119,14 @@ addEnvToEvent <- function(event, env) {
     event
 }
 
-getEventStart <- function(data) {
-    dets <- getDetectorData(data)
+getEventStart <- function(data, extraCols=NULL) {
+    if(is.AcousticStudy(data)) {
+        eventStart <- do.call(rbind, lapply(events(data), function(x) {
+            getEventStart(x, extraCols)
+        }))
+        return(eventStart)
+    }
+    dets <- getDetectorData(data, measures=TRUE)
     if(length(dets) == 0) {
         return(NULL)
     }
@@ -128,12 +135,13 @@ getEventStart <- function(data) {
         return(NULL)
     }
     dets <- dets[hasDets]
-    if(!all(c('UTC', 'Longitude', 'Latitude') %in% colnames(dets[[1]]))) {
-        pamWarning('Event ', id(data), ' does not have GPS data added.')
+    getCols <- c('UTC', 'eventId', extraCols)
+    if(!all(getCols %in% colnames(dets[[1]]))) {
+        pamWarning('Event ', id(data), ' does not have all desired columns.')
         return(NULL)
     }
     coordsOnly <- bind_rows(lapply(dets, function(x) {
-        coord <- x[, c('UTC', 'Longitude', 'Latitude', 'eventId')]
+        coord <- x[getCols]
     }))
     # coordsOnly$event <- id(data)
     # for now use earliest time in event, first row only just in case a tie

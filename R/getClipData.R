@@ -53,7 +53,7 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
     if(length(buffer) == 1) {
         buffer <- buffer * c(-1, 1)
     }
-    buffer <- abs(buffer) * c(-1, 1)
+    # buffer <- abs(buffer) * c(-1, 1)
 
     if(is.null(FUN)) {
         FUN <- function(wav, ...) wav

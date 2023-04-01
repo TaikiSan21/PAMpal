@@ -160,7 +160,7 @@ plotCeps <- function(x, tMin, tMax, col='blue') {
        length(UIDs) == 0) {
         return(NULL)
     }
-    binData <- getBinaryData(x, UIDs, type='whistle')
+    binData <- getBinaryData(x, UIDs, type='cepstrum')
     settings <- getPamFft(binData)
     settings$sr <- settings$sr * 2
     settings$wl <- settings$wl * 2

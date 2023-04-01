@@ -20,11 +20,13 @@
 #' @param \dots additional arguments for other methods
 #'
 #' @details Latitude and Longitude coordinates will be matched to the data
-#'   by using data.tables rolling join with \code{roll='nearest'}. After the
-#'   join is done, the time difference between the matched rows is checked
+#'   by interpolating between points in the provided GPS data. After the
+#'   interpolating is done, the time difference between the matched rows is checked
 #'   and any that are greater than the set threshold are set to NA. This is
 #'   done to prevent accidentally matching weird things if an incomplete set
-#'   of GPS data is provided.
+#'   of GPS data is provided. An approximate distance between the interpolated
+#'   points and the closest known GPS point is provided as a "gpsUncertainty"
+#'   column (distance in meters).
 #'
 #'   If \code{x} is an \linkS4class{AcousticEvent} or \linkS4class{AcousticStudy},
 #'   then \code{gps} can be omitted and will be read from the databases contained

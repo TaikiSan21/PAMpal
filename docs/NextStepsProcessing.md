@@ -837,6 +837,136 @@ nrow(trainTest$test$events)
 
 This is a longer topic with [its own page][plot-pres]
 
+## Working With .wav Files
+
+While most of the functionality of PAMpal comes from reading and processing
+the data contained in the PAMguard binary files, there are some times when
+users need to work with the wav files directly. Typically this can be quite
+annoying to do since you need to match each detection to its corresponding
+wav file with timestamps, but PAMpal provides some functions to make this 
+easier. 
+
+### Adding Recording Files
+
+The first step to letting PAMpal work with any wav files is to use the
+`addRecordings` function to add a map of the recording files to your
+AcousticStudy object. If you are working with a single database of detections,
+you simply provide the path to the folder containing your recording files
+as the `folder` argument.
+
+```r
+myStudy <- addRecordings(myStudy, folder='path/to/recordings')
+```
+
+If you have Soundtrap recordings, you can also provide the XML log files to this
+function. Sometimes there are gaps or recording error information stored in the
+log files, and this will help PAMpal sort that out.
+
+```r
+myStudy <- addRecordings(myStudy, folder='path/to/recordings',
+                         log = 'path/to/logs')
+```
+
+If your AcousticStudy covers multiple databases, then you will need to provide a
+separate recording folder for each database. It is common for users to have deployments
+that overlap in time, so this is what allows PAMpal to decide which wav file a detection
+belongs to in these cases. Here `folder` should be a vector of folder paths, one for each
+database. The order of these should match the order of `files(myStudy)$db`.
+
+```r
+# check order first
+files(myStudy)$db
+recFolders <- c(
+    'path/to/db1recordings',
+    'path/to/db2recordings'
+    )
+myStudy <- addRecordings(myStudy, folder=recFolders)
+```
+
+The `addRecordings` function will go through your folder(s) of wav files and determine the 
+start and end time of each file. These will be stored in a dataframe within your AcousticStudy
+object in `files(myStudy)$recordings`. This function has to open the header information of 
+every single wav file to determine the exact file length, so it can take quite a bit of time.
+
+### Using Recording Files
+
+Once files have been added with `addRecordings`, some extra PAMpal functionality is opened up.
+One new function is `plotGram`, which allows users to plot spectrograms of their events. This 
+reads in data from the wav files to create a spectrogram of a specified duration (or an entire
+event). It also allows users to overlay click detections (as circles), whistle contours, and 
+cepstrum detection contours. 
+
+```r
+plotGram(myStudy, evNum=1, start=0, end=20, detections=c('click', 'whistle'), detCol=c('red', 'blue'))
+```
+
+<a href="images/DetSpectrogram.png" data-lightbox="det-spec" data-title="Spectrogram with overlaid detections">![](images/DetSpectrogram.png)</a>
+
+There are also functions that allow users to access clips of wav data associated with their
+detections or events. `getClipData` returns a list of `WaveMC` class objects from the `tuneR`
+package, either for each event (`mode='event'`) in the data or for each detection (`mode='detection'`).
+Users can also specify a `buffer` to extend the clip length before and after the desired event/detection.
+If `buffer` is a single value, then clips will be extended by that amount before and after the clip, so
+`buffer=1` adds one second before the clip and one second after. Alternatively, if buffer is a vector
+of length 2 then separate values will be used before and after (first number should typically be negative).
+So `buffer=1` is identical to `buffer=c(-1, 1)`.
+
+```r
+# create clips of each detection, padding by half a second on each side
+clips <- getClipData(myStudy, buffer=c(-.5, .5), mode='detection')
+```
+
+There is also a `channel` argument if the original wav files are multichannel, this specifies which
+channel to use. There is also a `useSample` option that can be useful if extremely precise times
+are necessary (e.g. if trying to create clips of echolocation clicks). PAMguard typically stores
+times to millisecond accuracy, but sometimes this is not accurate enough. There are also detection 
+times stored as sample numbers in the binary files, and PAMpal will try to use these if `useSample=TRUE`.
+The downside is that this takes longer, and there are occasions where it does not work properly if
+there is not enough recording information in the database (issues are typically related to data processed
+with the "Merge contiguous files" option checked in PAMguard, and will result in warnings when `addRecordings`
+is run). For most use cases `useSample=FALSE` is fine and recommended. 
+
+`getClipData` also has a `FUN` argument that lets users apply a function to each wav clip instead of
+just returning the clip. FUN optional function to apply to wav clips. This function takes default inputs `wav`,
+a Wave class object, `name` the name of the detection or event, `time` the start and end
+time of the clip, `channel` as above, `mode` as above, and additional named arguments can be passed
+to `getClipData`.
+
+```r
+# custom function to print name and length of each wav file while returning clip
+# with an extra "message" argument
+nameLen <- function(wav, name, time, channel, mode, message) {
+    print(paste0('Length (samples): ', length(wav@.Data[, 1]),
+                 ' for ', name, ' message ', message))
+    wav
+}
+clips <- getClipData(myStudy, FUN=nameLen, mode='detection', message='test!')
+```
+
+A special case of this `FUN` functionality is implemented with the `writeEventClips` function. This
+function will write wav clips to disk of either entire events or each detection. It uses all the
+same arguments as `getClipData`, with a couple extras. `outDir` specifies the directory that the clips
+should be written to. `filter` allows users to specify a low-pass, high-pass, or band-pass filter. 
+A value of 0 applies no filter. A single value applies a highpass filter at that value. A vector of two
+values applies a lowpass filter if the first number is 0, or a bandpass filter if
+both are non-zero. All filter values are supplied in units of kHz.
+
+File names are returned by `writeEventClips`, and files are formatted according to this:
+[Event or Detection]_[Id]CH[ChannelNumber(s)]_[YYYYMMDD]_[HHMMSS]_[mmm].wav
+The last numbers are the start time of the file in UTC, accurate to milliseconds.
+The Id is either the event ID or the detection UID. A helper function `parseEventClipName`
+is included that can take in one of these file names and return either the event/detection ID
+or the file time.
+
+```r
+# create clips of each detection, applying a 20kHz low-pass filter
+# Clips are written to the current directory
+clipFileNames <- writeEventClips(myStudy, buffer=c(-.5, .5), 
+                                 filter=c(0, 20), mode='detection', outDir='.')
+# get start time of first clip
+parseEventClipName(clipFileNames[1], part='time')
+```
+
 [avg-spec]: AvgSpec.html
 [banter-guide]: banterGuide.html
 [plot-pres]: plotPres.html

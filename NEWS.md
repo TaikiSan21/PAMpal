@@ -1,3 +1,9 @@
+## PAMpal 0.19.0
+
+- Adding `matchTimeData` function to add arbitrary data to AcousticStudies
+
+- Bug fixes for some random stuff
+
 ## PAMpal 0.18.1
 
 - Updated to warnings in `addGps` to now be less overwhelming

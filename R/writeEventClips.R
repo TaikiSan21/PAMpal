@@ -1,10 +1,10 @@
 #' @title Create Wav Clips of Data
 #'
 #' @description Creates audio clips containing sounds from events or detections
-#' 
+#'
 #' @details \code{parseEventClipName} parses the file names created to pull out
 #'   event names or file start times
-#' 
+#'
 #' @param x \linkS4class{AcousticStudy} object containing data to make wav clips for
 #' @param buffer amount before and after each event to also include in the clip, in seconds.
 #'   Can either be a vector of length two specifying how much to buffer before and after
@@ -27,8 +27,9 @@
 #'   created, any that were not able to be written will be \code{NA}. Note
 #'   that currently this can only write clips with up to 2 channels. File names
 #'   will be formatted as
-#'   [Event or Detection]_[EventId]CH[ChannelNumber(s)]_[YYYYMMDD]_[HHMMSS]_[mmm].wav
-#'   (the last numbers are the start time of the file in UTC, accurate to milliseconds)
+#'   [Event or Detection]_[Id]CH[ChannelNumber(s)]_[YYYYMMDD]_[HHMMSS]_[mmm].wav
+#'   The last numbers are the start time of the file in UTC, accurate to milliseconds.
+#'   The Id is either the event ID or the detection UID.
 #'
 #' @examples
 #'
@@ -115,12 +116,12 @@ psxToChar <- function(x) {
 }
 
 #' @rdname writeEventClips
-#' 
+#'
 #' @param file file name to parse
 #' @param part part of file name to return
-#' 
+#'
 #' @export
-#' 
+#'
 parseEventClipName <- function(file, part=c('event', 'time')) {
     pattern <- '(Event|Detection)_(.*)CH[0-9]{1,2}_([0-9]{14}_[0-9]{3}|[0-9]{8}_[0-9]{6}_[0-9]{3})\\.wav$'
     switch(match.arg(part),

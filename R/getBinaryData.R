@@ -77,12 +77,16 @@ getBinaryData <- function(x, UID, type=c('click', 'whistle', 'cepstrum', 'gpl'),
         typeMatch[t] <- switch(type[t],
                             'click' = '^Click_Detector_|^SoundTrap_Click_Detector_',
                             'whistle' = '^WhistlesMoans_',
-                            'cepstrum' = '^WhistlesMoans_',
+                            'cepstrum' = '^WhistlesMoans_.*([Cc]epstrum|[Bb]urst[Pp]ulse|[Bb]urst_[Pp]ulse).*',
                             'gpl' = '^GPL_Detector_'
         )
     }
     typeMatch <- paste0(typeMatch, collapse='|')
     bins <- bins[grepl(typeMatch, bins$BinaryFile), ]
+    if(!'cepstrum' %in% type) {
+        noCeps <- !grepl('cepstrum|burstpulse|burst_pulse', bins$BinaryFile, ignore.case=TRUE)
+        bins <- bins[noCeps, ]
+    }
     if(is.null(bins) ||
        nrow(bins) == 0) {
         if(!quiet) {
