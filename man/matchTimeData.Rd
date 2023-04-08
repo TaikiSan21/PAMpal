@@ -10,7 +10,8 @@ matchTimeData(
   mode = c("event", "detection"),
   thresh = Inf,
   interpolate = TRUE,
-  replace = FALSE
+  replace = FALSE,
+  keepDiff = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ in \code{data} or just matched to nearest time}
 all existing values with the same name as columns in \code{data} will be
 replaced. If \code{FALSE} no replacement occurs. If \code{NA} only values
 which are \code{NA} will be replaced with new values}
+
+\item{keepDiff}{logical flag to keep}
 }
 \value{
 the same data as \code{x}, with data added from \code{data}

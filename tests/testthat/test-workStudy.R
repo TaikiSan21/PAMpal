@@ -257,7 +257,7 @@ test_that('Test annotation stuff', {
     exPps <- addFunction(exPps, roccaWhistleCalcs, module='WhistlesMoans', verbose=FALSE)
     exPps <- addFunction(exPps, standardCepstrumCalcs, module = 'Cepstrum', verbose=FALSE)
     exData <- processPgDetections(exPps, mode='db', id='Example', progress = FALSE, verbose = FALSE)
-    
+
     exData <- addGps(exData, thresh=365*24*3600)
     exData <- setSpecies(exData, 'pamguard')
     anno <- prepAnnotation(exData)
@@ -274,4 +274,22 @@ test_that('Test annotation stuff', {
     expect_identical(anno, getAnnotation(exData))
     expect_message(export_annomate(exData), 'Also missing')
     expect_identical(export_annomate(exData), export_annomate(anno))
+})
+
+test_that('Test spec anno marking', {
+    data("exStudy")
+    anno <- data.frame(
+        start = as.POSIXct('2018-03-20 15:25:10', tz='UTC'),
+        fmin = c(16000, 17000, 18000, 20000),
+        fmax = c(17000, 18000, 19000, 24000))
+    anno$end <- anno$start + 1
+    exStudy <- markAnnotated(exStudy, anno)
+    expect_true(all(getClickData(exStudy)$inAnno[c(1,3)]))
+    expect_true(!any(getClickData(exStudy)$inAnno[c(2,4)]))
+    expect_true(!any(getWhistleData(exStudy)$inAnno))
+    exStudy <- markAnnotated(exStudy, anno, tBuffer=c(0,1.5))
+    expect_true(all(getWhistleData(exStudy)$inAnno[c(3,4,5,6,7,10,11,12,13,14)]))
+    expect_true(all(getCepstrumData(exStudy)$inAnno))
+    exStudy <- markAnnotated(exStudy, anno, tBuffer =c(0, 1.5), fBuffer = c(0, 400))
+    expect_true(all(getWhistleData(exStudy)$inAnno[1:2]))
 })

@@ -21,6 +21,7 @@
 #'   all existing values with the same name as columns in \code{data} will be
 #'   replaced. If \code{FALSE} no replacement occurs. If \code{NA} only values
 #'   which are \code{NA} will be replaced with new values
+#' @param keepDiff logical flag to keep
 #'
 #' @details This function lets you match any arbitrary data to a PAMpal object
 #'   as long as it has a time associated with it. Data will be attached to
@@ -54,7 +55,7 @@
 #'
 #' @export
 #'
-matchTimeData <- function(x, data, mode=c('event', 'detection'), thresh=Inf, interpolate=TRUE, replace=FALSE) {
+matchTimeData <- function(x, data, mode=c('event', 'detection'), thresh=Inf, interpolate=TRUE, replace=FALSE, keepDiff=FALSE) {
     if(is.AcousticStudy(x)) {
         dbFilt <- FALSE
         if('db' %in% colnames(data)) {
@@ -85,6 +86,7 @@ matchTimeData <- function(x, data, mode=c('event', 'detection'), thresh=Inf, int
                 x[[e]] <- matchTimeData(x[[e]], data, mode, thresh, interpolate, replace)
             }
         }
+        x <- .addPamWarning(x)
         return(x)
     }
     if(!is.AcousticEvent(x)) {
@@ -95,18 +97,47 @@ matchTimeData <- function(x, data, mode=c('event', 'detection'), thresh=Inf, int
         'event' = {
             eventData <- getEventStart(x)
             eventData <- timeJoin(eventData, data, thresh=thresh, interpolate=interpolate, replace=replace)
-            eventData <- as.list(dropCols(eventData, c('UTC', 'eventId')))
+            if(eventData$timeDiff > thresh) {
+                pamWarning('Event ', id(x), ' exceeded time threshold, setting values',
+                           ' to NA. (Average ', round(mean(eventData$timeDiff/3600, na.rm=TRUE),1), ' hours apart)',
+                           which=sys.nframe()-1)
+            }
+            toDrop <- c('UTC', 'eventId', 'timeDiff')
+            eventData <- as.list(dropCols(eventData, toDrop))
+            # REPLACE DOES NOTHING HERE
             oldMeas <- ancillary(x)$measures
             if(!is.null(oldMeas)) {
-                eventData <- safeListAdd(oldMeas, eventData)
+                eventData <- safeListAdd(oldMeas, eventData, replace=replace)
             }
             ancillary(x)$measures <- eventData
         },
         'detection' = {
+            diffs <- numeric(0)
             for(d in seq_along(detectors(x))) {
                 calltype <- attr(x[[d]], 'calltype')
-                x[[d]] <- timeJoin(x[[d]], data, thresh=thresh, interpolate=interpolate, replace=replace)
-                attr(x[[d]], 'calltype') <- calltype
+                thisDet <- x[[d]]
+                oldCols <- colnames(thisDet)
+                thisDet <- timeJoin(thisDet, data, thresh=thresh, interpolate=interpolate, replace=replace)
+                newNa <- sapply(colnames(thisDet)[!colnames(thisDet) %in% oldCols], function(c) {
+                    anyNA(thisDet[[c]])
+                })
+                newNa <- map(colnames(thisDet)[!colnames(thisDet) %in% oldCols],
+                             \(c) is.na(thisDet[[c]])
+                ) %>%
+                    reduce(`|`)
+                if(any(newNa)) {
+                    diffs <- c(diffs, thisDet$timeDiff[newNa])
+                }
+                attr(thisDet, 'calltype') <- calltype
+                x[[d]] <- thisDet
+                # x[[d]] <- timeJoin(x[[d]], data, thresh=thresh, interpolate=interpolate, replace=replace)
+
+                # attr(x[[d]], 'calltype') <- calltype
+            }
+            if(length(diffs) > 0) {
+                pamWarning(length(diffs), ' matches in event ', id(x), ' exceeded time threshold, setting',
+                           ' to NA. (Average ', round(mean(diffs/3600, na.rm=TRUE),1), ' hours apart)',
+                           which=sys.nframe()-1)
             }
         }
     )
@@ -115,6 +146,10 @@ matchTimeData <- function(x, data, mode=c('event', 'detection'), thresh=Inf, int
 
 timeJoin <- function(x, y, thresh=Inf, interpolate=TRUE, replace=FALSE) {
     #add reserved column names like eventId, db
+    if(is.null(x) ||
+       nrow(x) == 0) {
+        return(x)
+    }
     reservedCols <- c('eventId', 'db', 'UID', 'eventLabel', 'BinaryFile', 'species', 'Channel')
     if(isFALSE(replace)) {
         addCols <- colnames(y)[!colnames(y) %in% colnames(x)]
@@ -126,15 +161,17 @@ timeJoin <- function(x, y, thresh=Inf, interpolate=TRUE, replace=FALSE) {
     } else if(is.na(replace)) {
         overlaps <- (colnames(y) %in% colnames(x)) &
             colnames(y) != 'UTC'
-        overlaps <- colnames(y)[overlaps]
-        hasNa <- sapply(overlaps, function(c) {
-            anyNA(x[[c]])
-        })
-        hasNa <- overlaps[hasNa]
-        for(n in hasNa) {
-            isNa <- is.na(x[[n]])
-            newMatch <- timeJoin(x[c('UTC', n)], y[c('UTC', n)], thresh=thresh, interpolate=interpolate, replace=TRUE)
-            x[[n]][isNa] <- newMatch[[n]][isNa]
+        if(any(overlaps)) {
+            overlaps <- colnames(y)[overlaps]
+            hasNa <- sapply(overlaps, function(c) {
+                anyNA(x[[c]])
+            })
+            hasNa <- overlaps[hasNa]
+            for(n in hasNa) {
+                isNa <- is.na(x[[n]])
+                newMatch <- timeJoin(x[c('UTC', n)], y[c('UTC', n)], thresh=thresh, interpolate=interpolate, replace=TRUE)
+                x[[n]][isNa] <- newMatch[[n]][isNa]
+            }
         }
         addCols <- colnames(y)[!colnames(y) %in% colnames(x)]
         oldCols <- colnames(x)
@@ -152,7 +189,8 @@ timeJoin <- function(x, y, thresh=Inf, interpolate=TRUE, replace=FALSE) {
     setkeyv(x, 'UTC')
     setkeyv(y, 'UTC')
     result <- y[x, roll='nearest']
-    tooFar <- abs(as.numeric(result$xTime) - as.numeric(result$yTime)) > thresh
+    result$timeDiff <- abs(as.numeric(result$xTime) - as.numeric(result$yTime))
+    tooFar <- result$timeDiff > thresh
     result[tooFar, (addCols) := NA]
     if(nrow(y) == 1) {
         interpolate <- FALSE
@@ -167,5 +205,5 @@ timeJoin <- function(x, y, thresh=Inf, interpolate=TRUE, replace=FALSE) {
     setDF(x)
     setDF(y)
     setDF(result)
-    result[c(oldCols, addCols)]
+    result[c(oldCols, addCols, 'timeDiff')]
 }

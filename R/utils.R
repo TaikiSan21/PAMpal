@@ -159,7 +159,7 @@ inInterval <- function(bounds, sa) {
 }
 
 # add list without replacing old one, only replace matching names
-safeListAdd <- function(x, value) {
+safeListAdd <- function(x, value, replace=TRUE) {
     if(is.null(value)) {
         return(x)
     }
@@ -174,6 +174,14 @@ safeListAdd <- function(x, value) {
     hasName <- names(value) %in% names(x)
     if(any(hasName)) {
         for(n in names(value)[hasName]) {
+            if(isFALSE(replace)) {
+                next
+            }
+            if(is.na(replace) &&
+               !is.na(x[[n]])) {
+                next
+            }
+            # only replace if TRUE or NA and isNA
             x[[n]] <- value[[n]]
         }
     }

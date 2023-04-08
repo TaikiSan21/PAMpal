@@ -1,3 +1,8 @@
+## PAMpal 0.19.1
+
+- Adding `markAnnotated` function to flag whether or not detections are within annotation
+boxes
+
 ## PAMpal 0.19.0
 
 - Adding `matchTimeData` function to add arbitrary data to AcousticStudies
