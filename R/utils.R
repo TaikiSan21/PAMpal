@@ -236,7 +236,8 @@ getPamFft <- function(data) {
 
 ppVars <- function() {
     list(nonModelVars = c('UID', 'Id', 'parentUID', 'sampleRate', 'Channel',
-                          'angle', 'angleError', 'peakTime', 'depth', 'sr'),
+                          'angle', 'angleError', 'peakTime', 'depth', 'sr',
+                          'annoId', 'inAnno', 'db'),
          # tarMoCols = c(
          #     "TMModelName1", "TMLatitude1", "TMLongitude1", "BeamLatitude1",
          #     "BeamLongitude1", "BeamTime1", "TMSide1", "TMChi21", "TMAIC1", "TMProbability1",
