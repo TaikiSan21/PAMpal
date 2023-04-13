@@ -270,7 +270,7 @@ doCalcs <- function(data, funs, detSettings=NULL, module, retry=TRUE) {
                        whichThis <- allTimes == times[j]
                        maxEn <- max(thisEnergy[whichThis])
                        whichMax <- whichThis & (thisEnergy == maxEn)
-                       freq[j] <- thisFreq[whichMax]
+                       freq[j] <- thisFreq[whichMax[1]]
                    }
                    data[[i]]$freq <- freq
                    data[[i]]$time <- times * timeRes
