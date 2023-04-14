@@ -218,6 +218,17 @@ plotPresGrid(drift4, bin='hour', title='California') +
     plotPresGrid(drift4, bin='hour', gps=newGps, title='North Sea')
 ```
 
+The timezone of the plot axis can also be changed. UTC is required as a standardized
+input column, but the `plotTz` argument can be used to create a more easily interpreted
+display. The accepted timezone arguments must come from the `OlsonNames()` function, 
+notable choices that are **NOT** valid include `'PDT'` and `'PST'`.
+
+```{r}
+# PDT/PST are not accepted, use America/Los_Angeles instead
+plotPresGrid(drift4, plotTz='America/Los_Angeles') +
+    plotPresGrid(drift4, plotTz='UTC')
+```
+
 In addition to changing the color of the box when plotting presence, we can also change
 the box outline color with the `color` argument, and we can change the colormap
 used to plot call density with the `cmap` argument.
