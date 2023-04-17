@@ -269,8 +269,8 @@ doCalcs <- function(data, funs, detSettings=NULL, module, retry=TRUE) {
                    for(j in seq_along(times)) {
                        whichThis <- allTimes == times[j]
                        maxEn <- max(thisEnergy[whichThis])
-                       whichMax <- whichThis & (thisEnergy == maxEn)
-                       freq[j] <- thisFreq[whichMax[1]]
+                       whichMax <- which(whichThis & (thisEnergy == maxEn))[1]
+                       freq[j] <- thisFreq[whichMax]
                    }
                    data[[i]]$freq <- freq
                    data[[i]]$time <- times * timeRes
