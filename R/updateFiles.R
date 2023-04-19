@@ -148,7 +148,8 @@ fileMatcher <- function(old, new) {
     }
     # new <- normalizePath(new, winslash = '/')
     # old <- normalizePath(old, winslash = '/')
-    old <- normalizePath(old, winslash = '/', mustWork = FALSE)
+    # old <- normalizePath(old, winslash = '/', mustWork = FALSE)
+    old <- gsub('\\\\', '/', old)
     ###
     toCheck <- rep(TRUE, length(old))
     nCheck <- sum(toCheck)
@@ -179,7 +180,7 @@ fileMatcher <- function(old, new) {
     if(nCheck == 0) {
         return(old)
     }
-    
+
     # cat(nReps, 'different base directories used')
     # old
     ###
@@ -228,7 +229,7 @@ getOnePathDiff <- function(old, new) {
     if(length(poss) > 1) {
         dirMatch <- checkNextDir(old, new[poss]) # return ix of poss
         matchIx <- poss[dirMatch]
-    }    
+    }
     findPathDiff(old, new[matchIx])
 }
 
@@ -241,7 +242,7 @@ checkNextDir <- function(x,y) {
     poss <- which(basename(dirname(y)) %in% basename(dirname(x)))
     if(length(poss) == 0) {
         return(1)
-    } 
+    }
     if(length(poss) == 1) {
         return(poss)
     }

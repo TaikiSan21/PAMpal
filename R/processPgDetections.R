@@ -603,7 +603,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                         x$BinaryUsed <- thisBin$fileInfo$fileName
                         binData %>%
                             # select(-.data$BinaryFile) %>%
-                            inner_join(x, by='UID', multiple='all') %>%
+                            inner_join(x, by='UID', relationship='many-to-many') %>%
                             distinct()
                     }
                 }
@@ -815,7 +815,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
     }
 
     allDetections <- inner_join(
-        allDetections, allEvents, by=c('parentID'='Id')
+        allDetections, allEvents, by=c('parentID'='Id'), relationship='many-to-one'
     )
     if(!('newUID' %in% colnames(allDetections))) {
         allDetections$newUID <- -1
