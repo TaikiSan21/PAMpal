@@ -224,7 +224,10 @@ test_that('Test updateFiles', {
                                 files(exStudy[[1]])$binaries)))
     recs <- system.file('extdata', 'Recordings', package='PAMpal')
     exStudy <- addRecordings(exStudy, folder =recs, log=FALSE, progress=FALSE)
-    files(exStudy)$recordings$file <- substr(files(exStudy)$recordings$file, start=5, stop=10e3)
+    # files(exStudy)$recordings$file <- substr(files(exStudy)$recordings$file, start=5, stop=10e3)
+    files(exStudy)$recordings$file <-
+        gsub(dirname(recs), 'New/Directory',
+             files(exStudy)$recordings$file)
     expect_true(!any(file.exists(files(exStudy)$recordings$file)))
     exStudy <- updateFiles(exStudy, recording=recs, verbose=FALSE)
     expect_true(all(file.exists(files(exStudy)$recordings$file)))
