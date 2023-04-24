@@ -1113,7 +1113,8 @@ wavToGroup <- function(db) {
             if(length(thisEnd) == 0) {
                 thisEnd <- NA
             } else {
-                thisEnd <- max(thisEnd)
+                # thisEnd <- max(thisEnd)
+                thisEnd <- thisEnd[length(thisEnd)]
             }
             thisId <- gsub(' ', '', unique(x$id))
             list(start = thisStart,

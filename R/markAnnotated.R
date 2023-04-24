@@ -74,6 +74,8 @@ markAnnotated <- function(x, anno=NULL, tBuffer=0, fBuffer=0, table='Spectrogram
             }
             thisAnn$start <- thisAnn$start + tBuffer[1]
             thisAnn$end <- thisAnn$end + tBuffer[2]
+            thisAnn$start <- as.numeric(thisAnn$start)
+            thisAnn$end <- as.numeric(thisAnn$end)
             thisAnn$fmin <- thisAnn$fmin + fBuffer[1]
             thisAnn$fmax <- thisAnn$fmax + fBuffer[2]
             thisAnn
@@ -101,6 +103,8 @@ markAnnotated <- function(x, anno=NULL, tBuffer=0, fBuffer=0, table='Spectrogram
         }
         anno$start <- anno$start + tBuffer[1]
         anno$end <- anno$end + tBuffer[2]
+        anno$start <- as.numeric(anno$start)
+        anno$end <- as.numeric(anno$end)
         anno$fmin <- anno$fmin + fBuffer[1]
         anno$fmax <- anno$fmax + fBuffer[2]
         if('db' %in% colnames(anno)) {
@@ -117,72 +121,123 @@ markAnnotated <- function(x, anno=NULL, tBuffer=0, fBuffer=0, table='Spectrogram
     events(x) <- lapply(events(x), function(e) {
         thisAnn <- annoList[[basename(files(e)$db)]]
         for(d in seq_along(detectors(e))) {
-            e[[d]] <- markOneDetector(e[[d]], thisAnn, type=attr(e[[d]], 'calltype'))
+            e[[d]] <- markOneDetector(e[[d]], thisAnn, type=attr(e[[d]], 'calltype'), event=id(e))
         }
         e
     })
+    x <- .addPamWarning(x)
     x
 }
 
-markOneDetector <- function(x, sa, type=c('click', 'whistle', 'gpl', 'cepstrum')) {
+markOneDetector <- function(x, sa, type=c('click', 'whistle', 'gpl', 'cepstrum'), event=NULL) {
     type <- match.arg(type)
     x$annoId <- ''
     x$inAnno <- FALSE
     if(is.null(sa)) {
         return(x)
     }
-    switch(type,
-           'click' = {
-               for(i in 1:nrow(sa)) {
-                   # check every detection to see if it is fully contained within bounding box 'i'
-                   inThis <- x$UTC >= sa$start[i] &
-                       x$UTC <= sa$end[i] &
-                       x$peak * 1e3 <= sa$fmax[i] &
-                       x$peak * 1e3 >= sa$fmin[i]
-                   # store ID of spec anno box for matches just in case we want it later
-                   x$annoId[inThis] <- paste0(x$annoId[inThis], sa$id[i], ',')
-                   # change any detections in this box to TRUE
-                   x$inAnno <- x$inAnno | inThis
-               }
-           },
-           'whistle' = {
-               for(i in 1:nrow(sa)) {
-                   # check every detection to see if it is fully contained within bounding box 'i'
-                   inThis <- x$UTC >= sa$start[i] &
-                       (x$UTC + x$duration) <= sa$end[i] &
-                       x$freqMax <= sa$fmax[i] &
-                       x$freqMin >= sa$fmin[i]
-                   # store ID of spec anno box for matches just in case we want it later
-                   x$annoId[inThis] <- paste0(x$annoId[inThis], sa$id[i], ',')
-                   # change any detections in this box to TRUE
-                   x$inAnno <- x$inAnno | inThis
-               }
-           },
-           'gpl' = {
-               for(i in 1:nrow(sa)) {
-                   # check every detection to see if it is fully contained within bounding box 'i'
-                   inThis <- x$UTC >= sa$start[i] &
-                       (x$UTC + x$duration) <= sa$end[i] &
-                       x$freqMax <= sa$fmax[i] &
-                       x$freqMin >= sa$fmin[i]
-                   # store ID of spec anno box for matches just in case we want it later
-                   x$annoId[inThis] <- paste0(x$annoId[inThis], sa$id[i], ',')
-                   # change any detections in this box to TRUE
-                   x$inAnno <- x$inAnno | inThis
-               }
-           },
-           'cepstrum' = {
-               for(i in 1:nrow(sa)) {
-                   # check every detection to see if it is fully contained within bounding box 'i'
-                   inThis <- x$UTC >= sa$start[i] &
-                       (x$UTC + x$duration) <= sa$end[i]
-                   # store ID of spec anno box for matches just in case we want it later
-                   x$annoId[inThis] <- paste0(x$annoId[inThis], sa$id[i], ',')
-                   # change any detections in this box to TRUE
-                   x$inAnno <- x$inAnno | inThis
-               }
-           }
-    )
+    x$numTime <- as.numeric(x$UTC)
+    naUID <- character(0)
+    for(i in 1:nrow(sa)) {
+        inThis <- switch(
+            type,
+            'click' = {
+                x$numTime >= sa$start[i] &
+                    x$numTime <= sa$end[i] &
+                # x$UTC >= sa$start[i] &
+                    # x$UTC <= sa$end[i] &
+                    x$peak * 1e3 <= sa$fmax[i] &
+                    x$peak * 1e3 >= sa$fmin[i]
+            },
+            'whistle' = {
+                # x$UTC >= sa$start[i] &
+                    # (x$UTC + x$duration) <= sa$end[i] &
+                x$numTime >= sa$start[i] &
+                    (x$numTime + x$duration) <= sa$end[i] &
+                    x$freqMax <= sa$fmax[i] &
+                    x$freqMin >= sa$fmin[i]
+            },
+            'gpl' = {
+                # x$UTC >= sa$start[i] &
+                #     (x$UTC + x$duration) <= sa$end[i] &
+                x$numTime >= sa$start[i] &
+                    (x$numTime + x$duration) <= sa$end[i] &
+                    x$freqMax <= sa$fmax[i] &
+                    x$freqMin >= sa$fmin[i]
+            },
+            'cepstrum' = {
+                # x$UTC >= sa$start[i] &
+                #     (x$UTC + x$duration) <= sa$end[i]
+                x$numTime >= sa$start[i] &
+                    (x$numTime + x$duration) <= sa$end[i]
+            }
+        )
+        naComp <- is.na(inThis)
+        naUID <- unique(c(naUID, x$UID[naComp]))
+        inThis[naComp] <- FALSE
+        # store ID of spec anno box for matches just in case we want it later
+        x$annoId[inThis] <- paste0(x$annoId[inThis], sa$id[i], ',')
+        # change any detections in this box to TRUE
+        x$inAnno <- x$inAnno | inThis
+    }
+    if(length(naUID) > 0) {
+        pamWarning(length(naUID), ' detections in event ', event, ' had NA values and could not be properly',
+                   ' compared to annotations (UIDs ', naUID, ')')
+    }
+    x$numTime <- NULL
+    # switch(type,
+    #        'click' = {
+    #            for(i in 1:nrow(sa)) {
+    #                # check every detection to see if it is fully contained within bounding box 'i'
+    #                inThis <- x$UTC >= sa$start[i] &
+    #                    x$UTC <= sa$end[i] &
+    #                    x$peak * 1e3 <= sa$fmax[i] &
+    #                    x$peak * 1e3 >= sa$fmin[i]
+    #                # store ID of spec anno box for matches just in case we want it later
+    #                x$annoId[inThis] <- paste0(x$annoId[inThis], sa$id[i], ',')
+    #                # change any detections in this box to TRUE
+    #                x$inAnno <- x$inAnno | inThis
+    #            }
+    #        },
+    #        'whistle' = {
+    #            for(i in 1:nrow(sa)) {
+    #                # check every detection to see if it is fully contained within bounding box 'i'
+    #                inThis <- x$UTC >= sa$start[i] &
+    #                    (x$UTC + x$duration) <= sa$end[i] &
+    #                    x$freqMax <= sa$fmax[i] &
+    #                    x$freqMin >= sa$fmin[i]
+    #                # store ID of spec anno box for matches just in case we want it later
+    #                x$annoId[inThis] <- paste0(x$annoId[inThis], sa$id[i], ',')
+    #                # change any detections in this box to TRUE
+    #                x$inAnno <- x$inAnno | inThis
+    #            }
+    #        },
+    #        'gpl' = {
+    #            for(i in 1:nrow(sa)) {
+    #                # check every detection to see if it is fully contained within bounding box 'i'
+    #                inThis <- x$UTC >= sa$start[i] &
+    #                    (x$UTC + x$duration) <= sa$end[i] &
+    #                    x$freqMax <= sa$fmax[i] &
+    #                    x$freqMin >= sa$fmin[i]
+    #                # store ID of spec anno box for matches just in case we want it later
+    #                # if(anyNA(inThis)) browser()
+    #                x$annoId[inThis] <- paste0(x$annoId[inThis], sa$id[i], ',')
+    #                # change any detections in this box to TRUE
+    #                x$inAnno <- x$inAnno | inThis
+    #            }
+    #        },
+    #        'cepstrum' = {
+    #            for(i in 1:nrow(sa)) {
+    #                # check every detection to see if it is fully contained within bounding box 'i'
+    #                inThis <- x$UTC >= sa$start[i] &
+    #                    (x$UTC + x$duration) <= sa$end[i]
+    #                # store ID of spec anno box for matches just in case we want it later
+    #                x$annoId[inThis] <- paste0(x$annoId[inThis], sa$id[i], ',')
+    #                # change any detections in this box to TRUE
+    #                x$inAnno <- x$inAnno | inThis
+    #            }
+    #        }
+    # )
     x$annoId <- gsub(',$', '', x$annoId)
     x
 }

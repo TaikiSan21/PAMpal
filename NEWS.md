@@ -1,3 +1,7 @@
+## PAMpal 0.19.2
+
+- Updating `markAnnotated` to give warnings on NA values instead of failing
+
 ## PAMpal 0.19.1
 
 - Adding `markAnnotated` function to flag whether or not detections are within annotation
