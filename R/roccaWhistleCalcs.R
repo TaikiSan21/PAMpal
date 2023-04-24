@@ -129,9 +129,10 @@ roccaWhistleCalcs <- function(data) {
     result$freqRange <- result$freqMax - result$freqMin
     result$freqMedian <- median(freqSort)
     result$freqCenter <- result$freqMin + result$freqRange/2
-    result$freqRelBw <- result$freqRange / result$freqCenter
-    result$freqMaxMinRatio <- result$freqMax / result$freqMin
-    result$freqBegEndRatio <- result$freqBeg / result$freqEnd
+    # all these were causing div0 problems, setting the denom to 1 for these
+    result$freqRelBw <- ifelse(result$freqCenter == 0, result$freqRange, result$freqRange / result$freqCenter)
+    result$freqMaxMinRatio <- ifelse(result$freqMin == 0, result$freqMax, result$freqMax / result$freqMin)
+    result$freqBegEndRatio <- ifelse(result$freqEnd == 0, result$freqBeg, result$freqBeg / result$freqEnd)
 
     # Java 739
     result$freqNumSteps <- result$freqStepUp + result$freqStepDown

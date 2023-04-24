@@ -2,6 +2,8 @@
 
 - Updating `markAnnotated` to give warnings on NA values instead of failing
 
+- Updating `roccaWhistleCalcs` to avoid divide by zero NA/Inf values
+
 ## PAMpal 0.19.1
 
 - Adding `markAnnotated` function to flag whether or not detections are within annotation
