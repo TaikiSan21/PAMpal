@@ -14,7 +14,8 @@ writeEventClips(
   filter = 0,
   useSample = FALSE,
   progress = TRUE,
-  verbose = TRUE
+  verbose = TRUE,
+  fixLength = FALSE
 )
 
 parseEventClipName(file, part = c("event", "time"))
@@ -45,6 +46,11 @@ longer}
 \item{progress}{logical flag to show progress bar}
 
 \item{verbose}{logical flag to show summary messages}
+
+\item{fixLength}{logical flag to fix the output clip length to a constant value. If
+\code{TRUE}, then output clip length is entirely determined by the buffer value, as
+if the detection or event had zero length. E.g. \code{buffer=c(-2,1)} will produce clips
+3 seconds long, starting 2 seconds before the detection/event start time.}
 
 \item{file}{file name to parse}
 

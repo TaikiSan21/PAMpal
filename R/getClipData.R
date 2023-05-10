@@ -12,6 +12,10 @@
 #' @param useSample logical flag to use startSample information in binaries instead of UTC
 #'   time for start of detections. This can be slightly more accurate (~1ms) but will take
 #'   longer
+#' @param fixLength logical flag to fix the output clip length to a constant value. If
+#'   \code{TRUE}, then output clip length is entirely determined by the buffer value, as
+#'   if the detection or event had zero length. E.g. \code{buffer=c(-2,1)} will produce clips
+#'   3 seconds long, starting 2 seconds before the detection/event start time.
 #' @param progress logical flag to show progress bar
 #' @param verbose logical flag to show summary messages
 #' @param FUN optional function to apply to wav clips. This function takes default inputs \code{wav},
@@ -39,7 +43,7 @@
 #' @export
 #'
 getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
-                        channel = 1, useSample=FALSE, progress=TRUE, verbose=TRUE, FUN=NULL, ...) {
+                        channel = 1, useSample=FALSE, fixLength=FALSE, progress=TRUE, verbose=TRUE, FUN=NULL, ...) {
     if(!is.AcousticStudy(x)) {
         stop('"x" must be an AcousticStudy object.')
     }
@@ -57,6 +61,10 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
 
     if(is.null(FUN)) {
         FUN <- function(wav, ...) wav
+    }
+    if(fixLength &&
+       buffer[2] - buffer[1] <= 0) {
+        stop('For fixed length output buffer[2] - buffer[1] must be positive')
     }
     # each database can have a different set of assigned recordings,
     # so we break up by DB
@@ -104,6 +112,9 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
             pb <- txtProgressBar(min=0, max=length(allResult), style = 3)
         }
         for(i in seq_along(allResult)) {
+            if(fixLength) {
+                allTimes[[i]]$end <- allTimes[[i]]$start
+            }
             timeRange <- c(allTimes[[i]]$start, allTimes[[i]]$end) + buffer
             # for start and end check if in range. if we buffered, try undoing that first.
             # so like if buffer put us before first file, start and beginning of first file instead.

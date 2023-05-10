@@ -1,3 +1,8 @@
+## PAMpal 0.19.3
+
+- Updating `getClipData` and `writeEventClips` to have a `fixLength` option that 
+allows users to create clips of a fixed length using just the `buffer` argument
+
 ## PAMpal 0.19.2
 
 - Updating `markAnnotated` to give warnings on NA values instead of failing

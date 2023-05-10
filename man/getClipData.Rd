@@ -10,6 +10,7 @@ getClipData(
   mode = c("event", "detection"),
   channel = 1,
   useSample = FALSE,
+  fixLength = FALSE,
   progress = TRUE,
   verbose = TRUE,
   FUN = NULL,
@@ -31,6 +32,11 @@ wav clips of entire events or individual detections}
 \item{useSample}{logical flag to use startSample information in binaries instead of UTC
 time for start of detections. This can be slightly more accurate (~1ms) but will take
 longer}
+
+\item{fixLength}{logical flag to fix the output clip length to a constant value. If
+\code{TRUE}, then output clip length is entirely determined by the buffer value, as
+if the detection or event had zero length. E.g. \code{buffer=c(-2,1)} will produce clips
+3 seconds long, starting 2 seconds before the detection/event start time.}
 
 \item{progress}{logical flag to show progress bar}
 

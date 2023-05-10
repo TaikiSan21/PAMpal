@@ -110,7 +110,19 @@ test_that('Test working with AcousticStudy object', {
     expect_identical(normalizePath(files(exData)$recordings$file, winslash = '/'),
                      normalizePath(list.files(recs, full.names = TRUE), winslash = '/'))
     expect_warning(warnRec <- addRecordings(exData, folder = 'DNE', log=FALSE, progress=FALSE))
-
+    # test clip fun
+    clips <- getClipData(exData, mode='detection', buffer=c(0, .1))
+    expect_equal(nrow(clips[['Example.DGL1.8000003']]@.Data) / clips[['Example.DGL1.8000003']]@samp.rate,
+                 0.1)
+    expect_equal(
+        round(nrow(clips[['Example.DGL1.386000022']]@.Data) / clips[['Example.DGL1.386000022']]@samp.rate, 2),
+        .1 + round(exData$Example.DGL1$Whistle_and_Moan_Detector$duration, 2)
+    )
+    fixClips <- getClipData(exData, mode='detection', buffer=c(0, .1), fixLength=TRUE)
+    expect_equal(
+        round(nrow(fixClips[['Example.DGL1.386000022']]@.Data) / fixClips[['Example.DGL1.386000022']]@samp.rate, 2),
+        .1
+    )
     # test warning access from recorder warning
     warns <- getWarnings(warnRec)
     expect_is(warns, 'data.frame')

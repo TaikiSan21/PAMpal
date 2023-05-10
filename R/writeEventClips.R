@@ -20,6 +20,10 @@
 #' @param useSample logical flag to use startSample information in binaries instead of UTC
 #'   time for start of detections. This can be slightly more accurate (~1ms) but will take
 #'   longer
+#' @param fixLength logical flag to fix the output clip length to a constant value. If
+#'   \code{TRUE}, then output clip length is entirely determined by the buffer value, as
+#'   if the detection or event had zero length. E.g. \code{buffer=c(-2,1)} will produce clips
+#'   3 seconds long, starting 2 seconds before the detection/event start time.
 #' @param progress logical flag to show progress bar
 #' @param verbose logical flag to show summary messages
 #'
@@ -49,7 +53,8 @@
 #' @export
 #'
 writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', 'detection'),
-                            channel = 1, filter=0, useSample=FALSE, progress=TRUE, verbose=TRUE) {
+                            channel = 1, filter=0, useSample=FALSE, progress=TRUE, verbose=TRUE,
+                            fixLength=FALSE) {
     if(!dir.exists(outDir)) dir.create(outDir)
     if(length(channel) > 2) {  #### WAV CLIP SPECIFIC
         message('R can only write wav files with 2 or less channels, channels will be split',
@@ -63,12 +68,14 @@ writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', '
                 thisChan <- channel[ix]
             }
             allFiles <- c(allFiles, writeEventClips(x, buffer=buffer, outDir=outDir, mode=mode, filter=filter,
-                                                    channel = thisChan, useSample=useSample,progress=progress, verbose=verbose))
+                                                    channel = thisChan, useSample=useSample,progress=progress,
+                                                    verbose=verbose, fixLength=fixLength))
         }
         return(allFiles)
     }
     getClipData(x, buffer=buffer, mode=mode, channel=channel, useSample=useSample,
-                progress=progress, verbose=verbose, FUN=writeOneClip, outDir=outDir, filter=filter)
+                progress=progress, verbose=verbose, FUN=writeOneClip, outDir=outDir,
+                filter=filter, fixLength=fixLength)
 }
 
 writeOneClip <- function(wav, name, time, channel, mode, outDir='.', filter) {
