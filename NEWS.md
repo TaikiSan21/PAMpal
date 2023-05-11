@@ -3,6 +3,9 @@
 - Updating `getClipData` and `writeEventClips` to have a `fixLength` option that 
 allows users to create clips of a fixed length using just the `buffer` argument
 
+- Allowing `processPgDetections` to take multiple `label` arguments to specify
+different table columns if using both DG and OE events in same db
+
 ## PAMpal 0.19.2
 
 - Updating `markAnnotated` to give warnings on NA values instead of failing

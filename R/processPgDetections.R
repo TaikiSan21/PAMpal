@@ -139,9 +139,9 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
     startTime <- Sys.time()
     result <- switch(mode,
                      'db' = processPgDb(pps=pps, grouping=grouping, id=id,
-                                                  progress=progress, ...),
+                                        progress=progress, ...),
                      'time' = processPgTime(pps=pps, grouping=grouping, format=format, id=id,
-                                                      progress=progress),
+                                            progress=progress),
                      'recording' = {
                          grouping <- bind_rows(lapply(pps@db, function(x) {
                              wavToGroup(x)
@@ -152,7 +152,7 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
                              return(NULL)
                          }
                          processPgTime(pps=pps, grouping=grouping, format=format, id=id,
-                                                 progress=progress)
+                                       progress=progress)
                      }
     )
     checkStudy(result)
@@ -177,7 +177,7 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #'
 processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NULL,
-                                    progress=progress) {
+                          progress=progress) {
     # start with checking grouping - parse csv if missing or provided as character and fmt times
     grouping <- checkGrouping(grouping, format)
     # this is a flag to see if any manual entries happened to grouping
@@ -256,11 +256,11 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
             time <-gsub(':', '-', time)
             fileName <- paste0(time, '_GroupingData.Rdata')
             message('\nOops! It looks like something went wrong and the function ',
-                'stopped before finishing. Your "grouping"',
-                ' data has been saved in the current working directory as:\n',
-                '   ', fileName, '\nYou can supply this to "grouping" next time you ',
-                'run getPgDetections to avoid re-selecting options with:\n',
-                '   newGrouping <- readRDS("', fileName, '")')
+                    'stopped before finishing. Your "grouping"',
+                    ' data has been saved in the current working directory as:\n',
+                    '   ', fileName, '\nYou can supply this to "grouping" next time you ',
+                    'run getPgDetections to avoid re-selecting options with:\n',
+                    '   newGrouping <- readRDS("', fileName, '")')
             saveRDS(grouping, file = fileName)
         }
         message('\nLast file I tried to read: ', failBin)
@@ -426,7 +426,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     binData <- binData[sapply(binData, function(x) !is.null(x))]
     if(length(binData) == 0) {
         warning(paste0('None of the binary files contained data for any of the events.',
-                    ' Please check that times are in UTC and the correct binary folder was supplied.'), call.=FALSE)
+                       ' Please check that times are in UTC and the correct binary folder was supplied.'), call.=FALSE)
     }
     # for clicks we have split the broad detector into separate ones by classification
     binData <- lapply(binData, function(x) split(x, x$detectorName))
@@ -525,7 +525,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
 
 #'
 processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
-                                  progress=TRUE, ...) {
+                        progress=TRUE, ...) {
     allDb <- pps@db
 
     # awk diff init values between modes have to reset this here
@@ -558,7 +558,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             if(is.null(dbData) ||
                nrow(dbData) == 0) {
                 pamWarning('No detections found in database ',
-                        basename(db), '.')
+                           basename(db), '.')
                 # setTxtProgressBar(pb, value = evNo)
                 # evNo <- evNo + 1
                 return(NULL)
@@ -566,7 +566,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             thisSr <- unique(dbData$sampleRate)
             if(length(thisSr) > 1) {
                 pamWarning('More than 1 sample rate found in database ',
-                        basename(db),'.')
+                           basename(db),'.')
             }
             # thisSource <- unique(dbData$SystemType)
             # dbData <- select(dbData, -SystemType)
@@ -610,8 +610,8 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             )
             if(length(missBins) > 0) {
                 pamWarning('Could not find the matching binary files for binaries ',
-                                  missBins,
-                                  ' in database ', basename(db), n=3)
+                           missBins,
+                           ' in database ', basename(db), n=3)
             }
             # This is a list for each binary, we want for each detector
             dbData <- dbData[sapply(dbData, function(x) !is.null(x))]
@@ -662,8 +662,8 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                     x
                 })
                 acEv <- AcousticEvent(id = evId, detectors = ev, settings = list(sr = thisSr),#, source=thisSource),
-                              files = list(binaries=binariesUsed, db=db, calibration=calibrationUsed),
-                              localizations = list(PGTargetMotion = evTarMo))
+                                      files = list(binaries=binariesUsed, db=db, calibration=calibrationUsed),
+                                      localizations = list(PGTargetMotion = evTarMo))
                 ancillary(acEv)$eventComment <- evComment
                 acEv
             })
@@ -694,7 +694,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
     })))
     on.exit()
     study <- AcousticStudy(id=id, events = allAcEv, pps = pps,
-                  files = list(db=allDbs, binaries=allBins))
+                           files = list(db=allDbs, binaries=allBins))
     # study <- .addPamWarning(study)
     settings(study)$detectors <- pps@settings$detectors
     study
@@ -714,11 +714,22 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
         grouping <- c('event', 'detGroup')
     }
     if(length(grouping) > 1) {
+        # return(
+        #     suppressPamWarnings(
+        #         bind_rows(
+        #             lapply(grouping, function(x) {
+        #                 getDbData(db, x, label, extraCols, doSR)
+        #             }))
+        #     )
+        # )
+        if(length(label) == 1) {
+            label <- rep(label, length(grouping))
+        }
         return(
             suppressPamWarnings(
                 bind_rows(
-                    lapply(grouping, function(x) {
-                        getDbData(db, x, label, extraCols, doSR)
+                    lapply(seq_along(grouping), function(x) {
+                        getDbData(db, grouping[x], label[x], extraCols, doSR)
                     }))
             )
         )
@@ -767,7 +778,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
     if(length(detTables)==0 ||
        length(eventTables)==0) {
         pamWarning('Could not find event tables for grouping method "', grouping,
-                '" in database ', basename(db), which = -1)
+                   '" in database ', basename(db), which = -1)
         return(NULL)
     }
     allDetections <- bind_rows(
@@ -782,7 +793,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
     )
     if(nrow(allDetections)==0) {
         pamWarning('No detections found for grouping method "', grouping,
-                '" in database ', basename(db), which = -1)
+                   '" in database ', basename(db), which = -1)
         return(NULL)
     }
 
@@ -798,7 +809,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
     )
     if(nrow(allEvents)==0) {
         pamWarning('No events found for grouping method "', grouping,
-                '" in database ', basename(db), which = -1)
+                   '" in database ', basename(db), which = -1)
         return(NULL)
     }
 
@@ -892,7 +903,7 @@ getMatchingBinaryData <- function(dbData, binList, dbName, idCol = 'UID') {
     }
     if(!all(dbData$matched)) {
         pamWarning('UID(s) ', dbData$UID[!dbData$matched],
-                       ' are in databases ', dbName, ' but not in binary file ', binFile)
+                   ' are in databases ', dbName, ' but not in binary file ', binFile)
     }
     # do SR match after, if onyl one we can just simple match
     if(length(unique(dbData$sampleRate)) == 1) {
@@ -919,7 +930,7 @@ checkGrouping <- function(grouping, format) {
     if(inherits(grouping, 'character')) {
         if(!file.exists(grouping)) {
             stop('Provided grouping file does not exist, please provide a csv file with',
-                ' columns "start", "end", and "id" to group detections into events.')
+                 ' columns "start", "end", and "id" to group detections into events.')
             # grouping <- tk_choose.files(caption = 'Select event time csv file:', multi = FALSE)
         }
         # grouping <- read_csv(grouping, col_types = cols(.default=col_character()))
@@ -1130,7 +1141,7 @@ wavToGroup <- function(db) {
     }
     if(any(isNa)) {
         pamWarning('Event id(s) ', saGrp$id[isNa], ' could not get start and end times,',
-                       ' they will be removed (check for missing values in Sound_Acquisition table to fix).')
+                   ' they will be removed (check for missing values in Sound_Acquisition table to fix).')
         saGrp <- saGrp[!isNa,]
     }
     saGrp$db <- db
@@ -1155,9 +1166,6 @@ parseDglLabel <- function(x, colnames) {
     if('eventType' %in% newCols) {
         return('eventType')
     }
-    if('Text_Annotation' %in% newCols) {
-        return('Text_Annotation')
-    }
     isSpec <- grepl('species', newCols, ignore.case = TRUE)
     if(sum(isSpec) == 1) {
         return(newCols[isSpec])
@@ -1169,6 +1177,9 @@ parseDglLabel <- function(x, colnames) {
     isId <- grepl('id', newCols, ignore.case=TRUE)
     if(sum(isId) == 1) {
         return(newCols[isId])
+    }
+    if('Text_Annotation' %in% newCols) {
+        return('Text_Annotation')
     }
     newCols[1]
 }
