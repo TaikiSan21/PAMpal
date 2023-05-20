@@ -133,6 +133,13 @@ getGPLData <- function(x, measures=TRUE) {
 #' @export
 #' @rdname getDetectorData
 #'
+getFPODData <- function(x, measures=TRUE) {
+    getDetectorData(x, measures)$fpod
+}
+
+#' @export
+#' @rdname getDetectorData
+#'
 getMeasures <- function(x) {
     if(is.data.frame(x)) {
         return(x)

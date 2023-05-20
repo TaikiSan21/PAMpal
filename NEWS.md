@@ -1,3 +1,8 @@
+## PAMpal 0.19.4
+
+- Adding `addFPOD` and `getFPODData` functions to deal with adding/getting FPOD 
+data from AcousticStudies
+
 ## PAMpal 0.19.3
 
 - Updating `getClipData` and `writeEventClips` to have a `fixLength` option that 

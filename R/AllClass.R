@@ -158,7 +158,7 @@ setClass('AcousticEvent',
              files = 'list',
              ancillary = 'list'),
          prototype = prototype(id = character(), detectors=list(), localizations=list(),
-                               settings=list(sr = NA_integer_, source = 'Not Found'), species=list(id=NA_character_),
+                               settings=list(sr = NA_integer_), species=list(id=NA_character_),
                                files = list(), ancillary = list())
 )
 
@@ -170,7 +170,7 @@ setValidity('AcousticEvent',
 )
 # Basic constructor
 AcousticEvent <- function(id = character(), detectors=list(), localizations=list(),
-                          settings=list(sr = NA_integer_, source = 'Not Found'),
+                          settings=list(sr = NA_integer_),
                           species=list(id=NA_character_), files=list(), ancillary = list()) {
     new('AcousticEvent', id = id, detectors=detectors, localizations=localizations, settings=settings,
         species=species, files=files, ancillary = ancillary)

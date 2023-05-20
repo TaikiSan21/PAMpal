@@ -6,6 +6,7 @@
 \alias{getWhistleData}
 \alias{getCepstrumData}
 \alias{getGPLData}
+\alias{getFPODData}
 \alias{getMeasures}
 \alias{nDetections}
 \alias{nClicks}
@@ -23,6 +24,8 @@ getWhistleData(x, measures = TRUE)
 getCepstrumData(x, measures = TRUE)
 
 getGPLData(x, measures = TRUE)
+
+getFPODData(x, measures = TRUE)
 
 getMeasures(x)
 
