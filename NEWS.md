@@ -1,3 +1,7 @@
+## PAMpal 0.19.5
+
+- Adding `sampleDetector` function to subsample by detector
+
 ## PAMpal 0.19.4
 
 - Adding `addFPOD` and `getFPODData` functions to deal with adding/getting FPOD 

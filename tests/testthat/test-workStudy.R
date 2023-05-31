@@ -325,3 +325,13 @@ test_that('Test FPOD adding', {
     expect_equal(nrow(fpod), 16)
     expect_equal(nrow(exStudy[[1]][['FPOD2']]), 4)
 })
+
+test_that('Test subsampler', {
+    data('exStudy')
+    half <- sampleDetector(exStudy, n=0.5)
+    expect_equal(nDetections(half), 12)
+    two <- sampleDetector(exStudy, n=2)
+    expect_equal(nDetections(two), 2 * 3 * 2)
+    same <- sampleDetector(exStudy, n=Inf)
+    expect_equal(nDetections(exStudy), nDetections(same))
+})
