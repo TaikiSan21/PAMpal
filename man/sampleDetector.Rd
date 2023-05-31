@@ -10,7 +10,8 @@ sampleDetector(x, n = 1)
 \item{x}{\linkS4class{AcousticStudy} object}
 
 \item{n}{if less than 1, proportion of rows to sample from each detector.
-If 1 or more, the number of rows to sample from each detector.}
+If 1 or more, the number of rows to sample from each detector. If \code{n}
+is negative, this proportion or number will be removed from each detector.}
 }
 \value{
 subsampled AcousticStudy \code{x}

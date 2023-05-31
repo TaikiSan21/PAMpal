@@ -334,4 +334,8 @@ test_that('Test subsampler', {
     expect_equal(nDetections(two), 2 * 3 * 2)
     same <- sampleDetector(exStudy, n=Inf)
     expect_equal(nDetections(exStudy), nDetections(same))
+    lessone <- sampleDetector(exStudy, n=-1)
+    expect_equal(nDetections(lessone), 28 - 2 * 1 * 3)
+    dropFive <- sampleDetector(exStudy, n=-5)
+    expect_equal(nDetections(dropFive), 2 * 2)
 })
