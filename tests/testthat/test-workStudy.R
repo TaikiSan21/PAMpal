@@ -338,4 +338,18 @@ test_that('Test subsampler', {
     expect_equal(nDetections(lessone), 28 - 2 * 1 * 3)
     dropFive <- sampleDetector(exStudy, n=-5)
     expect_equal(nDetections(dropFive), 2 * 2)
+    # same tests for event version
+    event <- exStudy[[1]]
+    half <- sampleDetector(event, n=.5)
+    expect_equal(nDetections(half), 6)
+    two <- sampleDetector(event, n=2)
+    expect_equal(nDetections(two), 2*3)
+    same <- sampleDetector(event, n=Inf)
+    expect_equal(nDetections(same), nDetections(event))
+    lessone <- sampleDetector(event, n=-1)
+    expect_equal(nDetections(lessone), 14 - 1*3)
+    lessHalf <- sampleDetector(event, n=-.5)
+    expect_equal(nDetections(lessHalf), 14-6)
+    dropFive <- sampleDetector(event, n=-5)
+    expect_equal(nDetections(dropFive), 2)
 })
