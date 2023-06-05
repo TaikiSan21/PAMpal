@@ -4,7 +4,8 @@
 [![CRAN last day downloads](http://cranlogs.r-pkg.org/badges/last-day/PAMpal?color=red)](https://cran.r-project.org/package=PAMpal)
 [![CRAN last week downloads](http://cranlogs.r-pkg.org/badges/last-week/PAMpal?color=red)](https://cran.r-project.org/package=PAMpal)
 [![CRAN last month downloads](http://cranlogs.r-pkg.org/badges/PAMpal?color=red)](https://cran.r-project.org/package=PAMpal)
-[![CRAN total downloads](http://cranlogs.r-pkg.org/badges/grand-total/PAMpal?color=red)](https://cran.r-project.org/package=PAMpal)  
+[![CRAN total downloads](http://cranlogs.r-pkg.org/badges/grand-total/PAMpal?color=red)](https://cran.r-project.org/package=PAMpal)
+[![DOI](https://zenodo.org/badge/295535985.svg)](https://zenodo.org/badge/latestdoi/295535985)
 <!-- badges: end -->
 
 # PAMpal
