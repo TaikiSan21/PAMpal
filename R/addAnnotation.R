@@ -60,7 +60,7 @@ addAnnotation <- function(x, anno, verbose=TRUE) {
 #' @param \dots additional named arguments to fill in annotation data. If names match
 #'   a column in the annotation, that value will be used for all events or detections
 #'   in the annotation
-#'   
+#'
 #' @export
 #' @rdname addAnnotation
 #'
@@ -78,14 +78,14 @@ prepAnnotation <- function(x, specMap=NULL, mode=c('event', 'detection'), intera
         # manually add lat/long?? can just set them to NA here
         stop('No GPS data found, please add first with "addGps".')
     }
-    
+
     annoList <- getAnnoTemplate(notes=FALSE)
     noMatchSp <- character(0)
     fillEventAnno <- function(event, anno, interactive=interactive, mode) {
         coordsOnly <- bind_rows(lapply(detectors(event), function(d) {
             d[, c('UTC', 'Longitude', 'Latitude', 'UID')]
         }))
-        
+
         switch(mode,
                'event' = {
                    useIx <- which.min(coordsOnly$UTC)[1]
@@ -99,7 +99,7 @@ prepAnnotation <- function(x, specMap=NULL, mode=c('event', 'detection'), intera
         anno$lon <- coordsOnly$Longitude[useIx]
         anno$lat <- coordsOnly$Latitude[useIx]
         anno$time_start <- coordsOnly$UTC[useIx]
-        
+
         thisSpec <- species(event)$id
         if(!is.null(specMap)) {
             if(is.null(thisSpec) ||
@@ -124,19 +124,19 @@ prepAnnotation <- function(x, specMap=NULL, mode=c('event', 'detection'), intera
                    anno$matchId <- id(event)
                }
         )
-        
+
         if(interactive) {
             cat(paste0('Adding data for event ', id(event), '...\n'))
             anno <- fillAnno(anno)
         }
         anno
     }
-    
+
     allAnno <- lapply(events(x), function(e) {
         fillEventAnno(e, annoList, interactive, mode=mode)
     })
     allAnno <- bind_rows(allAnno, .id='event')
-    
+
     dotArgs <- list(...)
     for(d in names(dotArgs)) {
         if(!d %in% names(allAnno)) {
@@ -147,7 +147,7 @@ prepAnnotation <- function(x, specMap=NULL, mode=c('event', 'detection'), intera
     if(length(noMatchSp) > 0) {
         noMatchSp <- unique(noMatchSp)
         warning(length(noMatchSp), ' species labels were not found in ',
-                '"specMap", they have not been changed: ', 
+                '"specMap", they have not been changed: ',
                 paste0(noMatchSp, collapse=', '), call. = FALSE)
     }
     allAnno
@@ -169,7 +169,7 @@ getAnnotation <- function(x) {
 
 #' @export
 #' @rdname addAnnotation
-#' 
+#'
 checkAnnotation <- function(x) {
     allCols <- names(getAnnoTemplate())
     missCols <- allCols[!allCols %in% names(x)]
@@ -299,7 +299,7 @@ getAnnoTemplate <- function(notes=FALSE) {
 #     }
 #     notes <- getAnnoTemplate(notes=TRUE)
 #     toFill <- sapply(annoList, is.na)
-#     
+#
 #     for(i in names(annoList)[toFill]) {
 #         thisChoice <- menu(
 #             title = paste0('Will "', i, '" be the same for all events?',
@@ -447,11 +447,11 @@ export_annomate <- function(x, file=NULL) {
 #'   \code{recording_url}. If clips were created using \link[PAMpal]{writeEventClips},
 #'   then must have column \code{filename} containing the wav file names. Other
 #'   column names will be automatically parsed from there. If wav files are from
-#'   another source, must contain columns \code{matchId} 
+#'   another source, must contain columns \code{matchId}
 #'
 #' @export
 #' @rdname addAnnotation
-#' 
+#'
 matchRecordingUrl <- function(anno, rec) {
     # matchId is either event name or event.UID for detections
     if(!'matchId' %in% names(rec)) {

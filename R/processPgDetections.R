@@ -524,16 +524,16 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
 }
 
 #'
-processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
+processPgDb <- function(pps, grouping=c('event', 'detGroup', 'clickTrain'), id=NULL,
                         progress=TRUE, ...) {
     allDb <- pps@db
 
     # awk diff init values between modes have to reset this here
     if(is.null(grouping)) {
-        grouping <- c('event', 'detGroup')
+        grouping <- c('event', 'detGroup', 'clickTrain')
     }
 
-    nBin <- sum(sapply(allDb, nBins))
+    nBin <- sum(sapply(allDb, nBins, grouping=grouping))
     if(nBin == 0) {
         warning('No detections found within database, are you sure you want',
                 'to run with mode="db" ?')
@@ -547,6 +547,11 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
     modList <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum', 'GPLDetector')
     modWarn <- c(FALSE, FALSE, FALSE, FALSE)
     tarMoCols <- ppVars()$tarMoCols
+    extraCols <- tarMoCols
+    if('clickTrain' %in% grouping) {
+        ctCols <- ppVars()$ctCols
+        extraCols <- c(extraCols, ctCols)
+    }
     names(modWarn) <- modList
     allAcEv <- lapply(allDb, function(db) {
         tryCatch({
@@ -554,7 +559,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             failBin <- 'No file processed'
             binList <- pps@binaries$list
             binFuns <- pps@functions
-            dbData <- getDbData(db=db, grouping=grouping, extraCols=tarMoCols, ...)
+            dbData <- getDbData(db=db, grouping=grouping, extraCols=extraCols, ...)
             if(is.null(dbData) ||
                nrow(dbData) == 0) {
                 pamWarning('No detections found in database ',
@@ -632,7 +637,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
             # in the list, but is this reliable? Probably not
 
             colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentID',
-                            'sr', 'callType', 'newUID', tarMoCols, 'BinaryUsed')
+                            'sr', 'callType', 'newUID', extraCols, 'BinaryUsed')
 
             acousticEvents <- lapply(dbData, function(ev) {
                 ev <- ev[sapply(ev, function(x) !is.null(x))]
@@ -648,7 +653,12 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                     evTarMo <- data.frame(matrix(NA, nrow=1, ncol=length(tarMoCols)))
                     colnames(evTarMo) <- ppVars()$locCols
                 }
-
+                # clicktrain stuff
+                if(all(ctCols %in% colnames(ev[[1]]))) {
+                    ctData <- ev[[1]][1, ctCols]
+                } else {
+                    ctData <- NULL
+                }
                 evComment <- unique(ev[[1]]$comment)
                 if(is.null(evComment)) {
                     evComment <- NA
@@ -665,6 +675,9 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
                                       files = list(binaries=binariesUsed, db=db, calibration=calibrationUsed),
                                       localizations = list(PGTargetMotion = evTarMo))
                 ancillary(acEv)$eventComment <- evComment
+                if(!is.null(ctData)) {
+                    ancillary(acEv)$clickTrain <- ctData
+                }
                 acEv
             })
             # setTxtProgressBar(pb, value = evNo)
@@ -701,7 +714,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup'), id=NULL,
 }
 
 # ---- not exported helpers ----
-getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols = NULL, doSR=TRUE) {
+getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=NULL, extraCols = NULL, doSR=TRUE) {
     # Combine all click/event tables, even by diff detector. Binary will have det name
     con <- dbConnect(SQLite(), db)
     on.exit(dbDisconnect(con))
@@ -711,7 +724,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
     # det group does not so we have to go look it up. If we are just
     # reading in all the data we only care about SA data
     if(is.null(grouping)) {
-        grouping <- c('event', 'detGroup')
+        grouping <- c('event', 'detGroup', 'clickTrain')
     }
     if(length(grouping) > 1) {
         # return(
@@ -769,6 +782,14 @@ getDbData <- function(db, grouping=c('event', 'detGroup'), label=NULL, extraCols
 
                eventColumns <- unique(c('Id', label, 'Text_Annotation'))
                evName <- 'DGL'
+           },
+           'clickTrain' = {
+               trainNames <- grep('Click_Train', tables, value=TRUE)
+               eventTables <- trainNames[!grepl('Children', trainNames)]
+               detTables <- trainNames[grepl('Children', trainNames)]
+               label <- NULL
+               eventColumns <- c('Id', label)
+               evName <- 'CT'
            },
            {
                stop("I don't know how to group by ", grouping, '.\n', call.=FALSE)
@@ -983,8 +1004,8 @@ readSa <- function(db) {
     sa
 }
 
-nBins <- function(db) {
-    evData <- getDbData(db, doSR=FALSE)
+nBins <- function(db, grouping) {
+    evData <- getDbData(db, grouping=grouping, doSR=FALSE)
     if(nrow(evData) == 0) {
         return(0)
     }

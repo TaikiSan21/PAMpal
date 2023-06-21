@@ -340,6 +340,8 @@ ppVars <- function() {
                                      'MmMe', 'MmMe', 'MmMe')),
          dglCols = c('Id', 'UID', 'UTC', 'UTCMilliseconds', 'PCLocalTime', 'PCTime',
                      'ChannelBitmap', 'SequenceBitmap', 'EndTime', 'DataCount'),
+         ctCols = c('Chi2', 'median_IDI_sec', 'mean_IDI_sec', 'std_IDI_sec', 'algorithm_info',
+                     'avrg_spectrum_max', 'avrg_spectrum', 'classifiers', 'speciesFlag'),
          binPattern = '(Clicks|WhistlesMoans|GPL).*pgdf$'
     )
 }

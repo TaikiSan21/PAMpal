@@ -1,3 +1,9 @@
+## PAMpal 0.20.0
+
+- Adding support for Click Train Detector with `grouping='clickTrain'` when processing
+with `mode='db'`. Events have prefix CT instead of OE or DGL. By default `mode='db'` will
+process all three of `grouping=c('event', 'detGroup', 'clickTrain')`
+
 ## PAMpal 0.19.5
 
 - Adding `sampleDetector` function to subsample by detector
