@@ -4,7 +4,7 @@
 #'   to an AcousticStudy or AcousticEvent object
 #'
 #' @param x \linkS4class{AcousticStudy} or \linkS4class{AcousticEvent} object
-#'   to match data to
+#'   to match data to, or a dataframe for \code{timeJoin}
 #' @param data a data frame to match to data to \code{x}.
 #'   Must have column \code{UTC}, and optionally a column \code{db} if subsets
 #'   of data should be matched only to parts of \code{x} with that database. All
@@ -21,7 +21,7 @@
 #'   all existing values with the same name as columns in \code{data} will be
 #'   replaced. If \code{FALSE} no replacement occurs. If \code{NA} only values
 #'   which are \code{NA} will be replaced with new values
-#' @param keepDiff logical flag to keep
+#' @param keepDiff logical flag to keep time difference data
 #'
 #' @details This function lets you match any arbitrary data to a PAMpal object
 #'   as long as it has a time associated with it. Data will be attached to
@@ -102,7 +102,10 @@ matchTimeData <- function(x, data, mode=c('event', 'detection'), thresh=Inf, int
                            ' to NA. (Average ', round(mean(eventData$timeDiff/3600, na.rm=TRUE),1), ' hours apart)',
                            which=sys.nframe()-1)
             }
-            toDrop <- c('UTC', 'eventId', 'timeDiff')
+            toDrop <- c('UTC', 'eventId')
+            if(isFALSE(keepDiff)) {
+                toDrop <- c(toDrop, 'timeDiff')
+            }
             eventData <- as.list(dropCols(eventData, toDrop))
             # REPLACE DOES NOTHING HERE
             oldMeas <- ancillary(x)$measures
@@ -128,6 +131,9 @@ matchTimeData <- function(x, data, mode=c('event', 'detection'), thresh=Inf, int
                 if(any(newNa)) {
                     diffs <- c(diffs, thisDet$timeDiff[newNa])
                 }
+                if(isFALSE(keepDiff)) {
+                    thisDet$timeDiff <- NULL
+                }
                 attr(thisDet, 'calltype') <- calltype
                 x[[d]] <- thisDet
                 # x[[d]] <- timeJoin(x[[d]], data, thresh=thresh, interpolate=interpolate, replace=replace)
@@ -144,12 +150,19 @@ matchTimeData <- function(x, data, mode=c('event', 'detection'), thresh=Inf, int
     x
 }
 
+#' @rdname matchTimeData
+#'
+#' @param y dataframe to join to \code{x}
+#'
+#' @export
+#'
 timeJoin <- function(x, y, thresh=Inf, interpolate=TRUE, replace=FALSE) {
     #add reserved column names like eventId, db
     if(is.null(x) ||
        nrow(x) == 0) {
         return(x)
     }
+    x[['timeDiff']] <- NULL
     reservedCols <- c('eventId', 'db', 'UID', 'eventLabel', 'BinaryFile', 'species', 'Channel')
     if(isFALSE(replace)) {
         addCols <- colnames(y)[!colnames(y) %in% colnames(x)]

@@ -1,3 +1,7 @@
+## PAMpal 0.20.1
+
+- Exporting `timeJoin` from `matchTimeData` so other packages can use
+
 ## PAMpal 0.20.0
 
 - Adding support for Click Train Detector with `grouping='clickTrain'` when processing

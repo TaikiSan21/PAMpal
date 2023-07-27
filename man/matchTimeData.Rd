@@ -2,6 +2,7 @@
 % Please edit documentation in R/matchTimeData.R
 \name{matchTimeData}
 \alias{matchTimeData}
+\alias{timeJoin}
 \title{Match time-based data to PAMpal objects}
 \usage{
 matchTimeData(
@@ -13,10 +14,12 @@ matchTimeData(
   replace = FALSE,
   keepDiff = FALSE
 )
+
+timeJoin(x, y, thresh = Inf, interpolate = TRUE, replace = FALSE)
 }
 \arguments{
 \item{x}{\linkS4class{AcousticStudy} or \linkS4class{AcousticEvent} object
-to match data to}
+to match data to, or a dataframe for \code{timeJoin}}
 
 \item{data}{a data frame to match to data to \code{x}.
 Must have column \code{UTC}, and optionally a column \code{db} if subsets
@@ -39,7 +42,9 @@ all existing values with the same name as columns in \code{data} will be
 replaced. If \code{FALSE} no replacement occurs. If \code{NA} only values
 which are \code{NA} will be replaced with new values}
 
-\item{keepDiff}{logical flag to keep}
+\item{keepDiff}{logical flag to keep time difference data}
+
+\item{y}{dataframe to join to \code{x}}
 }
 \value{
 the same data as \code{x}, with data added from \code{data}
