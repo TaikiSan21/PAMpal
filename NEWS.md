@@ -1,3 +1,7 @@
+## PAMpal 0.20.2
+
+- Adding `addMeasures` and `getMeasures` functions
+
 ## PAMpal 0.20.1
 
 - Exporting `timeJoin` from `matchTimeData` so other packages can use

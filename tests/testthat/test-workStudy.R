@@ -353,3 +353,28 @@ test_that('Test subsampler', {
     dropFive <- sampleDetector(event, n=-5)
     expect_equal(nDetections(dropFive), 2)
 })
+
+test_that('Test measure functions', {
+    data('exStudy')
+    measList <- list('Example.OE1' = list(a=1, b=2),
+                     'Example.OE2' = list(a=3, b=4))
+    measDf <- data.frame(eventId = c('Example.OE1', 'Example.OE2'),
+                         a = 4:5,
+                         b = 6:7,
+                         c = 10:11
+    )
+    exStudy <- addMeasures(exStudy, measList)
+    outMeas <- getMeasures(exStudy)
+    expect_identical(outMeas$a, c(1,3))
+    exStudy <- addMeasures(exStudy, measDf, replace=FALSE)
+    expect_identical(getMeasures(exStudy)$a, c(1,3))
+    exStudy <- addMeasures(exStudy, measDf, replace=TRUE)
+    expect_identical(getMeasures(exStudy)$a, 4:5)
+    expect_identical(colnames(outMeas), c('eventId', 'a', 'b'))
+    measDf$eventId <- c('Wrong', 'Name')
+    expect_error(addMeasures(exStudy, measDf))
+    measDf$eventId <- c('Example.OE1', 'Example.OE3')
+    measDf$a <- 20:21
+    exStudy <- addMeasures(exStudy, measDf, replace=TRUE)
+    expect_equal(getMeasures(exStudy)$a, c(20, 5))
+})

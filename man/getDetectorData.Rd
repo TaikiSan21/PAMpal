@@ -7,7 +7,6 @@
 \alias{getCepstrumData}
 \alias{getGPLData}
 \alias{getFPODData}
-\alias{getMeasures}
 \alias{nDetections}
 \alias{nClicks}
 \alias{nWhistles}
@@ -26,8 +25,6 @@ getCepstrumData(x, measures = TRUE)
 getGPLData(x, measures = TRUE)
 
 getFPODData(x, measures = TRUE)
-
-getMeasures(x)
 
 nDetections(x, distinct = FALSE)
 
