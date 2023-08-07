@@ -1,3 +1,8 @@
+## PAMpal 0.20.3
+
+- Fixed an issue where some rare clicks would cause processing to result in
+only `NA` values
+
 ## PAMpal 0.20.2
 
 - Adding `addMeasures` and `getMeasures` functions

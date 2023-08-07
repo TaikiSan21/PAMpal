@@ -155,6 +155,10 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
         thisDf$duration <- dur
         thisDf$peakTime <- peakTime
         thisSpec <- spec(thisWave, f=sr, wl=fftSize, norm=FALSE, correction='amplitude', plot=FALSE)
+        # zeros shouldnt happen, set to tiny non-zero value
+        if(any(thisSpec[,2] == 0)) {
+            thisSpec[thisSpec[,2] == 0, 2] <- 1e-13
+        }
         if(any(is.nan(thisSpec[,2]))) {
             blanks  <- data.frame(matrix(NA, nrow=1, ncol=length(paramNames)))
             colnames(blanks) <- paramNames
