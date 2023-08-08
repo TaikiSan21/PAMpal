@@ -193,6 +193,10 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
         calibratedClick <- cbind(freq, relDb)
 
         peakData <- lapply(peakTrough(calibratedClick), unname)
+        # forcing broken for testing
+        # if(any(thisSpec[,2] == 0)) {
+        #     peakData$peak3 <- logical(0)
+        # }
         thisDf <- c(thisDf, peakData)
 
         # peak-to-peak calcuation from anne s

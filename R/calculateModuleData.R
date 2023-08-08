@@ -102,7 +102,8 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
         moduleType,
         'ClickDetector' = {
             # allClicks <- doClickCalcs(binData$data, c(getBasic(moduleType), binFuns[['ClickDetector']]), detSettings)
-            allClicks <- doCalcs(binData$data, binFuns, detSettings, module='ClickDetector')
+            allClicks <- doCalcs(binData$data, binFuns, detSettings, module='ClickDetector',
+                                 file=binData$fileInfo$fileName)
             # We want each 'type' of click to be separate 'detector'. This is PG only.
             allNames <- bind_rows(
                 lapply(binData$data[unique(as.character(allClicks$UID))], function(x) {
@@ -117,21 +118,24 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
         },
         'WhistlesMoans' = {
             # allWhistles <- doWhistleCalcs(binData$data, c(getBasic(moduleType), binFuns[['WhistlesMoans']]))
-            allWhistles <- doCalcs(binData$data, binFuns, detSettings, module='WhistlesMoans')
+            allWhistles <- doCalcs(binData$data, binFuns, detSettings, module='WhistlesMoans',
+                                   file=binData$fileInfo$fileName)
             allWhistles$detectorName <- detName
             allWhistles$callType <- 'whistle'
             allWhistles
         },
         'Cepstrum' = {
             # allCepstrum <- doCepstrumCalcs(binData$data, c(getBasic(moduleType), binFuns[['Cepstrum']]), detSettings)
-            allCepstrum <- doCalcs(binData$data, binFuns, detSettings, module='Cepstrum')
+            allCepstrum <- doCalcs(binData$data, binFuns, detSettings, module='Cepstrum',
+                                   file=binData$fileInfo$fileName)
             allCepstrum$detectorName <- detName
             allCepstrum$callType <- 'cepstrum'
             allCepstrum
         },
         'GPLDetector' = {
             # allGPL <- doGPLCalcs(binData$data, c(getBasic(moduleType), binFuns[['GPLDetector']]))
-            allGPL <- doCalcs(binData$data, binFuns, module='GPLDetector')
+            allGPL <- doCalcs(binData$data, binFuns, module='GPLDetector',
+                              file=binData$fileInfo$fileName)
             if(is.null(allGPL) ||
                nrow(allGPL) == 0) {
                 return(NULL)
@@ -147,7 +151,8 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
     result
 }
 
-doCalcs <- function(data, funs, detSettings=NULL, module, retry=TRUE) {
+doCalcs <- function(data, funs, detSettings=NULL, module, retry=TRUE, file) {
+    # data <- bin$data
     getBasic <- function(type) {
         switch(type,
                'ClickDetector' = function(x) {
@@ -184,17 +189,17 @@ doCalcs <- function(data, funs, detSettings=NULL, module, retry=TRUE) {
                })
 
     }
-    funs <- c(getBasic(module), funs[[module]])
-    names(funs)[1] <- 'getBasic'
+    doFuns <- c(getBasic(module), funs[[module]])
+    names(doFuns)[1] <- 'getBasic'
     switch(module,
            'ClickDetector' = {
                if(isTRUE(detSettings$decimated)) {
                    for(i in seq_along(data)) {
                        data[[i]]$sr <- detSettings$sr
                    }
-                   for(f in seq_along(funs)) {
-                       if('sr_hz' %in% names(formals(funs[[f]]))) {
-                           formals(funs[[f]])[['sr_hz']] <- 'auto'
+                   for(f in seq_along(doFuns)) {
+                       if('sr_hz' %in% names(formals(doFuns[[f]]))) {
+                           formals(doFuns[[f]])[['sr_hz']] <- 'auto'
                        }
                    }
                }
@@ -280,15 +285,15 @@ doCalcs <- function(data, funs, detSettings=NULL, module, retry=TRUE) {
                }
            }
     )
-    allDets <- vector('list', length=length(funs))
-    for(f in seq_along(funs)) {
+    allDets <- vector('list', length=length(doFuns))
+    for(f in seq_along(doFuns)) {
         allDets[[f]] <- bind_rows(
             lapply(data, function(oneDet) {
                 tryCatch({
-                    funs[[f]](oneDet)
+                    doFuns[[f]](oneDet)
                 }, error = function(e) {
                     if(isFALSE(retry)) {
-                        message('Error in function ', names(funs)[f],
+                        message('Error in function ', names(doFuns)[f],
                                 ':', as.character(e$call[1]), '-', e$message,
                                 '. UID: ', oneDet$UID, sep='')
                     }
@@ -297,10 +302,16 @@ doCalcs <- function(data, funs, detSettings=NULL, module, retry=TRUE) {
         )
     }
     nDets <- sapply(allDets, nrow)
+    diffDets <- nDets != nDets[1]
     if(isTRUE(retry) &&
-       !all(nDets == nDets[1])) {
-        return(doCalcs(data, funs, detSettings, module, retry=FALSE))
+       any(diffDets)) {
+        return(doCalcs(data, funs, detSettings, module, retry=FALSE, file=file))
     }
+    if(any(diffDets)) {
+        pamWarning('Some processing functions failed on file ', file)
+        allDets <- allDets[!diffDets]
+    }
+
     bind_cols(allDets)
 }
 
