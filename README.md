@@ -10,7 +10,20 @@
 
 # PAMpal
 
-Welcome! The installation guide and tutorial has moved to [here](https://taikisan21.github.io/PAMpal/).
+Welcome! The tutorial has moved to [here](https://taikisan21.github.io/PAMpal/).
 
 Please reach out if you have any issues [taiki.sakai@noaa.gov](mailto:taiki.sakai@noaa.gov).
 
+## Installation Guide
+
+`PAMpal` is available on CRAN and can be installed with 
+
+```{r}
+install.packages('PAMpal')
+```
+
+A more recent development version may be available on GitHub, and can be installed with
+
+```{r}
+devtools::install_github('TaikiSan21/PAMpal')
+```

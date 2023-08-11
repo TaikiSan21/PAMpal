@@ -1,3 +1,9 @@
+## PAMpal 1.0.0
+
+- Probably about time this was 1.0.0, just in time for a paper!
+
+- Updating front page readme
+
 ## PAMpal 0.20.3
 
 - Fixed an issue where some rare clicks would cause processing to result in
