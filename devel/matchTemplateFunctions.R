@@ -4,10 +4,18 @@ library(PAMmisc)
 
 loadTemplateBinary <- function(x, names, columns) {
     bin <- loadPamguardBinaryFile(x, skipLarge=TRUE, convertDate=FALSE)
+    if(length(bin$data) == 0) {
+        return(NULL)
+    }
     bin <- suppressWarnings(pbToDf(bin, templateNames=names)[columns])
     bin$UID <- as.character(bin$UID)
     bin$BinaryFile <- basename(x)
     bin$date <- convertPgDate(bin$date)
+    if(!is.data.frame(bin)) {
+        warning('Weird bin')
+        print(bin)
+        return(NULL)
+    }
     bin <- rename(bin, UTC = date)
     bin
 }
@@ -42,6 +50,9 @@ loadTemplateFolder <- function(dir, names, extraCols=NULL, file=NULL, progress=T
 }
 
 addTemplateLabels <- function(x, db, names, thresh) {
+    if(!file.exists(db)) {
+        stop('Database ', db, ' does not exist')
+    }
     eventData <- PAMpal:::getDbData(db, doSR=FALSE)[c('UID', 'parentID', 'eventLabel', 'BinaryFile')]
     eventData <- distinct(eventData)
     labelCols <- c('parentID', 'eventLabel', 'templateId', 'templateMatch')
@@ -101,6 +112,12 @@ markGoodEvents <- function(x, nDets = 3, nSeconds=120, verbose=TRUE) {
 }
 
 addTemplateEvents <- function(db, binFolder, data) {
+    if(!file.exists(db)) {
+        stop('Database ', db, ' does not exist')
+    }
+    if(!dir.exists(binFolder)) {
+        stop('Binary folder ', binFolder, ' does not exist')
+    }
     binFiles <- list.files(binFolder, pattern='^Click_Detector.*pgdf$', full.names=TRUE, recursive=TRUE)
     data <- data[data$templateEvent != 'none', ]
     data <- split(data, data$templateEvent)

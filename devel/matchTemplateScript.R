@@ -6,12 +6,13 @@ templateNames <- c("ZC","BW43","BW39V","MS","BB","BW70")
 extraCols <- c(paste0(templateNames, '_match'),
               paste0(templateNames, '_reject'))
 
-binFolder <- 'D:/CCES_2018/Finalized BW Analyses/Drift-19 (completed by JST)/12 dB threshold/'
+baseDir <- 'D:/CCES_2018/Finalized BW Analyses/Drift-20 (completed by JST)/12 dB threshold/'
+binFolder <- baseDir
 # this database should be a COPY of the original because we will add events to it later
-db <- 'D:/CCES_2018/Finalized BW Analyses/Drift-19 (completed by JST)/12 dB threshold/PamGuard64 2_00_16e Drift-19_JST_Templates.sqlite3'
+db <- file.path(baseDir, 'PamGuard64 2_00_16e Drift-20_JST_Templates.sqlite3')
 # the binary processing takes a really long time, this automatically saves to an RDS file
 # so that you don't have to reprocess in future
-saveFile <- 'D:/CCES_2018/Finalized BW Analyses/Drift-19 (completed by JST)/12 dB threshold/Drift19Template.rds'
+saveFile <- file.path(baseDir, 'Drift20Template.rds')
 
 allData <- loadTemplateFolder(binFolder, names=templateNames, extraCols=extraCols, file=saveFile)
 # these are in order of "templateNames" above. Can look at data and see if any of these need to
