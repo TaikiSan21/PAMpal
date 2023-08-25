@@ -1,11 +1,11 @@
 #' @title Load Pamguard XML Settings
 #'
-#' @description Loads in relevant settings and formats for use in PAMpal 
+#' @description Loads in relevant settings and formats for use in PAMpal
 #'
 #' @param x an XML file created by Pamguard's "Export XML Configuration"
-#' 
+#'
 #' @return A list with settings for audio \code{sources} (sound acuisition, decimators,
-#'   FFT, and cepstrum) and \code{detectors} (click detector and whistle and moan 
+#'   FFT, and cepstrum) and \code{detectors} (click detector and whistle and moan
 #'   detector). Also stores the entire XML file as \code{raw} and the file name as
 #'   \code{file}
 #'
@@ -27,7 +27,7 @@ loadPamguardXML <- function(x) {
   }
   x <- normalizePath(x, winslash = '/')
   pgxml <- read_xml(x)
-  psf <- xml_find_all(pgxml, 'INFO') %>% 
+  psf <- xml_find_all(pgxml, 'INFO') %>%
     xml_attr('CONFIGURATION')
   pxSources <- xml_getSources(pgxml)
   pxDetectors <- xml_getDetectors(pgxml, pxSources)
@@ -44,26 +44,28 @@ xml_getFFT <- function(pgxml) {
     return(NULL)
   }
   fftList <- vector('list', length = length(fftNodes))
-  names(fftList) <- xml_find_all(fftNodes, 'PROCESS[starts-with(@Name, "FFT -")]/Output') %>% 
+  names(fftList) <- xml_find_all(fftNodes, 'PROCESS[starts-with(@Name, "FFT -")]/Output') %>%
     xml_attr('Name')
-  fftHops <- xml_find_all(fftNodes,'//CONFIGURATION/SETTINGS/fftHop') %>% 
-    xml_attr('Value') %>% 
+  fftHops <- xml_find_all(fftNodes,'//CONFIGURATION/SETTINGS/fftHop') %>%
+    xml_attr('Value') %>%
     as.numeric()
-  fftInputs <- xml_find_all(fftNodes, '//CONFIGURATION/SETTINGS/dataSourceName') %>% 
+  fftInputs <- xml_find_all(fftNodes, '//CONFIGURATION/SETTINGS/dataSourceName') %>%
     xml_attr('Value')
-  fftLengths <- xml_find_all(fftNodes, '//CONFIGURATION/SETTINGS/fftLength') %>% 
-    xml_attr('Value') %>% 
+  fftLengths <- xml_find_all(fftNodes, '//CONFIGURATION/SETTINGS/fftLength') %>%
+    xml_attr('Value') %>%
     as.numeric()
   for(i in seq_along(fftList)) {
     fftList[[i]] <- list(source=fftInputs[i],
                          length=fftLengths[i],
                          hop=fftHops[i])
   }
-  fftList
+  noiseFreeList <- fftList
+  names(noiseFreeList) <- paste0(names(fftList), ' Noise free FFT data')
+  c(fftList, noiseFreeList)
 }
 
 xml_getSa <- function(pgxml) {
-  saNode <- xml_find_all(pgxml, '//MODULE[@UnitName="Sound Acquisition"]/PROCESS/Output[starts-with(@Type, "PamDetection")]') %>% 
+  saNode <- xml_find_all(pgxml, '//MODULE[@UnitName="Sound Acquisition"]/PROCESS/Output[starts-with(@Type, "PamDetection")]') %>%
     xml_attrs()
   if(length(saNode) == 0) {
     return(NULL)
@@ -80,9 +82,9 @@ xml_getCepstrum <- function(pgxml, fftList) {
     return(NULL)
   }
   cepsList <- vector('list', length = length(cepsNodes))
-  names(cepsList) <- xml_find_all(cepsNodes, 'PROCESS/Output') %>% 
+  names(cepsList) <- xml_find_all(cepsNodes, 'PROCESS/Output') %>%
     xml_attr('Name')
-  cepsInput <- xml_find_all(cepsNodes, 'PROCESS/Input') %>% 
+  cepsInput <- xml_find_all(cepsNodes, 'PROCESS/Input') %>%
     xml_attr('Name')
   for(i in seq_along(cepsList)) {
     thisFft <- fftList[[cepsInput[i]]]
@@ -100,12 +102,12 @@ xml_getDecimator <- function(pgxml) {
     return(NULL)
   }
   deciList <- vector('list', length = length(deciNodes))
-  names(deciList) <- xml_find_all(deciNodes, 'PROCESS/Output') %>% 
+  names(deciList) <- xml_find_all(deciNodes, 'PROCESS/Output') %>%
     xml_attr('Name')
-  deciInput <- xml_find_all(deciNodes, 'PROCESS/Input') %>% 
+  deciInput <- xml_find_all(deciNodes, 'PROCESS/Input') %>%
     xml_attr('Name')
-  deciSr <- xml_find_all(deciNodes, 'PROCESS/Output') %>% 
-    xml_attr('SampleRate') %>% 
+  deciSr <- xml_find_all(deciNodes, 'PROCESS/Output') %>%
+    xml_attr('SampleRate') %>%
     as.numeric()
   for(i in seq_along(deciList)) {
     deciList[[i]] <- list(source = deciInput[i],
@@ -121,31 +123,31 @@ xml_getWMD <- function(pgxml) {
   }
   wmdList <- vector('list', length = length(wmdNodes))
   names(wmdList) <- xml_attr(wmdNodes, 'UnitName')
-  wmdInputs <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/dataSource') %>% 
+  wmdInputs <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/dataSource') %>%
     xml_attr('Value')
-  wmdMinFreq <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/minFrequency') %>% 
-    xml_attr('Value') %>% 
+  wmdMinFreq <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/minFrequency') %>%
+    xml_attr('Value') %>%
     as.numeric()
-  wmdMinLength <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/minLength') %>% 
-    xml_attr('Value') %>% 
+  wmdMinLength <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/minLength') %>%
+    xml_attr('Value') %>%
     as.numeric()
-  wmdMinPixels <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/minPixels') %>% 
-    xml_attr('Value') %>% 
+  wmdMinPixels <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/minPixels') %>%
+    xml_attr('Value') %>%
     as.numeric()
-  wmdMaxCross <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/maxCrossLength') %>% 
-    xml_attr('Value') %>% 
+  wmdMaxCross <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/maxCrossLength') %>%
+    xml_attr('Value') %>%
     as.numeric()
-  wmdShortLength <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/shortLength') %>% 
-    xml_attr('Value') %>% 
+  wmdShortLength <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/shortLength') %>%
+    xml_attr('Value') %>%
     as.numeric()
-  wmdMedianFilter <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/specNoiseSettings//filterLength') %>% 
-    xml_attr('Value') %>% 
+  wmdMedianFilter <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/specNoiseSettings//filterLength') %>%
+    xml_attr('Value') %>%
     as.numeric()
-  wmdAvgSub <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/specNoiseSettings//updateConstant') %>% 
-    xml_attr('Value') %>% 
+  wmdAvgSub <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/specNoiseSettings//updateConstant') %>%
+    xml_attr('Value') %>%
     as.numeric()
-  wmdThreshold <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/specNoiseSettings//thresholdDB') %>% 
-    xml_attr('Value') %>% 
+  wmdThreshold <- xml_find_all(wmdNodes, 'CONFIGURATION/SETTINGS/specNoiseSettings//thresholdDB') %>%
+    xml_attr('Value') %>%
     as.numeric()
   for(i in seq_along(wmdNodes)) {
     wmdList[[i]] <- list(
@@ -171,17 +173,17 @@ xml_getClick <- function(pgxml) {
   }
   clickList <- vector('list', length = length(clickNodes))
   names(clickList) <- xml_attr(clickNodes, 'UnitName')
-  longFilter <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/longFilter') %>% 
-    xml_attr('Value') %>% 
+  longFilter <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/longFilter') %>%
+    xml_attr('Value') %>%
     as.numeric()
-  longFilter2 <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/longFilter2') %>% 
-    xml_attr('Value') %>% 
+  longFilter2 <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/longFilter2') %>%
+    xml_attr('Value') %>%
     as.numeric()
-  shortFilter <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/shortFilter') %>% 
-    xml_attr('Value') %>% 
+  shortFilter <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/shortFilter') %>%
+    xml_attr('Value') %>%
     as.numeric()
-  threshold <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/dbThreshold') %>% 
-    xml_attr('Value') %>% 
+  threshold <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/dbThreshold') %>%
+    xml_attr('Value') %>%
     as.numeric()
   preFilterNodes <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/preFilter')
   preFilter <- lapply(preFilterNodes, function(x) {
@@ -189,7 +191,7 @@ xml_getClick <- function(pgxml) {
     names(vals) <- xml_name(xml_children(x))
     vals
   })
-  
+
   triggerFilterNodes <- xml_find_all(clickNodes, 'CONFIGURATION/SETTINGS[@Type="Click Detector"]/triggerFilter')
   triggerFilter <- lapply(triggerFilterNodes, function(x) {
     vals <- xml_attr(xml_children(x), 'Value')
@@ -211,7 +213,7 @@ xml_getClick <- function(pgxml) {
   for(i in seq_along(clickList)) {
     input <- xml_find_all(clickNodes, paste0('PROCESS[@Name="',
                                              names(clickList)[i],
-                                             '"]/Input')) %>% 
+                                             '"]/Input')) %>%
       xml_attr('Name')
     result <- list(longFilter=longFilter[i],
                    longFilter2=longFilter2[i],

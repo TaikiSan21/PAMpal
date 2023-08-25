@@ -294,7 +294,8 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
         #             x, ' to time properly.')
         #     return(NULL)
         # }
-        if(FOUNDFORMAT == 'soundtrap') {
+        if(!is.null(FOUNDFORMAT) &&
+           FOUNDFORMAT == 'soundtrap') {
             hasLog <- which(gsub('\\.wav$', '', basename(x)) == log$file)
             if(length(hasLog) == 1) {
                 len <- len + log$gap[hasLog]

@@ -11,7 +11,7 @@ loadPamguardXML(x)
 }
 \value{
 A list with settings for audio \code{sources} (sound acuisition, decimators,
-  FFT, and cepstrum) and \code{detectors} (click detector and whistle and moan 
+  FFT, and cepstrum) and \code{detectors} (click detector and whistle and moan
   detector). Also stores the entire XML file as \code{raw} and the file name as
   \code{file}
 }
