@@ -1,3 +1,7 @@
+## PAMpal 1.0.2
+
+- Trying to remove hidden R 4.1 dependency from `\(c)` usage in `matchTimeData`
+
 ## PAMpal 1.0.1
 
 - Fixed issue where noise free FFT was not assigned properly in `addSettings`

@@ -124,9 +124,9 @@ matchTimeData <- function(x, data, mode=c('event', 'detection'), thresh=Inf, int
                 newNa <- sapply(colnames(thisDet)[!colnames(thisDet) %in% oldCols], function(c) {
                     anyNA(thisDet[[c]])
                 })
-                newNa <- map(colnames(thisDet)[!colnames(thisDet) %in% oldCols],
-                             \(c) is.na(thisDet[[c]])
-                ) %>%
+                newNa <- map(colnames(thisDet)[!colnames(thisDet) %in% oldCols], function(c) {
+                             is.na(thisDet[[c]])
+                }) %>%
                     reduce(`|`)
                 if(any(newNa)) {
                     diffs <- c(diffs, thisDet$timeDiff[newNa])
