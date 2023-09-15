@@ -1,3 +1,8 @@
+## PAMpal 1.0.3
+
+- `export_annomate` bugged file writing
+- Adding message if you try to export before adding annotation
+
 ## PAMpal 1.0.2
 
 - Trying to remove hidden R 4.1 dependency from `\(c)` usage in `matchTimeData`

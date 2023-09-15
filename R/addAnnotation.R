@@ -183,7 +183,7 @@ checkAnnotation <- function(x) {
     mandatory <- c('source', 'annotator', 'recording_url', 'contact')
     # non-mand
     notMand <- c('annotation_date', 'annotation_info_url', 'recording_info_url',
-                 'time_start', 'time_end', 'freq_low', 'freq_high', 'species',
+                 'time_start', 'time_end', 'freq_low', 'freq_high', 'taxon',
                  'type', 'lat', 'lon', 'alt', 'effort', 'additional')
     # notMand <- c('recording_info_url', 'annotation_info_url', 'type',
     #              'annotation_date', 'alt', 'freq_low','freq_high', 'effort',
@@ -197,7 +197,7 @@ checkAnnotation <- function(x) {
     }
     if(any(otherMiss)) {
         message('Also missing data for ', sum(otherMiss), ' optional field(s): ',
-                paste0(names(which(otherMiss)), collapse=', '), call.=FALSE)
+                paste0(names(which(otherMiss)), collapse=', '))
     }
     negStart <- x$time_start < 0
     if(any(negStart)) {
@@ -220,7 +220,7 @@ checkAnnotation <- function(x) {
         warning('Found ', sum(freqLowHigher, na.rm=TRUE), ' occasions where freq_low is ',
                 'higher than freq_high', call.=FALSE)
     }
-    x
+    invisible(x)
 }
 
 getAnnoTemplate <- function(notes=FALSE) {
@@ -239,7 +239,7 @@ getAnnoTemplate <- function(notes=FALSE) {
                 time_end = TRUE,
                 freq_low = TRUE, # only if freq is in data we ave? could be optional i guess. "peak" in standardClick, "freqMin/Max" in rocca
                 freq_high = TRUE,
-                species = TRUE, # can ask for each species found in species id. was prev taxon?
+                taxon = TRUE, # can ask for each species found in species id. was prev species?
                 type = NA, # probably ask, could do whistle/click/bp based on detector
                 lat = TRUE, # all trues are able to be autod, these do by start time
                 lon = TRUE,
@@ -265,7 +265,7 @@ getAnnoTemplate <- function(notes=FALSE) {
                 # time_end = TRUE, # These are SECONDS WITHIN RECORDING
                 # freq_low = TRUE, # only if freq is in data we ave? could be optional i guess. "peak" in standardClick, "freqMin/Max" in rocca
                 # freq_high = TRUE,
-                # species = NA, # can ask for each species found in species id
+                # taxon = NA, # can ask for each species found in species id
                 type = 'Type of call in the recording (e.g. click, whistle, noise)', # probably ask, could do whistle/click/bp based on detector
                 # lat = TRUE, # all trues are able to be autod, these do by start time
                 # lon = TRUE,
@@ -431,11 +431,19 @@ export_annomate <- function(x, file=NULL) {
     } else {
         anno <- x
     }
+    if(is.null(anno) ||
+       nrow(anno) == 0) {
+        stop('No annotations found, use "addAnnotation" first.')
+    }
     annomateCols <- names(getAnnoTemplate())
+    missCol <- annomateCols[!annomateCols %in% colnames(anno)]
+    if(length(missCol) > 0) {
+        stop('Missing annomate columns ', paste0(missCol, collapse=', '))
+    }
     anno <- anno[annomateCols]
     checkAnnotation(anno)
     if(!is.null(file)) {
-        write.csv(x, file=file, row.names = FALSE)
+        write.csv(anno, file=file, row.names = FALSE)
     }
     anno
 }
