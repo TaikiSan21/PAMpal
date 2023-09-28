@@ -44,14 +44,22 @@ myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
     }
     wave <- clipAroundPeak(wave, wl, noise=noise)
     if(window) {
-        wave <- wave * hanning(length(wave)) / mean(hanning(length(wave))^2)
+        # wave <- wave * hanning(length(wave)) / mean(hanning(length(wave))^2)
+        w <- hanning(length(wave))
+    } else {
+        w <- rep(1, length(wave))
     }
-
+    wave <- wave * w
+    # wave <- wave - mean(wave)
     switch(match.arg(mode),
            'spec' = {
                FUN <- function(x) {
-                   result <- Mod(fft(x))
-                   20*log10(result)
+                   result <- Mod(fft(x))^2
+                   # computing power spectrum, normalize by sum(w)^2
+                   # PSD would be norm by sr * sum(w^2)
+                   result <- 2 * result[1:(wl%/%2)]
+                   result <- result / sum(w)^2
+                   10*log10(result)
                }
                y <- (1:(wl)) / wl * sr
            },

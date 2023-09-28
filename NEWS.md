@@ -1,3 +1,8 @@
+## PAMpal 1.0.4
+
+- `calculateAverageSpectra` was not properly scaling the power spectrum, giving
+values ~50 dB higher than it should
+
 ## PAMpal 1.0.3
 
 - `export_annomate` bugged file writing
