@@ -80,7 +80,7 @@ myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
 
     ans <- matrix(NA, nrow=wl%/%2, ncol=2)
     ans[, 1] <- y[1:(wl%/%2)]
-    dB <- FUN(wave)[1:(wl)]
+    dB <- FUN(wave)
     isInf <- is.infinite(dB)
     if(all(isInf)) {
         return(ans)
