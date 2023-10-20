@@ -39,7 +39,7 @@ loadTemplateFolder <- function(dir, names, extraCols=NULL, file=NULL, progress=T
         }
         loadTemplateBinary(x, names=names, columns=columns)
     }))
-    noTemplate <- is.na(allBins$ZC_match)
+    noTemplate <- is.na(allBins[[paste0(names[1], '_match')]])
     if(any(noTemplate)) {
         warning(sum(noTemplate), ' detections did not have template classifier data')
     }
