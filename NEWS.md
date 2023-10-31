@@ -2,6 +2,9 @@
 
 - Updated `filter` to work more consistently with complicated queries
 
+- Added check for processing `mode='time'` where it would previously
+crash if `$db` was a folder, not a file
+
 ## PAMpal 1.0.4
 
 - `calculateAverageSpectra` was not properly scaling the power spectrum, giving

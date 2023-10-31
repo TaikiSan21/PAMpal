@@ -197,11 +197,18 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
         grouping$db <- NA_character_
     }
     # if they are there and are valid, assume they assigned
-    dbToAssign <- which(sapply(basename(grouping$db), function(d) {
+    dbToAssign <- which(sapply(grouping$db, function(d) {
         if(is.na(d)) {
             return(TRUE)
         }
-        !any(grepl(d, allDbs))
+        if(!file.exists(d)) {
+            return(TRUE)
+        }
+        # file.exists is T for folders, folders are bad here
+        if(dir.exists(d)) {
+            return(TRUE)
+        }
+        !any(grepl(basename(d), allDbs))
     }))
     # match db to events
     if(length(allDbs) == 1) {
@@ -209,6 +216,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     } else {
         for(i in dbToAssign) {
             if(is.na(grouping$db[i]) ||
+               dir.exists(grouping$db[i]) ||
                !any(grepl(grouping$db[i], allDbs, fixed=TRUE))) {
                 dbPossible <- allDbs[sapply(saList, function(x) {
                     inInterval(c(grouping$start[i], grouping$end[i]), x)
