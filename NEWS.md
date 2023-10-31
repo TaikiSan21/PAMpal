@@ -1,3 +1,7 @@
+## PAMpal 1.0.5
+
+- Updated `filter` to work more consistently with complicated queries
+
 ## PAMpal 1.0.4
 
 - `calculateAverageSpectra` was not properly scaling the power spectrum, giving

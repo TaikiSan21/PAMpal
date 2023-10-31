@@ -133,7 +133,9 @@ test_that('Test working with AcousticStudy object', {
 test_that('Test filter', {
     data(exStudy)
     # test filtering
-    filterNone <- filter(exStudy, VARDNE == 'DNE')
+    expect_warning({
+        filterNone <- filter(exStudy, VARDNE == 'DNE')
+        })
     # expect_identical(events(exStudy), events(filterNone))
     expect_true(checkSameDetections(exStudy, filterNone))
     exStudy <- setSpecies(exStudy, method='manual', value=letters[1:2])
@@ -146,21 +148,7 @@ test_that('Test filter', {
     peakFilter <- filter(exStudy, peak < 20)
     expect_true(all(detectors(peakFilter)$click$peak < 20))
     peakFilter <- filter(exStudy, peak < 2000)
-    # events(peakFilter) <- lapply(events(peakFilter), function(x) {
-    #     detectors(x) <- lapply(detectors(x), function(y) {
-    #         row.names(y) <- NULL
-    #         y
-    #     })
-    #     x
-    # })
-    # events(exStudy) <- lapply(events(exStudy), function(x) {
-    #     detectors(x) <- lapply(detectors(x), function(y) {
-    #         row.names(y) <- NULL
-    #         y
-    #     })
-    #     x
-    # })
-    # expect_identical(events(peakFilter), events(exStudy))
+
     expect_warning(filter(exStudy, detector == 'Click_Detector_1'))
     detFilter <- filter(exStudy, detectorName == 'Cepstrum_Detector')
     expect_equal(nClicks(detFilter), 0)
@@ -172,6 +160,15 @@ test_that('Test filter', {
     expect_true(checkSameDetections(exStudy, dbFilter))
     dbNone <- filter(exStudy, database == 'NODB.sqlite3')
     expect_equal(length(events(dbNone)), 0)
+    # test complex filters
+    multiFilt <- filter(exStudy, (detectorName != 'Cepstrum_Detector' | ici > .0016))
+    expect_true(all(
+        getCepstrumData(multiFilt)$ici > .0016
+    ))
+    expect_equal(nrow(getClickData(multiFilt)),
+                 nrow(getClickData(exStudy)))
+
+    expect_warning(filter(exStudy, (detectorName != 'Cepstrum_Detector' | blergh > 10)))
 })
 test_that('Test checkStudy test cases', {
     # create example data

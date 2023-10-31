@@ -69,8 +69,8 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
         naSp <- sapply(events(.data), function(x) is.null(species(x)$id) || is.na(species(x)$id))
         if(any(naSp)) {
             pamWarning('Attempting to filter by species, but ', sum(naSp),
-                    ' species have not been set. These will be removed from',
-                    ' the filtered results.')
+                       ' species have not been set. These will be removed from',
+                       ' the filtered results.')
             events(.data) <- events(.data)[!naSp]
             if(length(events(.data)) == 0) {
                 .data <- .addPamWarning(.data)
@@ -184,12 +184,39 @@ doFilter <- function(.x, dotChars=NULL, ...) {
     if(is.null(dotChars)) {
         dotChars <- sapply(quos(...), as_label)
     }
-    hasCol <- sapply(dotChars, function(d) any(sapply(colnames(.x), function(c) grepl(c, d))))
+    # hasCol <- sapply(dotChars, function(d) {
+    #     splitCond <- strsplit(d, '\\&|\\|')[[1]]
+    #     isMatch <- rep(FALSE, length(splitCond))
+    #     for(i in seq_along(splitCond)) {
+    #         isMatch[i] <- any(sapply(colnames(.x), function(c) grepl(c, splitCond[i])))
+    #     }
+    #     if(!all(isMatch)) {
+    #         warning('Issue with ', d)
+    #     }
+    #     all(isMatch)
+    # })
+    hasCol <- sapply(dotChars, function(d) {
+        checkColMatch(d, colnames(.x))
+    })
     if(!any(hasCol)) {
         return(.x)
     }
     filter(.x, !!!quos(...)[hasCol])
+    # if(inherits(tryFilt, 'try-error')) {
+    # tryMsg <- attr(tryFilt, 'condition')$parent$message
+    # return(.x)
+    # }
+    # tryFilt
 }
+
+checkColMatch <- function(cond, names) {
+    splitCond <- strsplit(cond, '\\&|\\|')[[1]]
+    condMatch <- sapply(splitCond, function(x) {
+        any(sapply(names, function(n) grepl(n, x)))
+    })
+    all(condMatch)
+}
+
 # this is way faster to gather all dets as DFs, filter on big, then reassign to events
 # quos/labels is slow when you have to do it on thousands of events compared to the
 # actual filtering and data manipulation
@@ -198,9 +225,13 @@ detectorFilt <- function(x, dotChars=NULL, ...) {
         dotChars <- sapply(quos(...), as_label)
     }
     dets <- getDetectorData(x, measures = FALSE)
+    condMatch <- rep(FALSE, length(dotChars))
     names(dets) <- NULL
     for(d in seq_along(dets)) {
+        thisMatch <- sapply(dotChars, function(c) checkColMatch(c, colnames(dets[[d]])))
+        condMatch <- condMatch | thisMatch
         dets[[d]] <- doFilter(dropCols(dets[[d]], c('db', 'species')), dotChars=dotChars, ...)
+        # reshape to $events$detectors
         dets[[d]] <- lapply(split(dets[[d]], dets[[d]]$eventId), function(e) {
             tmp <- split(e, e$detectorName)
             # ct <- attr(tmp[[1]], 'calltype')
@@ -211,6 +242,10 @@ detectorFilt <- function(x, dotChars=NULL, ...) {
             }
             tmp
         })
+    }
+    if(any(!condMatch)) {
+        pamWarning('Condition(s) ', paste0(dotChars[!condMatch], collapse=', '),
+                ' matched no parameter names. Check for possible misspellings.')
     }
     dets <- squishList(unlist(dets, recursive=FALSE))
     x <- x[names(events(x)) %in% names(dets)]
