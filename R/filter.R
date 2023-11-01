@@ -57,6 +57,12 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
     if(all(notFilt)) {
         return(.data)
     }
+    tooLong <- grepl('\\.{3}', dotChars)
+    if(any(tooLong)) {
+        pamWarning('Condition(s) ', paste0(dotChars[tooLong], collapse=', '),
+                   ' are too long and cannot be parsed properly. Try to shorten',
+                   ' by assigning values to variables with short names.')
+    }
     # do event level filters first
     # browser()
     # isSpecies <- grepl('^species|^Species', dotChars)
