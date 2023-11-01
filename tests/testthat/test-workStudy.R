@@ -136,6 +136,7 @@ test_that('Test filter', {
     expect_warning({
         filterNone <- filter(exStudy, VARDNE == 'DNE')
         })
+    expect_warning(filter(exStudy, peak = 3))
     # expect_identical(events(exStudy), events(filterNone))
     expect_true(checkSameDetections(exStudy, filterNone))
     exStudy <- setSpecies(exStudy, method='manual', value=letters[1:2])

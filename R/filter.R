@@ -49,10 +49,13 @@
 #' @export
 #'
 filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
-    dotChars <- sapply(quos(...), as_label)
+    dotChars <- sapply(quos(...), my_label)
     notFilt <- names(dotChars) != ''
     if(any(notFilt)) {
         pamWarning('Did you put "=" when you meant "=="? This filter will not be applied.')
+    }
+    if(all(notFilt)) {
+        return(.data)
     }
     # do event level filters first
     # browser()
@@ -152,7 +155,7 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
 filter.AcousticEvent <- function(.data, ..., .preserve=FALSE, dotChars=NULL) {
     # browser()
     if(is.null(dotChars)) {
-        dotChars <- sapply(quos(...), as_label)
+        dotChars <- sapply(quos(...), my_label)
     }
     # isDetector <- grepl('^.{0,3}detector|^.{0,3}Detector', dotChars)
     isDetector <- grepl('\\b[Dd]etector\\b', dotChars, ignore.case=TRUE)
@@ -182,7 +185,7 @@ filter.AcousticEvent <- function(.data, ..., .preserve=FALSE, dotChars=NULL) {
 
 doFilter <- function(.x, dotChars=NULL, ...) {
     if(is.null(dotChars)) {
-        dotChars <- sapply(quos(...), as_label)
+        dotChars <- sapply(quos(...), my_label)
     }
     # hasCol <- sapply(dotChars, function(d) {
     #     splitCond <- strsplit(d, '\\&|\\|')[[1]]
@@ -222,7 +225,7 @@ checkColMatch <- function(cond, names) {
 # actual filtering and data manipulation
 detectorFilt <- function(x, dotChars=NULL, ...) {
     if(is.null(dotChars)) {
-        dotChars <- sapply(quos(...), as_label)
+        dotChars <- sapply(quos(...), my_label)
     }
     dets <- getDetectorData(x, measures = FALSE)
     condMatch <- rep(FALSE, length(dotChars))
@@ -253,4 +256,26 @@ detectorFilt <- function(x, dotChars=NULL, ...) {
         detectors(x[[e]]) <- dets[[e]]
     }
     x
+}
+
+# avoids character length issue by labeling LHS and RHS separately
+#' @importFrom rlang quo_get_expr is_quosure is_expression
+#'
+my_label <- function(x) {
+    if(is_quosure(x)) {
+        x <- quo_get_expr(x)
+    } else if(is_expression(x)) {
+        x <- x#[[2]]
+    }
+    parts <- sapply(x, as_label)
+    if(parts[1] == '(') {
+        return(paste0('(',
+                      my_label(x[[2]]),
+                      ')'))
+    }
+    if(length(parts) != 3) {
+        return(parts[1])
+    }
+    new <- paste0(parts[c(2,1,3)], collapse=' ')
+    new
 }
