@@ -14,15 +14,22 @@ plotGram(
   hop = 0.25,
   mode = c("spec", "ceps"),
   detections = c("cepstrum", "click", "whistle"),
-  detCol = c("red", "blue", "blue"),
-  sr = NULL
+  detCol = c("red", "blue", "purple"),
+  brightness = 0,
+  contrast = 0,
+  q = 0.01,
+  cmap = gray.colors(64, start = 1, end = 0),
+  size = 1,
+  add = FALSE,
+  sr = NULL,
+  freqRange = NULL
 )
 }
 \arguments{
 \item{x}{an \linkS4class{AcousticStudy} object}
 
-\item{evNum}{if \code{x} is a study, the event index number to calculate the average
-spectra for. Note that this is the index in the order that they appear in the
+\item{evNum}{if \code{x} is a study, the event index number to plot.
+Note that this is the index in the order that they appear in the
 \linkS4class{AcousticStudy} object, not the actual event number. Alternatively
 full event names can be used}
 
@@ -48,7 +55,36 @@ and/or \code{'whistle'} indicating which detections to overlay on the plot}
 \item{detCol}{vector containing colors to use for plotting detections. Order matches
 order of detections (default alphabetical - cepstrum, click, whistle)}
 
-\item{sr}{sample rate}
+\item{brightness}{value from -255 to 255, positive values increase brightness,
+negative values decrease brightness of concatenated spectrogram image}
+
+\item{contrast}{value from -255 to 255, positive values increase contrast, negative
+values decrease contrast of concatenated spectrogram image}
+
+\item{q}{lower and upper quantiles to remove for scaling concatenated spectrogram.
+Or if a single value, then quantiles \code{q} and \code{1-q} will be used. Ex.
+if \code{q=.01}, then the bottom 1% and top 1% of values are truncated before
+plotting the image. This is done purely for cosmetic reasons, no output data is
+affected}
+
+\item{cmap}{color map for the spectrogram, either a palette function or
+vector of colors}
+
+\item{size}{size scaling to apply to plotted points and lines, as a multiple
+factor to the default values. Can be a vector of length equal to
+\code{detections} to apply different size scales}
+
+\item{add}{logical flag \code{FALSE} to create a new plot (default), or
+\code{TRUE} to only add new detections to an existing \code{plotGram} plot
+with the same parameters. Can be used to add detections with different
+visual parameters for the same detection type (e.g. clicks with different
+point size and color). Typically will only work well if \code{start} and
+\code{end} have been set manually.}
+
+\item{sr}{sample rate to decimate to}
+
+\item{freqRange}{frequency range to plot, in Hz for \code{mode='spec'} or
+milliseconds for \code{mode='ceps'}}
 }
 \value{
 nothing, just plots

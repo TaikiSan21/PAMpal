@@ -23,6 +23,7 @@ calculateAverageSpectra(
   title = NULL,
   ylim = NULL,
   flim = NULL,
+  cmap = hcl.colors(30, "YlOrRd", rev = TRUE),
   brightness = 0,
   contrast = 0,
   q = 0.01,
@@ -90,6 +91,9 @@ separate titles}
 \item{ylim}{optional y limits for mean spectra plot}
 
 \item{flim}{optional frequency limits for both plots}
+
+\item{cmap}{colors to use for concatenated click spectrogram, either a palette
+function or vector of colors}
 
 \item{brightness}{value from -255 to 255, positive values increase brightness,
 negative values decrease brightness of concatenated spectrogram image}

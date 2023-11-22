@@ -1,3 +1,9 @@
+## PAMpal 1.0.6
+
+- Adding `cmap` options to `plotGram` and `calculateAverageSpectra`
+
+- Adding various image control options to `plotGram`
+
 ## PAMpal 1.0.5
 
 - Updated `filter` to work more consistently with complicated queries

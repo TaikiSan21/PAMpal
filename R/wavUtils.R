@@ -94,6 +94,40 @@ myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
     ans
 }
 
+#' @importFrom signal filtfilt cheby1
+#'
+myDownsample <- function(wav, srFrom=NULL, srTo) {
+    if(inherits(wav, 'Wave')) {
+        x <- wav@left
+        srFrom <- wav@samp.rate
+    } else if(inherits(wav, 'WaveMC')) {
+        x <- wav@.Data[, 1]
+        srFrom <- wav@samp.rate
+    } else {
+        if(is.null(srFrom)) {
+            warning('Must provide original sample rate')
+            return(NULL)
+        }
+        x <- wav
+    }
+    if(srFrom <= srTo) {
+        return(wav)
+    }
+    q <- srFrom / srTo
+    y <- filtfilt(cheby1(8, 0.05, 0.8/q), x)
+    y <- y[seq(1, length(x), length.out = length(x) / q)]
+    if(inherits(wav, 'Wave')) {
+        wav@left <- y
+        wav@samp.rate <- srTo
+    } else if(inherits(wav, 'WaveMC')) {
+        wav@.Data <- matrix(y, ncol=1)
+        wav@samp.rate <- srTo
+    } else {
+        wav <- y
+    }
+    wav
+}
+
 # list of binary files to matrix of spectra
 binToSpecMat <- function(bin, channel=1, freq, wl, filterfrom_khz, filterto_khz,
                          sr, decimate, mode, noise=FALSE, calFun, ...) {
