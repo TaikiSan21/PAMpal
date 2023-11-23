@@ -125,6 +125,7 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
             return(.data)
         }
     }
+    evLevel <- isDb | isSpecies
     # do enviro?
     if(!is.null(ancillary(.data[[1]])$environmental)) {
         envNames <- names(ancillary(.data[[1]])$environmental)
@@ -142,15 +143,18 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
                 .data <- .addPamWarning(.data)
                 return(.data)
             }
+            evLevel <- evLevel | hasEnv
         }
     }
-
+    dotChars <- dotChars[!evLevel]
     # events(.data) <- lapply(events(.data), function(x) {
     #     filter(x, ..., dotChars=dotChars)
     # })
     # isNull <- sapply(events(.data), is.null)
     # events(.data) <- events(.data)[!isNull]
-    .data <- detectorFilt(.data, dotChars=dotChars, ...)
+    if(length(dotChars) > 0) {
+        .data <- detectorFilt(.data, dotChars=dotChars, !!!quos(...)[!evLevel])
+    }
     .data <- .addPamWarning(.data)
     .data
 }
