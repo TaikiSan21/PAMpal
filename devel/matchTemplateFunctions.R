@@ -7,7 +7,10 @@ loadTemplateBinary <- function(x, names, columns) {
     if(length(bin$data) == 0) {
         return(NULL)
     }
-    bin <- suppressWarnings(pbToDf(bin, templateNames=names)[columns])
+    bin <- try(suppressWarnings(pbToDf(bin, templateNames=names)[columns]))
+    if(inherits(bin, 'try-error')) {
+        stop('Problem loading binary file ', x)
+    }
     bin$UID <- as.character(bin$UID)
     bin$BinaryFile <- basename(x)
     bin$date <- convertPgDate(bin$date)
