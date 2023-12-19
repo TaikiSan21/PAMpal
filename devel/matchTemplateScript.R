@@ -6,13 +6,13 @@ templateNames <- c("ZC","BW43","BW39V","MS","BB","BW70")
 extraCols <- c(paste0(templateNames, '_match'),
               paste0(templateNames, '_reject'))
 
-baseDir <- 'D:/CCES_2018/Finalized BW Analyses/Drift-20 (completed by JST)/12 dB threshold/'
+baseDir <- 'D:/CCES_2018/Finalized BW Analyses/Drift-13/12 dB threshold/'
 binFolder <- baseDir
 # this database should be a COPY of the original because we will add events to it later
-db <- file.path(baseDir, 'PamGuard64 2_00_16e Drift-20_JST_Templates.sqlite3')
+db <- file.path(baseDir, 'PamGuard64 2_00_16e Drift-13_Final_Templates.sqlite3')
 # the binary processing takes a really long time, this automatically saves to an RDS file
 # so that you don't have to reprocess in future
-saveFile <- file.path(baseDir, 'Drift20Template.rds')
+saveFile <- file.path(baseDir, 'Drift13Template.rds')
 
 allData <- loadTemplateFolder(binFolder, names=templateNames, extraCols=extraCols, file=saveFile)
 # these are in order of "templateNames" above. Can look at data and see if any of these need to
@@ -20,8 +20,8 @@ allData <- loadTemplateFolder(binFolder, names=templateNames, extraCols=extraCol
 threshVals <- c(.06, .15, .15, .15, .15, .15)
 allData <- addTemplateLabels(allData, db, templateNames, threshVals)
 # nDets is minimum detections to count as an event, nSeconds is max time between detections
-# before an event is ended
-allData <- markGoodEvents(allData, nDets=3, nSeconds=120)
+# before an event is ended. maxSeconds is maximum length of an event
+allData <- markGoodEvents(allData, nDets=3, nSeconds=120, maxSeconds=120)
 
 # summary of how many of the detections in manually annotated events were tagged by template
 manualSummary <- summariseManualEvents(allData)
@@ -40,3 +40,5 @@ data <- setSpecies(data, method = 'pamguard')
 # new "FP" and "TP" events in addition to originals
 table(species(data))
 saveRDS(data, 'D:/CCES_2018/Finalized BW Analyses/Drift-19 (completed by JST)/12 dB threshold/matchTemplateStudy19.rds')
+
+

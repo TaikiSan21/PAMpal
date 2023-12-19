@@ -1,3 +1,11 @@
+## PAMpal 1.0.7
+
+- Bugfix for `addNotes`
+
+- Added `fillZeroes` option to `getClipData`
+
+- `plotGram` works with gaps in data
+
 ## PAMpal 1.0.6
 
 - Adding `cmap` options to `plotGram` and `calculateAverageSpectra`

@@ -11,6 +11,7 @@ getClipData(
   channel = 1,
   useSample = FALSE,
   fixLength = FALSE,
+  fillZeroes = TRUE,
   progress = TRUE,
   verbose = TRUE,
   FUN = NULL,
@@ -37,6 +38,10 @@ longer}
 \code{TRUE}, then output clip length is entirely determined by the buffer value, as
 if the detection or event had zero length. E.g. \code{buffer=c(-2,1)} will produce clips
 3 seconds long, starting 2 seconds before the detection/event start time.}
+
+\item{fillZeroes}{logical flag to fill gaps in non-consecutive clips with zeroes. If
+\code{FALSE}, will give warnings when attempting to retrieve clips spanning non-consecutive
+files and return no clip data}
 
 \item{progress}{logical flag to show progress bar}
 

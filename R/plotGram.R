@@ -42,9 +42,11 @@
 #'   visual parameters for the same detection type (e.g. clicks with different
 #'   point size and color). Typically will only work well if \code{start} and
 #'   \code{end} have been set manually.
+#' @param title optional title for plot, defaults to "Spectrogram" or "Cepstrogram"
 #' @param sr sample rate to decimate to
 #' @param freqRange frequency range to plot, in Hz for \code{mode='spec'} or
 #'   milliseconds for \code{mode='ceps'}
+#' @param \dots additional arguments to pass to \link{points} or \link{lines}
 #'
 #' @return nothing, just plots
 #'
@@ -77,7 +79,9 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1,
                      q=.01,
                      cmap=gray.colors(64, start=1, end=0),
                      size=1, add=FALSE,
-                     sr=NULL, freqRange=NULL) {
+                     title=NULL,
+                     sr=NULL, freqRange=NULL,
+                     ...) {
     # Needs to be one event at a time
     x <- x[evNum]
     thisRec <- checkRecordings(x)
@@ -117,7 +121,9 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1,
     # sign was wrong previously on this
     startBuff <- as.numeric(difftime(start, min(dets$UTC), units='secs'))
     endBuff <- as.numeric(difftime(end, max(dets$UTC), units='secs'))
-    wav <- getClipData(x, buffer=c(startBuff, endBuff), mode='event', channel=channel, verbose=FALSE, progress=FALSE)[[1]]
+    wav <- getClipData(x, buffer=c(startBuff, endBuff), mode='event',
+                       channel=channel, verbose=FALSE, progress=FALSE,
+                       fillZeroes=TRUE)[[1]]
     if(is.null(sr)) {
         sr <- wav@samp.rate
     }
@@ -127,18 +133,23 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1,
     if(sr != wav@samp.rate) {
         # wav <- downsample(wav, sr)
         wav <- myDownsample(wav, srTo=sr)
+        # doing this so filled zeroes return to zeroes for all-0 chunks
+        wav[abs(wav) < 1e-10] <- 0
     }
     mode <- match.arg(mode)
     # timeStart <- thisRec$start[fileCheck] + start
     # timeEnd <- timeStart - start + end
     timeStart <- start
     timeEnd <- timeStart + length(wav) / sr
+    if(abs(as.numeric(difftime(timeEnd, end, units='secs'))) > 1) {
+        warning('Clip size did not match requested length')
+    }
 
     if(channel > ncol(wav@.Data)) {
         stop('Specified channel is not present in wav file.', call.=FALSE)
     }
     wav <- wav@.Data[, channel]
-    wav <- wav - mean(wav)
+    # wav <- wav - mean(wav)
 
     data <- wavToGram(wav, wl=wl, hop=hop, sr=sr, mode=mode)
 
@@ -147,13 +158,17 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1,
     yAxis <- myGram(wav[1:wl], mode=mode, wl=wl, channel=channel, sr=sr)[, 1]
     switch(mode,
            'spec' = {
-               title <- 'Spectrogram'
+               if(is.null(title)) {
+                   title <- 'Spectrogram'
+               }
                yName = 'Frequency (kHz)'
                yAxis <- yAxis / 1e3
                plotMat <- data
            },
            'ceps' = {
-               title <- 'Cepstrogram'
+               if(is.null(title)) {
+                   title <- 'Cepstrogram'
+               }
                yName = 'ICI (ms)'
                yAxis <- yAxis * 1e3
                plotMat <- 20*log10(abs(data))
@@ -205,23 +220,26 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1,
     if('cepstrum' %in% detections) {
         plotCeps(x, timeStart, timeEnd, keepYPct[1], keepYPct[2],
                  col=detCol[detections == 'cepstrum'],
-                 size=size[detections == 'cepstrum'])
+                 size=size[detections == 'cepstrum'],
+                 ...)
     }
     if('whistle' %in% detections) {
         plotWhistle(x, timeStart, timeEnd, keepYPct[1], keepYPct[2], plotSr = sr,
                     col=detCol[detections == 'whistle'],
-                    size=size[detections == 'whistle'])
+                    size=size[detections == 'whistle'],
+                    ...)
     }
     if('click' %in% detections) {
         plotClick(x, timeStart, timeEnd,
                   yMin=sr/2/1e3 * keepYPct[1], yMax = sr / 2 / 1e3 * keepYPct[2],
                   col=detCol[detections == 'click'],
-                  size=size[detections == 'click'])
+                  size=size[detections == 'click'],
+                  ...)
     }
     invisible(data)
 }
 
-plotCeps <- function(x, tMin, tMax, yMinPct=0, yMaxPct=1, col='blue', size=1) {
+plotCeps <- function(x, tMin, tMax, yMinPct=0, yMaxPct=1, col='blue', size=1, ...) {
     UIDs <- getCepstrumData(x)$UID
 
     if(is.null(UIDs) ||
@@ -235,11 +253,11 @@ plotCeps <- function(x, tMin, tMax, yMinPct=0, yMaxPct=1, col='blue', size=1) {
     for(i in seq_along(binData)) {
         plotOneCeps(binData[[i]], hop=settings$hop, sr=settings$sr,
                     yMin=settings$wl/2 * yMinPct, yMax=settings$wl/2 * yMaxPct,
-                    tMin=tMin, tMax=tMax, col=col, size=size)
+                    tMin=tMin, tMax=tMax, col=col, size=size, ...)
     }
 }
 
-plotWhistle <- function(x, tMin, tMax, yMinPct=0, yMaxPct=1, plotSr, col='blue', size=1) {
+plotWhistle <- function(x, tMin, tMax, yMinPct=0, yMaxPct=1, plotSr, col='blue', size=1, ...) {
     UIDs <- getWhistleData(x)$UID
     if(is.null(UIDs) ||
        length(UIDs) == 0) {
@@ -251,20 +269,20 @@ plotWhistle <- function(x, tMin, tMax, yMinPct=0, yMaxPct=1, plotSr, col='blue',
         binData[[i]]$contour <- binData[[i]]$contour * settings$sr / plotSr
         plotOneCeps(binData[[i]], hop=settings$hop, sr=settings$sr,
                     yMin=settings$wl/2 * yMinPct, yMax=settings$wl/2 * yMaxPct,
-                    tMin=tMin, tMax=tMax, col=col, size=size)
+                    tMin=tMin, tMax=tMax, col=col, size=size, ...)
     }
 }
 
-plotOneCeps <- function(x, hop, sr, yMin=0, yMax, tMin, tMax, col='blue', size=1) {
+plotOneCeps <- function(x, hop, sr, yMin=0, yMax, tMin, tMax, col='blue', size=1, ...) {
     xVals <- x$date + seq(from=0, by=hop/sr, length.out=x$nSlices)
     yVals <- x$contour
 
     xPlot <- scaleToOne(xVals, tMin, tMax)
     yPlot <- scaleToOne(yVals, yMin, yMax)
-    lines(x=xPlot, y=yPlot, col=col, lwd=2*size)
+    lines(x=xPlot, y=yPlot, col=col, lwd=2*size, ...)
 }
 
-plotClick <- function(x, tMin, tMax, yMin, yMax, col='blue', size=1) {
+plotClick <- function(x, tMin, tMax, yMin, yMax, col='blue', size=1, ...) {
     clickData <- getClickData(x)[, c('UTC', 'peak', 'peakTime')]
     if(is.null(clickData) ||
        nrow(clickData) == 0) {
@@ -274,7 +292,7 @@ plotClick <- function(x, tMin, tMax, yMin, yMax, col='blue', size=1) {
     yVals <- clickData$peak
     xPlot <- scaleToOne(xVals, tMin, tMax)
     yPlot <- scaleToOne(yVals, yMin, yMax)
-    points(x=xPlot, y=yPlot, pch=1, col=col, cex=size)
+    points(x=xPlot, y=yPlot, pch=1, col=col, cex=size, ...)
 }
 
 scaleToOne <- function(vals, min, max) {

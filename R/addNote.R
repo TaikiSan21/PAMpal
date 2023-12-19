@@ -139,9 +139,10 @@ trimToN <- function(x, n=6) {
     if(n < 1) {
         return(NULL)
     }
-    if(!is.list(x[[1]])) {
-        x <- x[1:n]
-        return(x)
+    if(!is.list(x[[1]]) &&
+       length(x[[1]]) >=n) {
+        x[[1]] <- x[[1]][1:n]
+        return(x[1])
     }
     if(length(unlist(x)) <= n) {
         return(x)

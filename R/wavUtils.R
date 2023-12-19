@@ -198,6 +198,11 @@ wavToGram <- function(wav, sr=NULL, wl=1024, hop=.5, mode=c('spec', 'ceps'), axe
     slices <- seq(from=1, by=hop, length.out=nSlices)
     mat <- t(apply(as.matrix(slices), 1, function(s) {
         thisWav <- wav[s:(s+wl-1)]
+        thisWav[is.na(thisWav)] <- 0
+        thisWav <- thisWav - mean(thisWav)
+        if(all(thisWav == 0)) {
+            return(rep(NA, wl/2))
+        }
         thisGram <- myGram(thisWav, mode=mode, wl=wl, sr=sr, ...)
         thisGram[, 2]
     }))
@@ -273,7 +278,7 @@ clipAroundPeak <- function(wave, length, noise=FALSE, ixReturn=FALSE) {
 
 checkIn <- function(time, map) {
     time <- as.numeric(time)
-    possible <- (time >= map$numStart) & (time <= map$numEnd)
+    possible <- (time >= map$numStart) & (time < map$numEnd)
     if(!any(possible)) {
         return(NA)
     }

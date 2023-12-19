@@ -261,6 +261,10 @@ detectorFilt <- function(x, dotChars=NULL, ...) {
                 ' matched no parameter names. Check for possible misspellings.')
     }
     dets <- squishList(unlist(dets, recursive=FALSE))
+    if(length(dets) == 0) {
+        events(x) <- list()
+        return(x)
+    }
     x <- x[names(events(x)) %in% names(dets)]
     for(e in names(events(x))) {
         detectors(x[[e]]) <- dets[[e]]

@@ -16,6 +16,9 @@
 #'   \code{TRUE}, then output clip length is entirely determined by the buffer value, as
 #'   if the detection or event had zero length. E.g. \code{buffer=c(-2,1)} will produce clips
 #'   3 seconds long, starting 2 seconds before the detection/event start time.
+#' @param fillZeroes logical flag to fill gaps in non-consecutive clips with zeroes. If
+#'   \code{FALSE}, will give warnings when attempting to retrieve clips spanning non-consecutive
+#'   files and return no clip data
 #' @param progress logical flag to show progress bar
 #' @param verbose logical flag to show summary messages
 #' @param FUN optional function to apply to wav clips. This function takes default inputs \code{wav},
@@ -38,12 +41,14 @@
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
 #' @importFrom dplyr bind_rows arrange group_by summarise ungroup
-#' @importFrom tuneR readWave writeWave MCnames bind
+#' @importFrom tuneR readWave writeWave MCnames bind nchannel
 #'
 #' @export
 #'
 getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
-                        channel = 1, useSample=FALSE, fixLength=FALSE, progress=TRUE, verbose=TRUE, FUN=NULL, ...) {
+                        channel = 1, useSample=FALSE, fixLength=FALSE,
+                        fillZeroes=TRUE,
+                        progress=TRUE, verbose=TRUE, FUN=NULL, ...) {
     if(!is.AcousticStudy(x)) {
         stop('"x" must be an AcousticStudy object.')
     }
@@ -85,8 +90,13 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
                     ' matched more than 1 possible wav file, could not get clip.', call.=FALSE)
         }
         if(length(nonConsec) > 0) {
-            warning(oneUpper(mode), ' ', printN(nonConsec, 6),
-                    ' spanned two non-consecutive wav files, could not get clip.', call.=FALSE)
+            if(fillZeroes) {
+                # warning(oneUpper(mode), ' ', printN(nonConsec, 6),
+                        # ' spanned non-consecutive wav files, clip has been zero-filled.', call.=FALSE)
+            } else {
+                warning(oneUpper(mode), ' ', printN(nonConsec, 6),
+                        ' spanned two non-consecutive wav files, could not get clip.', call.=FALSE)
+            }
         }
         if(length(fileDNE) > 0) {
             warning('Wav files for ', mode, ' ', printN(fileDNE, 6), ' could not be found on disk.',
@@ -116,52 +126,85 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
                 allTimes[[i]]$end <- allTimes[[i]]$start
             }
             timeRange <- c(allTimes[[i]]$start, allTimes[[i]]$end) + buffer
+            # these are for times where desired start/end is outside of wav
+            if(fillZeroes) {
+                zeroBuff <- c(0,0)
+            }
             # for start and end check if in range. if we buffered, try undoing that first.
             # so like if buffer put us before first file, start and beginning of first file instead.
             startIx <- checkIn(timeRange[1], wavMap)
             if(length(startIx) > 1) {
-                multMatch <- c(multMatch, names(allResult)[i])
-                if(progress) {
-                    setTxtProgressBar(pb, value=i)
+                if(length(startIx) == 2 &&
+                   diff(startIx) == 1 &&
+                   wavMap$timeDiff[startIx[2]] < 0) {
+                    startIx <- startIx[1]
+                } else {
+                    multMatch <- c(multMatch, names(allResult)[i])
+                    if(progress) {
+                        setTxtProgressBar(pb, value=i)
+                    }
+                    next
                 }
-                next
             }
+            # if cant match, try undoing buffer then match
             if(is.na(startIx)) {
-                startIx <- checkIn(timeRange[1] - buffer[1], wavMap)
-                if(is.na(startIx)) {
+                # startIx <- checkIn(timeRange[1] - buffer[1], wavMap)
+                # if(is.na(startIx)) {
+                # if we arent filling zeroes we have to actually match
+                if(!fillZeroes) {
                     noMatch <- c(noMatch, names(allResult)[i])
                     if(progress) {
                         setTxtProgressBar(pb, value=i)
                     }
                     next
+                }
+                startIx <- min(which(wavMap$start > timeRange[1]))
+                # if fill zeroes, need to pre-pend by amount of zeroes here
+                if(fillZeroes) {
+                    zeroBuff[1] <- as.numeric(difftime(wavMap$start[startIx], timeRange[1], units='secs'))
                 }
                 timeRange[1] <- wavMap$start[startIx]
             }
             endIx <- checkIn(timeRange[2], wavMap)
             if(length(endIx) > 1) {
-                multMatch <- c(multMatch, names(allResult)[i])
-                if(progress) {
-                    setTxtProgressBar(pb, value=i)
+                if(length(endIx) == 2 &&
+                   diff(endIx) == 1 &&
+                   wavMap$timeDiff[endIx[2]] < 0) {
+                    endIx <- endIx[1]
+                } else {
+                    multMatch <- c(multMatch, names(allResult)[i])
+                    if(progress) {
+                        setTxtProgressBar(pb, value=i)
+                    }
+                    next
                 }
-                next
             }
+            # if cant match, try undoing buffer then match
             if(is.na(endIx)) {
-                endIx <- checkIn(timeRange[2] - buffer[2], wavMap)
-                if(is.na(endIx)) {
+                # endIx <- checkIn(timeRange[2] - buffer[2], wavMap)
+                # if(is.na(endIx)) {
+                if(!fillZeroes) {
                     noMatch <- c(noMatch, names(allResult)[i])
                     if(progress) {
                         setTxtProgressBar(pb, value=i)
                     }
                     next
                 }
+                # if fill zeroes, backfill by amount of zeroes here
+                endIx <- max(which(wavMap$end < timeRange[2]))
+                if(fillZeroes) {
+                    zeroBuff[2] <- as.numeric(difftime(timeRange[2], wavMap$end[endIx], units='secs'))
+                }
                 timeRange[2] <- wavMap$end[endIx]
             }
             if(wavMap$fileGroup[startIx] != wavMap$fileGroup[endIx]) {
                 nonConsec <- c(nonConsec, names(allResult)[i])
-                if(progress) {
-                    setTxtProgressBar(pb, value=i)
+                if(isFALSE(fillZeroes)) {
+                    if(progress) {
+                        setTxtProgressBar(pb, value=i)
+                    }
+                    next
                 }
-                next
             }
             if(any(!file.exists(wavMap$file[startIx:endIx]))) {
                 fileDNE <- c(fileDNE, names(allResult)[i])
@@ -182,7 +225,35 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
                 if(w == endIx) {
                     readEnd <- endTime
                 }
-                wavResult[[w]] <- readWave(wavMap$file[w], from = readStart, to = readEnd, units = 'seconds', toWaveMC = TRUE)
+                wavResult[[w]] <- readWave(wavMap$file[w], from = readStart,
+                                           to = readEnd, units = 'seconds', toWaveMC = TRUE)
+                thisSr <- wavResult[[w]]@samp.rate
+                if(fillZeroes &&
+                   w == startIx &&
+                   zeroBuff[1] != 0) {
+                    thisZeroes <- WaveMC(data=matrix(0,
+                                                     ncol=nchannel(wavResult[[w]]),
+                                                     nrow=thisSr*zeroBuff[1]),
+                                         samp.rate=thisSr, bit=wavResult[[w]]@bit)
+                    wavResult[[w]] <- bind(thisZeroes, wavResult[[w]])
+                }
+                if(fillZeroes &&
+                   w == endIx &&
+                   zeroBuff[2] != 0) {
+                    thisZeroes <- WaveMC(data=matrix(0,
+                                                     ncol=nchannel(wavResult[[w]]),
+                                                     nrow=thisSr*zeroBuff[2]),
+                                         samp.rate=thisSr, bit=wavResult[[w]]@bit)
+                    wavResult[[w]] <- bind(thisZeroes, wavResult[[w]])
+                }
+                if(fillZeroes &&
+                   w != endIx &&
+                   wavMap$timeDiff[w+1] > 0) {
+
+                    thisZeroes <- WaveMC(data=matrix(0, ncol=nchannel(wavResult[[w]]), nrow=thisSr*wavMap$timeDiff[w+1]),
+                                         samp.rate=thisSr, bit=wavResult[[w]]@bit)
+                    wavResult[[w]] <- bind(wavResult[[w]], thisZeroes)
+                }
             }
 
             wavResult <- wavResult[!sapply(wavResult, is.null)]

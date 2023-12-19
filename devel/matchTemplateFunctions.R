@@ -87,7 +87,20 @@ addTemplateLabels <- function(x, db, names, thresh) {
     x
 }
 
-markGoodEvents <- function(x, nDets = 3, nSeconds=120, verbose=TRUE) {
+markGoodEvents <- function(x, minDets=3, maxSep=120, maxLength=120, nDets = 3, nSeconds=120, maxSeconds=120, verbose=TRUE) {
+    x <- PAMpal:::dropCols(x, c('templateEvent'))
+    if(!missing(nDets)) {
+        warning('"nDets" has been renamed to "minDets" for clarity')
+        minDets <- nDets
+    }
+    if(!missing(nSeconds)) {
+        warning('"nSeconds" has been renamed to "maxSep" for clarity')
+        maxSep <- nSeconds
+    }
+    if(!missing(maxSeconds)) {
+        warning('"maxSeconds" has been renamed to "maxLength" for clarity')
+        maxLength <- maxSeconds
+    }
     result <- bind_rows(
         lapply(
             split(x, x$templateMatch), function(d) {
@@ -98,14 +111,39 @@ markGoodEvents <- function(x, nDets = 3, nSeconds=120, verbose=TRUE) {
                 d <- arrange(d, UTC)
                 d$tDiff <- c(0, as.numeric(difftime(d$UTC[2:nrow(d)],
                                                     d$UTC[1:(nrow(d)-1)], units='secs')))
-                d$overtime <- d$tDiff > nSeconds
+                d$overtime <- d$tDiff > maxSep
                 d$templateEvent <- as.character(cumsum(d$overtime))
                 eventDets <- table(d$templateEvent)
-                goodEvents <- names(eventDets)[eventDets >= nDets]
+                goodEvents <- names(eventDets)[eventDets >= minDets]
                 d$templateEvent[!d$templateEvent %in% goodEvents] <- 'none'
                 d <- PAMpal:::dropCols(d, c('tDiff', 'overtime'))
                 d
             }))
+    # SHOULD REALLY RESET START TIMER AFTER EVERY NEW EVENT
+    result <- bind_rows(
+        lapply(
+            split(result, result$templateEvent), function(e) {
+                if(e$templateEvent[1] == 'none') {
+                    return(e)
+                }
+                tDiff <- c(0, as.numeric(difftime(e$UTC[2:nrow(e)],
+                                                    e$UTC[1:(nrow(e)-1)], units='secs')))
+                # e$tInterval <- floor(cumsum(e$tDiff) / maxLength)
+                thisLab <- 1
+                labs <- rep(thisLab, nrow(e))
+                cTimes <- cumsum(tDiff)
+                for(i in 1:nrow(e)) {
+                    if(cTimes[i] <= maxLength) {
+                        next
+                    }
+                    thisLab <- thisLab + 1
+                    labs[i:(length(labs))] <- thisLab
+                    cTimes <- cTimes - cTimes[i]
+                }
+                e$templateEvent <- paste0(e$templateEvent, '_', labs)
+                e
+            }
+        ))
     result$truePos <- (result$parentID != 'none') & (result$templateEvent != 'none')
     result$trueNeg <- (result$parentID == 'none') & (result$templateEvent == 'none')
     result$falsePos <- (result$parentID == 'none') & (result$templateEvent != 'none')

@@ -21,8 +21,10 @@ plotGram(
   cmap = gray.colors(64, start = 1, end = 0),
   size = 1,
   add = FALSE,
+  title = NULL,
   sr = NULL,
-  freqRange = NULL
+  freqRange = NULL,
+  ...
 )
 }
 \arguments{
@@ -81,10 +83,14 @@ visual parameters for the same detection type (e.g. clicks with different
 point size and color). Typically will only work well if \code{start} and
 \code{end} have been set manually.}
 
+\item{title}{optional title for plot, defaults to "Spectrogram" or "Cepstrogram"}
+
 \item{sr}{sample rate to decimate to}
 
 \item{freqRange}{frequency range to plot, in Hz for \code{mode='spec'} or
 milliseconds for \code{mode='ceps'}}
+
+\item{\dots}{additional arguments to pass to \link{points} or \link{lines}}
 }
 \value{
 nothing, just plots
