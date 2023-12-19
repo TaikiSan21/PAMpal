@@ -19,9 +19,9 @@ allData <- loadTemplateFolder(binFolder, names=templateNames, extraCols=extraCol
 # be raised/lowered
 threshVals <- c(.06, .15, .15, .15, .15, .15)
 allData <- addTemplateLabels(allData, db, templateNames, threshVals)
-# nDets is minimum detections to count as an event, nSeconds is max time between detections
-# before an event is ended. maxSeconds is maximum length of an event
-allData <- markGoodEvents(allData, nDets=3, nSeconds=120, maxSeconds=120)
+# minDets is minimum detections to count as an event, maxSep is max time between detections
+# before an event is ended. maxLength is maximum length of an event
+allData <- markGoodEvents(allData, minDets=3, maxSep=120, maxLength=120)
 
 # summary of how many of the detections in manually annotated events were tagged by template
 manualSummary <- summariseManualEvents(allData)
