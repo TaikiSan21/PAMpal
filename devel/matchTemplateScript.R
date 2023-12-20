@@ -15,6 +15,7 @@ db <- file.path(baseDir, 'PamGuard64 2_00_16e Drift-13_Final_Templates.sqlite3')
 saveFile <- file.path(baseDir, 'Drift13Template.rds')
 
 allData <- loadTemplateFolder(binFolder, names=templateNames, extraCols=extraCols, file=saveFile)
+# allData <- readRDS(saveFile)
 # these are in order of "templateNames" above. Can look at data and see if any of these need to
 # be raised/lowered
 threshVals <- c(.06, .15, .15, .15, .15, .15)
@@ -24,9 +25,11 @@ allData <- addTemplateLabels(allData, db, templateNames, threshVals)
 allData <- markGoodEvents(allData, minDets=3, maxSep=120, maxLength=120)
 
 # summary of how many of the detections in manually annotated events were tagged by template
-manualSummary <- summariseManualEvents(allData)
+# Adding the "db" argument will include the time-overlap based summary
+manualSummary <- summariseManualEvents(allData, db=db)
 # summary of how many detections tagged by template were present in manually annotated events
-templateSummary <- summariseTemplateEvents(allData)
+# Adding the "db" argument will include the time-overlap based summary
+templateSummary <- summariseTemplateEvents(allData, db=db)
 
 # adds events meeting nDets/nSeconds criteria to the database
 # make sure db is a COPY of the original for safety

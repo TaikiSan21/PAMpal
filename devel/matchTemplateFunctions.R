@@ -1,6 +1,8 @@
 library(dplyr)
 library(PamBinaries)
 library(PAMmisc)
+library(RSQLite)
+library(lubridate)
 
 loadTemplateBinary <- function(x, names, columns) {
     bin <- loadPamguardBinaryFile(x, skipLarge=TRUE, convertDate=FALSE)
@@ -183,13 +185,18 @@ addTemplateEvents <- function(db, binFolder, data) {
 
 summariseManualEvents <- function(x, db=NULL) {
     result <- x %>%
-        filter(parentID != 'none') %>%
-        group_by(parentID) %>%
-        summarise(eventLabel = unique(eventLabel),
-                  nTemplate = sum(templateEvent != 'none'),
-                  pctTemplate = mean(templateEvent != 'none'),
-                  nDets = n())
-    nZero <- sum(result$nTemplate == 0)
+        filter(parentID != 'none')
+    if(nrow(result) > 0) {
+        result <- result %>%
+            group_by(parentID) %>%
+            summarise(eventLabel = unique(eventLabel),
+                      nTemplate = sum(templateEvent != 'none'),
+                      pctTemplate = mean(templateEvent != 'none'),
+                      nDets = n())
+        nZero <- sum(result$nTemplate == 0)
+    } else {
+        nZero <- 0
+    }
     cat('\n', nZero, ' out of ', nrow(result), ' manual event(s) had no template detections (FN).', sep='')
     if(!is.null(db)) {
         dbEv <- getDbEvent(db)
@@ -200,9 +207,12 @@ summariseManualEvents <- function(x, db=NULL) {
             ungroup()
         dbEv <- markIntervalOverlap(dbEv, tempEv)
         dbEv$parentID <- paste0('OE', dbEv$Id)
-        result <- left_join(result, dbEv[c('parentID', 'secOverlap', 'pctOverlap')], by='parentID')
-        nZeroTime <- sum(result$pctOverlap == 0)
-        cat('\n', nZeroTime, ' out of ', nrow(result), ' manual event(s) had no time overlap (FN).', sep='')
+        nZeroTime <- sum(dbEv$pctOverlap == 0)
+        cat('\n', nZeroTime, ' out of ', nrow(dbEv), ' manual event(s) had no time overlap (FN).', sep='')
+        if(nrow(result) == 0) {
+            return(dbEv)
+        }
+        result <- full_join(result, dbEv[c('parentID', 'secOverlap', 'pctOverlap')], by='parentID')
     }
     result
 }
@@ -264,9 +274,12 @@ summariseTemplateEvents <- function(x, db=NULL) {
             summarise(interval=interval(min(UTC), max(UTC))) %>%
             ungroup()
         tempEv <- markIntervalOverlap(tempEv, dbEv)
-        result <- left_join(result, tempEv[c('templateEvent', 'secOverlap', 'pctOverlap')], by='templateEvent')
-        nZeroTime <- sum(result$pctOverlap == 0)
-        cat('\n', nZeroTime, ' out of ', nrow(result), ' template event(s) had no time overlap (FN).', sep='')
+        nZeroTime <- sum(tempEv$pctOverlap == 0)
+        cat('\n', nZeroTime, ' out of ', nrow(tempEv), ' template event(s) had no time overlap (FN).', sep='')
+        if(nrow(result) == 0) {
+            return(tempEv)
+        }
+        result <- full_join(result, tempEv[c('templateEvent', 'secOverlap', 'pctOverlap')], by='templateEvent')
     }
     result
 }
