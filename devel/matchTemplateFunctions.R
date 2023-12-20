@@ -127,7 +127,7 @@ markGoodEvents <- function(x, minDets=3, maxSep=120, maxLength=120, nDets = 3, n
                     return(e)
                 }
                 tDiff <- c(0, as.numeric(difftime(e$UTC[2:nrow(e)],
-                                                    e$UTC[1:(nrow(e)-1)], units='secs')))
+                                                  e$UTC[1:(nrow(e)-1)], units='secs')))
                 # e$tInterval <- floor(cumsum(e$tDiff) / maxLength)
                 thisLab <- 1
                 labs <- rep(thisLab, nrow(e))
@@ -181,7 +181,7 @@ addTemplateEvents <- function(db, binFolder, data) {
     TRUE
 }
 
-summariseManualEvents <- function(x) {
+summariseManualEvents <- function(x, db=NULL) {
     result <- x %>%
         filter(parentID != 'none') %>%
         group_by(parentID) %>%
@@ -191,10 +191,54 @@ summariseManualEvents <- function(x) {
                   nDets = n())
     nZero <- sum(result$nTemplate == 0)
     cat('\n', nZero, ' out of ', nrow(result), ' manual event(s) had no template detections (FN).', sep='')
+    if(!is.null(db)) {
+        dbEv <- getDbEvent(db)
+        tempEv <- x %>%
+            filter(templateEvent != 'none') %>%
+            group_by(templateEvent) %>%
+            summarise(interval=interval(min(UTC), max(UTC))) %>%
+            ungroup()
+        dbEv <- markIntervalOverlap(dbEv, tempEv)
+        dbEv$parentID <- paste0('OE', dbEv$Id)
+        result <- left_join(result, dbEv[c('parentID', 'secOverlap', 'pctOverlap')], by='parentID')
+        nZeroTime <- sum(result$pctOverlap == 0)
+        cat('\n', nZeroTime, ' out of ', nrow(result), ' manual event(s) had no time overlap (FN).', sep='')
+    }
     result
 }
 
-summariseTemplateEvents <- function(x) {
+getDbEvent <- function(db) {
+    con <- dbConnect(db, drv=SQLite())
+    on.exit(dbDisconnect(con))
+    dbEv <- dbReadTable(con, 'Click_Detector_OfflineEvents')
+    dbEv <- dbEv[c('Id', 'UID', 'UTC', 'EventEnd', 'eventType', 'comment')]
+    dbEv$UTC <- PAMpal:::parseUTC(dbEv$UTC)
+    dbEv$EventEnd <- PAMpal:::parseUTC(dbEv$EventEnd)
+    dbEv$interval <- interval(dbEv$UTC, dbEv$EventEnd)
+    dbEv
+}
+
+markIntervalOverlap <- function(x, y) {
+    if(!'interval' %in% colnames(x) ||
+       !'interval' %in% colnames(y)) {
+        stop('"x" and "y" must have "interval" column')
+    }
+    x$secOverlap <- 0
+    for(i in 1:nrow(x)) {
+        whichOver <- which(int_overlaps(x$interval[i], y$interval))
+        if(length(whichOver) == 0) {
+            next
+        }
+        for(j in whichOver) {
+            thisInter <- intersect(x$interval[i], y$interval[j])
+            x$secOverlap[i] <- x$secOverlap[i] + int_length(thisInter)
+        }
+    }
+    x$pctOverlap <- x$secOverlap / int_length(x$interval)
+    x
+}
+
+summariseTemplateEvents <- function(x, db=NULL) {
     result <- x %>%
         filter(templateEvent != 'none') %>%
         group_by(templateEvent) %>%
@@ -211,6 +255,18 @@ summariseTemplateEvents <- function(x) {
     multiMatch <- grepl(',', result$manualEvent)
     if(any(multiMatch)) {
         cat('\n', sum(multiMatch), ' template event(s) matched multiple manual events.', sep='')
+    }
+    if(!is.null(db)) {
+        dbEv <- getDbEvent(db)
+        tempEv <- x %>%
+            filter(templateEvent != 'none') %>%
+            group_by(templateEvent) %>%
+            summarise(interval=interval(min(UTC), max(UTC))) %>%
+            ungroup()
+        tempEv <- markIntervalOverlap(tempEv, dbEv)
+        result <- left_join(result, tempEv[c('templateEvent', 'secOverlap', 'pctOverlap')], by='templateEvent')
+        nZeroTime <- sum(result$pctOverlap == 0)
+        cat('\n', nZeroTime, ' out of ', nrow(result), ' template event(s) had no time overlap (FN).', sep='')
     }
     result
 }
