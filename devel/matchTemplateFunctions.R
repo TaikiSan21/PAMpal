@@ -54,20 +54,25 @@ loadTemplateFolder <- function(dir, names, extraCols=NULL, file=NULL, progress=T
     allBins
 }
 
-addTemplateLabels <- function(x, db, names, thresh) {
-    if(!file.exists(db)) {
-        stop('Database ', db, ' does not exist')
-    }
-    eventData <- PAMpal:::getDbData(db, doSR=FALSE)
-    labelCols <- c('parentID', 'eventLabel', 'templateId', 'templateMatch')
-    x <- PAMpal:::dropCols(x, labelCols)
-    if(is.null(eventData) || nrow(eventData) == 0) {
+addTemplateLabels <- function(x, db=NULL, names, thresh) {
+    if(!is.null(db)) {
+        if(!file.exists(db)) {
+            stop('Database ', db, ' does not exist')
+        }
+        eventData <- PAMpal:::getDbData(db, doSR=FALSE)
+        labelCols <- c('parentID', 'eventLabel', 'templateId', 'templateMatch')
+        x <- PAMpal:::dropCols(x, labelCols)
+        if(is.null(eventData) || nrow(eventData) == 0) {
+            x$parentID <- NA
+            x$eventLabel <- NA
+        } else {
+            eventData <- distinct(eventData[c('UID', 'parentID', 'eventLabel', 'BinaryFile')])
+            x <- left_join(x, eventData,
+                           by=join_by('UID'=='UID', 'BinaryFile'=='BinaryFile'))
+        }
+    } else {
         x$parentID <- NA
         x$eventLabel <- NA
-    } else {
-        eventData <- distinct(eventData[c('UID', 'parentID', 'eventLabel', 'BinaryFile')])
-        x <- left_join(x, eventData,
-                       by=join_by('UID'=='UID', 'BinaryFile'=='BinaryFile'))
     }
     noMatch <- is.na(x$parentID)
     x$parentID[noMatch] <- 'none'
