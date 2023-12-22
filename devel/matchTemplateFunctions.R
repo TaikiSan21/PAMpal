@@ -210,9 +210,13 @@ summariseManualEvents <- function(x, db=NULL) {
         nZeroTime <- sum(dbEv$pctOverlap == 0)
         cat('\n', nZeroTime, ' out of ', nrow(dbEv), ' manual event(s) had no time overlap (FN).', sep='')
         if(nrow(result) == 0) {
+            dbEv <- PAMpal:::dropCols(dbEv, c('Id', 'UID', 'EventEnd'))
+            dbEv <- rename(dbEv, eventLabel = eventType)
+            dbEv$eventLabel <- gsub('^\\s*', '', dbEv$eventLabel)
+            dbEv$eventLabel <- gsub('\\s*$', '', dbEv$eventLabel)
             return(dbEv)
         }
-        result <- full_join(result, dbEv[c('parentID', 'secOverlap', 'pctOverlap')], by='parentID')
+        result <- full_join(result, dbEv[c('parentID', 'comment', 'interval', 'secOverlap', 'pctOverlap')], by='parentID')
     }
     result
 }
@@ -221,7 +225,7 @@ getDbEvent <- function(db) {
     con <- dbConnect(db, drv=SQLite())
     on.exit(dbDisconnect(con))
     dbEv <- dbReadTable(con, 'Click_Detector_OfflineEvents')
-    dbEv <- dbEv[c('Id', 'UID', 'UTC', 'EventEnd', 'eventType', 'comment')]
+    dbEv <- dbEv[c('Id', 'UID', 'UTC', 'EventEnd', 'eventType', 'comment', 'nClicks')]
     dbEv$UTC <- PAMpal:::parseUTC(dbEv$UTC)
     dbEv$EventEnd <- PAMpal:::parseUTC(dbEv$EventEnd)
     dbEv$interval <- interval(dbEv$UTC, dbEv$EventEnd)
