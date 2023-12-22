@@ -211,7 +211,7 @@ summariseManualEvents <- function(x, db=NULL) {
         cat('\n', nZeroTime, ' out of ', nrow(dbEv), ' manual event(s) had no time overlap (FN).', sep='')
         if(nrow(result) == 0) {
             dbEv <- PAMpal:::dropCols(dbEv, c('Id', 'UID', 'EventEnd'))
-            dbEv <- rename(dbEv, eventLabel = eventType)
+            dbEv <- rename(dbEv, eventLabel = eventType, nDets=nClicks)
             dbEv$eventLabel <- gsub('^\\s*', '', dbEv$eventLabel)
             dbEv$eventLabel <- gsub('\\s*$', '', dbEv$eventLabel)
             return(dbEv)
