@@ -234,6 +234,7 @@ getDbEvent <- function(db) {
     dbEv$UTC <- PAMpal:::parseUTC(dbEv$UTC)
     dbEv$EventEnd <- PAMpal:::parseUTC(dbEv$EventEnd)
     dbEv$interval <- interval(dbEv$UTC, dbEv$EventEnd)
+    dbEv$eventType <- gsub('\\s*$', '', dbEv$eventType)
     dbEv
 }
 
@@ -243,10 +244,16 @@ markIntervalOverlap <- function(x, y) {
         stop('"x" and "y" must have "interval" column')
     }
     x$secOverlap <- 0
+    x$overlapLabel <- 'none'
     for(i in 1:nrow(x)) {
         whichOver <- which(int_overlaps(x$interval[i], y$interval))
         if(length(whichOver) == 0) {
             next
+        }
+        possLabs <- y$eventType[whichOver]
+        possLabs <- possLabs[possLabs != 'none']
+        if(length(possLabs) > 0) {
+            x$overlapLabel[i] <- paste0(possLabs, collapse=', ')
         }
         for(j in whichOver) {
             thisInter <- intersect(x$interval[i], y$interval[j])
@@ -288,7 +295,7 @@ summariseTemplateEvents <- function(x, db=NULL) {
         if(nrow(result) == 0) {
             return(tempEv)
         }
-        result <- full_join(result, tempEv[c('templateEvent', 'secOverlap', 'pctOverlap')], by='templateEvent')
+        result <- full_join(result, tempEv[c('templateEvent', 'secOverlap', 'pctOverlap', 'overlapLabel')], by='templateEvent')
     }
     result
 }
