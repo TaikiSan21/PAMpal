@@ -164,7 +164,7 @@ markGoodEvents <- function(x, minDets=3, maxSep=120, maxLength=120, nDets = 3, n
     result
 }
 
-addTemplateEvents <- function(db, binFolder, data) {
+addTemplateEvents <- function(db, binFolder, data, labelCol=NULL) {
     if(!file.exists(db)) {
         stop('Database ', db, ' does not exist')
     }
@@ -173,12 +173,19 @@ addTemplateEvents <- function(db, binFolder, data) {
     }
     binFiles <- list.files(binFolder, pattern='^Click_Detector.*pgdf$', full.names=TRUE, recursive=TRUE)
     data <- data[data$templateEvent != 'none', ]
+    if(!is.null(labelCol) && !labelCol %in% colnames(data)) {
+        stop(labelCol, ' is not a column in "data".')
+    }
     data <- split(data, data$templateEvent)
 
     pb <- txtProgressBar(min=0, max=length(data), style=3)
     for(e in seq_along(data)) {
         bins <- binFiles[basename(binFiles) %in% unique(data[[e]]$BinaryFile)]
-        label <- ifelse(any(data[[e]]$truePos), 'TP', 'FP')
+        if(is.null(labelCol)) {
+            label <- ifelse(any(data[[e]]$truePos), 'TP', 'FP')
+        } else {
+            label <- data[[e]][[labelCol]][1]
+        }
         addPgEvent(db=db, binary=bins, UIDs = unique(data[[e]]$UID), type='click',
                    eventType = label,
                    comment=paste0('templateEvent: ', data[[e]]$templateEvent[1],
