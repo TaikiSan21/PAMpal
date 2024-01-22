@@ -276,6 +276,10 @@ detectorFilt <- function(x, dotChars=NULL, ...) {
 #' @importFrom rlang quo_get_expr is_quosure is_expression
 #'
 my_label <- function(x) {
+    tryLabel <- as_label(x)
+    if(!grepl('\\.{3}', tryLabel)) {
+        return(tryLabel)
+    }
     if(is_quosure(x)) {
         x <- quo_get_expr(x)
     } else if(is_expression(x)) {

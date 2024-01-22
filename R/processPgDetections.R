@@ -180,6 +180,13 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
                           progress=progress) {
     # start with checking grouping - parse csv if missing or provided as character and fmt times
     grouping <- checkGrouping(grouping, format)
+    overlappedGroups <- checkGroupOverlap(grouping)
+    if(overlappedGroups) {
+        stop('Events associated with separate databases overlap in time, ',
+             'these cannot be accurately processed together. Process each ',
+             'database and associated events/binaries separately, then ',
+             'combine with "bindStudies"')
+    }
     # this is a flag to see if any manual entries happened to grouping
     editGroup <- FALSE
     binList <- pps@binaries$list
@@ -995,7 +1002,28 @@ checkGrouping <- function(grouping, format) {
     }
     grouping$id <- evName
     grouping$interval <- interval(grouping$start, grouping$end)
+    # overlappedGroups <- checkGroupOverlap(grouping)
+    # if(overlappedGroups) {
+    #     stop('Events associated with separate databases overlap in time, ',
+    #          'these cannot be accurately processed together. Process each ',
+    #          'database and associated events/binaries separately, then ',
+    #          'combine with "bindStudies"')
+    # }
     grouping
+}
+
+checkGroupOverlap <- function(x) {
+    if(!'db' %in% colnames(x) ||
+       length(unique(x$db)) == 1) {
+        return(FALSE)
+    }
+    byDb <- group_by(x, db) %>%
+        summarise(interval=interval(min(.data$start), max(.data$end)))
+    byDb$overlaps <- FALSE
+    for(i in 1:nrow(byDb)) {
+        byDb$overlaps[i] <- any(int_overlaps(byDb$interval[i], byDb$interval[-i]))
+    }
+    any(byDb$overlaps)
 }
 
 # read sound acq table with minimum formatting required

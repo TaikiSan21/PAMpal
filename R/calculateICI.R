@@ -150,10 +150,10 @@ dfICI <- function(x, time='UTC') {
     }
     if('Channel' %in% colnames(x)) {
         bind_rows(lapply(unique(x$Channel), function(c) {
-            calcICI(x[x$Channel == c, c('UID', 'Channel', time)], time)
+            calcICI(x[x$Channel == c, c('UID', 'BinaryFile', 'Channel', time)], time)
         }))
     } else {
-        calcICI(x[, c('UID', time)], time)
+        calcICI(x[, c('UID', 'BinaryFile',time)], time)
     }
 }
 

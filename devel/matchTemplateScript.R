@@ -18,8 +18,10 @@ allData <- loadTemplateFolder(binFolder, names=templateNames, extraCols=extraCol
 # allData <- readRDS(saveFile)
 # these are in order of "templateNames" above. Can look at data and see if any of these need to
 # be raised/lowered
-threshVals <- c(.06, .15, .15, .15, .15, .15)
+# threshVals <- c(.06, .15, .15, .15, .15, .15)
+threshVals <- c(.55, .45, .6, .5, .25, .6)
 # change "db" to "db=NULL" if we don't have manual events that we can match UIDs to
+
 allData <- addTemplateLabels(allData, db, templateNames, threshVals)
 # minDets is minimum detections to count as an event, maxSep is max time between detections
 # before an event is ended. maxLength is maximum length of an event
