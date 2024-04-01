@@ -6,13 +6,13 @@ templateNames <- c("ZC","BW43","BW39V","MS","BB","BW70")
 extraCols <- c(paste0(templateNames, '_match'),
                paste0(templateNames, '_reject'))
 
-baseDir <- 'D:/CCES_2018/Finalized BW Analyses/Drift-13/12 dB threshold/'
+baseDir <- '../Data/MTC_CV/Binaries/ADRIFT_024/'
 binFolder <- baseDir
 # this database should be a COPY of the original because we will add events to it later
-db <- file.path(baseDir, 'PamGuard64 2_00_16e Drift-13_Final_Templates.sqlite3')
+db <- '../Data/MTC_CV/Databases/ADRIFT_024_MTC.sqlite3'
 # the binary processing takes a really long time, this automatically saves to an RDS file
 # so that you don't have to reprocess in future
-saveFile <- file.path(baseDir, 'Drift13Template.rds')
+saveFile <- file.path(baseDir, 'Drift24Template.rds')
 
 allData <- loadTemplateFolder(binFolder, names=templateNames, extraCols=extraCols, file=saveFile)
 # allData <- readRDS(saveFile)
@@ -53,12 +53,12 @@ addTemplateEvents(db, binFolder, filter(allData, overlapLabel != 'none'), labelC
 # adds events meeting nDets/nSeconds criteria to the database
 # make sure db is a COPY of the original for safety
 # commented out in favor of above approach
-# addTemplateEvents(db, binFolder, allData)
+addTemplateEvents(db, binFolder, allData)
 
 ### OPTIONAL process again with PAMpal to do stuff ###
 library(PAMpal)
 pps <- PAMpalSettings(db, binFolder, sr_hz=288e3, filterfrom_khz=10, filterto_khz=NULL, winLen_sec=.0025)
-data <- processPgDetections(pps, mode='db', id='MatchTempCC19')
+data <- processPgDetections(pps, mode='db', id='MatchTempAD24')
 data <- setSpecies(data, method = 'pamguard')
 # new "FP" and "TP" events in addition to originals
 table(species(data))
