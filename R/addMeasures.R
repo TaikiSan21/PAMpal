@@ -94,6 +94,9 @@ checkMeasures <- function(x, measures) {
 getMeasures <- function(x) {
     if(is.AcousticEvent(x)) {
         meas <- ancillary(x)$measures
+        if(is.null(meas)) {
+            return(data.frame(eventId=id(x)))
+        }
         return(
             data.frame(eventId=id(x),
                        meas)

@@ -83,19 +83,19 @@ matchSR <- function(data, db, extraCols = NULL, safe=FALSE, fixNA=TRUE) {
     }
     if(!is.null(soundAcquisition)) {
         soundAcquisition <- soundAcquisition %>%
-            mutate(Status = str_trim(.data$Status),
-                   SystemType = str_trim(.data$SystemType)) %>%
+            mutate(Status = strsplitboth(.data$Status),
+                   SystemType = strsplitboth(.data$SystemType)) %>%
             filter(.data$Status=='Start') %>%
             arrange(.data$UTC) %>%
             select(all_of(c('UTC', 'sampleRate', extraCols))) %>%
             distinct() %>%
             data.table()
-
+        
         # setkeyv(soundAcquisition, 'UTC')
-
+        
         data <- data.table(data)
         # setkeyv(data, 'UTC')
-
+        
         # This rolling join rolls to the first time before. Since we filtered to only starts, it goes back
         # to whatever the last Start was.
         data <- soundAcquisition[data, roll = TRUE, on='UTC'] %>%
@@ -134,7 +134,7 @@ matchSR <- function(data, db, extraCols = NULL, safe=FALSE, fixNA=TRUE) {
 
 # check if in start/stop interval
 # bounds is a single start/stop, sa is sound acq table from db
-#' @importFrom tidyr spread
+#' @importFrom tidyr pivot_wider
 #'
 inInterval <- function(bounds, sa) {
     sa <- sa[sa$Status %in% c('Start', 'Stop'), c('UTC', 'Status', 'sampleRate')]
@@ -151,7 +151,8 @@ inInterval <- function(bounds, sa) {
     alt <- sa$Status[1:(nrow(sa)-1)] != sa$Status[2:nrow(sa)]
     sa <- sa[c(TRUE, alt), ]
     sa$id <- rep(1:(nrow(sa)/2), each=2)
-    sa <- tidyr::spread(sa, 'Status', 'UTC')
+    # sa <- tidyr::spread(sa, 'Status', 'UTC')
+    sa <- pivot_wider(sa, names_from='Status', values_from='UTC')
     startIn <- (any((bounds[1] >= sa[['Start']]) & (bounds[1] <= sa[['Stop']])))
     endIn <- (any((bounds[2] >= sa[['Start']]) & (bounds[2] <= sa[['Stop']])))
     contain <- (any((bounds[1] <= sa[['Start']]) & (bounds[2] >= sa[['Stop']])))
@@ -261,7 +262,7 @@ getPamFft <- function(data, method=c('new', 'old')) {
             if(nrow(samplePairs) <= 1) {
                 return(getPamFft(data, method='old'))
             }
-
+            
             hops <- diff(samplePairs$start) / diff(samplePairs$slice)
             hops <- unique(hops)
             hops <- hops[is.finite(hops)]
@@ -286,7 +287,7 @@ getPamFft <- function(data, method=c('new', 'old')) {
                 return(getPamFft(data, method='old'))
             }
             # return(list(sr=sr, hop=fftHop, wl=fftLen))
-
+            
         },
         'old' = {
             tempData <- data[[1]]
@@ -321,11 +322,11 @@ ppVars <- function() {
          #     "BeamLongitude1", "BeamTime1", "TMSide1", "TMChi21", "TMAIC1", "TMProbability1",
          #     "TMDegsFreedom1", "TMPerpendicularDistance1", "TMPerpendicularDistanceError1", "TMDepth1",
          #     "TMDepthError1","TMHydrophones1","TMComment1","TMError1","TMLatitude2","TMLongitude2",
-             # "BeamLatitude2","BeamLongitude2","BeamTime2","TMSide2", "TMChi22","TMAIC2",
-             # "TMProbability2", "TMDegsFreedom2", "TMPerpendicularDistance2", "TMPerpendicularDistanceError2",
-             # "TMDepth2" ,"TMDepthError2", "TMHydrophones2","TMError2","TMComment2"),
+         # "BeamLatitude2","BeamLongitude2","BeamTime2","TMSide2", "TMChi22","TMAIC2",
+         # "TMProbability2", "TMDegsFreedom2", "TMPerpendicularDistance2", "TMPerpendicularDistanceError2",
+         # "TMDepth2" ,"TMDepthError2", "TMHydrophones2","TMError2","TMComment2"),
          tarMoCols = c('TMModelName1', 'TMLatitude1', 'TMLongitude1', 'TMPerpendicularDistance1',
-                        'TMPerpendicularDistanceError1', 'TMDepth1', 'TMDepthError1'),
+                       'TMPerpendicularDistanceError1', 'TMDepth1', 'TMDepthError1'),
          locCols = c('locName', 'locLat', 'locLong', 'perpDist', 'perpDistErr', 'locDepth', 'depthErr'),
          bftHeight = data.table(bftMax=c(1, 2.4, 2.9, 3.4, 3.9, 4.4, 4.9, 5.4, 6, 12),
                                 waveHeight=c(0, 0.05, 0.1, 0.2, 0.5, 0.6, 1.25, 1.3, 2.5, 2.5),
@@ -341,7 +342,7 @@ ppVars <- function() {
          dglCols = c('Id', 'UID', 'UTC', 'UTCMilliseconds', 'PCLocalTime', 'PCTime',
                      'ChannelBitmap', 'SequenceBitmap', 'EndTime', 'DataCount'),
          ctCols = c('Chi2', 'median_IDI_sec', 'mean_IDI_sec', 'std_IDI_sec', 'algorithm_info',
-                     'avrg_spectrum_max', 'avrg_spectrum', 'classifiers', 'speciesFlag'),
+                    'avrg_spectrum_max', 'avrg_spectrum', 'classifiers', 'speciesFlag'),
          binPattern = '(Clicks|WhistlesMoans|GPL).*pgdf$'
     )
 }
@@ -412,7 +413,7 @@ getSr <- function(x, type=c('click', 'whistle', 'cepstrum'), name=NULL, data=NUL
     for(i in seq_along(srOut)) {
         srOut[i] <- doOneSr(x, type, name[i])
     }
-
+    
     srNa <- is.na(srOut)
     if(!any(srNa)) {
         return(srOut)
@@ -559,8 +560,8 @@ getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
                 result <- lapply(getBinaryData(x, dets$UID), function(b) {
                     thisDate <- b$date
                     wavIx <- checkIn(thisDate, recMap)
-                    if(is.na(wavIx) ||
-                       (length(wavIx) != 1) ||
+                    if((length(wavIx) != 1) ||
+                       is.na(wavIx) ||
                        is.na(recMap$startSample[wavIx])) {
                         return(list(start=thisDate, end=thisDate + dets$duration[dets$UID == b$UID][1]))
                     }
@@ -573,7 +574,7 @@ getTimeRange <- function(x, mode=c('event', 'detection'), sample=FALSE) {
                     }
                     out
                 })
-
+                
             } else {
                 # result <- lapply(dets$UTC, function(d) {
                 #     list(start = d, end = d)
@@ -617,4 +618,38 @@ checkSameDetections <- function(x, y) {
         }
     }
     TRUE
+}
+
+# remove front/end spaces
+strsplitboth <- function(x) {
+    if(length(x) > 1) {
+        return(sapply(x, strsplitboth, USE.NAMES = FALSE))
+    }
+    gsub('^\\s*', '', 
+         gsub('\\s*$', '', x)
+    )
+}
+
+# goes from a getXXXData det dataframe back into the study it came from
+detDataToStudy <- function(study, dets) {
+    colsToDrop <- c('eventId', 'detectorName', 'db', 'species')
+    measNames <- names(getMeasures(study))
+    colsToDrop <- unique(c(colsToDrop, measNames))
+    dets <- split(dets, dets[['eventId']])
+    detEvs <- names(dets)
+    for(e in seq_along(dets)) {
+        if(!names(dets)[e] %in% names(events(study))) {
+            next
+        }
+        thisDet <- split(dets[[e]], dets[[e]][['detectorName']])
+        thisDet <- lapply(thisDet, function(x) {
+            dropCols(x, colsToDrop)
+        })
+        for(d in seq_along(thisDet)) {
+            ct <- attr(study[[names(dets)[e]]][[names(thisDet)[d]]], 'calltype')
+            attr(thisDet[[d]], 'calltype') <- ct
+            study[[names(dets)[e]]][[names(thisDet)[d]]] <- thisDet[[d]]
+        }
+    }
+    study
 }

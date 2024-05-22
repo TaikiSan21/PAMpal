@@ -89,7 +89,6 @@
 #' @importFrom PamBinaries loadPamguardBinaryFile
 #' @importFrom PAMmisc squishList
 #' @importFrom RSQLite dbConnect dbListTables dbReadTable dbDisconnect SQLite dbListFields
-#' @importFrom stringr str_trim
 #' @importFrom tcltk tk_choose.files
 #' @importFrom purrr transpose
 #' @importFrom lubridate interval int_overlaps
@@ -776,8 +775,8 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
            'detGroup' = {
                # modules <- dbReadTable(con, 'Pamguard_Settings_Last')
                # dgTables <- modules %>%
-               #     mutate(unitName=str_trim(.data$unitName),
-               #            unitType=str_trim(.data$unitType)) %>%
+               #     mutate(unitName=strsplitboth(.data$unitName),
+               #            unitType=strsplitboth(.data$unitType)) %>%
                #     filter(.data$unitType == 'Detection Group Localiser') %>%
                #     distinct(.data$unitType, .data$unitName)
                # dgNames <- gsub(' ',  '_', dgTables$unitName)
@@ -868,7 +867,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
         allDetections$newUID <- -1
     }
     allDetections <- allDetections %>%
-        mutate(BinaryFile = str_trim(.data$BinaryFile),
+        mutate(BinaryFile = strsplitboth(.data$BinaryFile),
                # UTC = as.POSIXct(as.character(UTC), format='%Y-%m-%d %H:%M:%OS', tz='UTC')) %>%
                UTC = pgDateToPosix(.data$UTC)) %>%
 
@@ -889,10 +888,10 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
         allDetections <- matchSR(allDetections, db, extraCols=c('SystemType'))
     }
 
-    # apply str_trim to all character columns
+    # apply strsplitboth to all character columns
     whichChar <- which(sapply(allDetections, function(x) 'character' %in% class(x)))
     for(i in whichChar) {
-        allDetections[, i] <- str_trim(allDetections[, i])
+        allDetections[, i] <- strsplitboth(allDetections[, i])
     }
     # allDetections <- select(allDetections, -.data$UTC)
     allDetections <- dropCols(allDetections, 'UTC')
@@ -1034,8 +1033,8 @@ readSa <- function(db) {
         return(NULL)
     }
     sa <- dbReadTable(con, 'Sound_Acquisition')
-    sa$Status <- str_trim(sa$Status)
-    sa$SystemType <- str_trim(sa$SystemType)
+    sa$Status <- strsplitboth(sa$Status)
+    sa$SystemType <- strsplitboth(sa$SystemType)
     sa$UTC <- pgDateToPosix(sa$UTC)
     sa
 }
@@ -1099,7 +1098,7 @@ wavToGroup <- function(db) {
         pamWarning('No Sound_Acquisition table in database ', db)
         return(NULL)
     }
-    sa$Status <- str_trim(sa$Status)
+    sa$Status <- strsplitboth(sa$Status)
     sa$UTC <- pgDateToPosix(sa$UTC)
     # sa <- filter(sa, .data$Status != 'Continue')
     wavCol <- findWavCol(sa)
@@ -1145,7 +1144,8 @@ wavToGroup <- function(db) {
         saGrp <- saGrp[c(TRUE, alt), ]
         saGrp$id <- rep(1:(nrow(saGrp)/2), each=2)
         saGrp$id <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', saGrp$id)
-        saGrp <- tidyr::spread(saGrp, 'Status', 'UTC')
+        # saGrp <- tidyr::spread(saGrp, 'Status', 'UTC')
+        saGrp <- pivot_wider(saGrp, names_from='Status', values_from='UTC')
         saGrp <- saGrp[!is.na(saGrp$Start) & !is.na(saGrp$Stop), ]
         if(nrow(saGrp) == 0) {
             pamWarning('Could not find appropriate start and stop times in Sound_Acquisition table')
@@ -1252,8 +1252,8 @@ findModuleNames <- function(con, module='Detection Group Localiser') {
         if(nrow(mods) == 0) next
         dgTables <- mods[c(typeCols[i], nameCols[i])]
         names(dgTables) <- c('type', 'name')
-        dgTables$type <- str_trim(dgTables$type)
-        dgTables$name <- str_trim(dgTables$name)
+        dgTables$type <- strsplitboth(dgTables$type)
+        dgTables$name <- strsplitboth(dgTables$name)
         dgTables <- dgTables[dgTables$type == module, ]
         if(nrow(dgTables) == 0) next
         dgTables <- distinct(dgTables)

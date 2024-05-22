@@ -1,3 +1,9 @@
+## PAMpal 1.1.0
+
+- Dropping `stringr` dependency
+
+- Adding CSV option for `addHydrophoneDepth`
+
 ## PAMpal 1.0.7
 
 - Bugfix for `addNotes`

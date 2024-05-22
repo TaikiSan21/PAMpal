@@ -3,7 +3,7 @@
 #' @description Add hydrophone depth to an AcousticStudy or AcousticEvent
 #'
 #' @param x an \linkS4class{AcousticStudy} to add depth data to
-#' @param depth a data frame of depth values to match to data from \code{x}.
+#' @param depth a CSV or data frame of depth values to match to data from \code{x}.
 #'   Must have column \code{UTC}, and a column containing depth data to be
 #'   specified by \code{depthCol}. If not provided and \code{x} is an
 #'   \linkS4class{AcousticEvent} or \linkS4class{AcousticStudy} object, then
@@ -58,12 +58,19 @@ addHydrophoneDepth <- function(x, depth=NULL, depthCol=NULL, thresh=60, ...) {
         x <- .addPamWarning(x)
         return(x)
     }
+    if(is.character(depth)) {
+        if(!file.exists(depth)) {
+            stop('Could not find file ', depth)
+        }
+        depth <- read.csv(depth, stringsAsFactors = FALSE)
+    }
     if(is.data.frame(depth)) {
         needCols <- c('UTC', depthCol)
         missingCols <- needCols[!(needCols %in% colnames(depth))]
         if(length(missingCols) > 0) {
             stop('Depth data needs column(s) named ', paste0(missingCols, collapse=', '))
         }
+        x$UTC <- parseUTC(x$UTC)
         if(!inherits(depth$UTC, 'POSIXct')) {
             stop('UTC must be converted to POSIXct in "depth" data')
         }

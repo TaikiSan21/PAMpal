@@ -1,7 +1,7 @@
 Package: PAMpal
 Type: Package
 Title: Load and Process Passive Acoustic Data
-Version: 1.0.6
+Version: 1.1.0
 Authors@R: c(
   TS = person("Taiki", "Sakai", email = "taiki.sakai@noaa.gov", role = c("aut", "cre")),
   JB = person("Jay", "Barlow", role = c("ctb")),
@@ -21,16 +21,15 @@ Encoding: UTF-8
 LazyData: true
 Depends: 
     R (>= 3.5.0),
-    PamBinaries (>= 1.3.0),
-    PAMmisc (>= 1.8.3),
     dplyr
 Imports:
+    PamBinaries (>= 1.3.0),
+    PAMmisc (>= 1.8.3),
     tuneR,
     seewave,
     gam,
     data.table,
     RSQLite,
-    stringr,
     purrr,
     methods,
     signal,
@@ -43,6 +42,6 @@ Imports:
     reticulate,
     lubridate,
     geosphere
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Suggests: 
     testthat

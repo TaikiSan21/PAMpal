@@ -52,7 +52,6 @@
 #' species(exData)
 #'
 #' @importFrom dplyr distinct
-#' @importFrom stringr str_trim str_split
 #' @importFrom RSQLite dbConnect dbDisconnect dbReadTable SQLite
 #' @export
 #'
@@ -139,7 +138,7 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
            'am' = {
                specDf <- bind_rows(lapply(acev, function(oneAe) {
                    list(event = id(oneAe),
-                                  eventType = str_trim(getClickData(oneAe)$eventLabel[1]),
+                                  eventType = strsplitboth(getClickData(oneAe)$eventLabel[1]),
                                   comment = ancillary(oneAe)$eventComment)
                    # dbs <- files(oneAe)$db
                    # events <- do.call(rbind, lapply(dbs, function(y) {
@@ -150,10 +149,10 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                    #     evs <- evs[, c('Id', 'eventType', 'comment')]
                    #     evs$event <- paste0(gsub('\\.sqlite3', '', basename(y)),
                    #                            '.OE', as.character(evs$Id))
-                   #     evs$eventType <- str_trim(evs$eventType)
+                   #     evs$eventType <- strsplitboth(evs$eventType)
                    #     evs$comment <- gsub('OFF EFF', '', evs$comment)
                    #     evs$comment <- gsub("[[:punct:]]", '', evs$comment)
-                   #     evs$comment <- str_trim(evs$comment)
+                   #     evs$comment <- strsplitboth(evs$comment)
                    #     evs
                    # }))
                    # events$event <- paste0('OE', as.character(events$UID))
@@ -166,12 +165,17 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                }))
                specDf$comment <- gsub('OFF EFF', '', specDf$comment)
                specDf$comment <- gsub("[[:punct:]]", '', specDf$comment)
-               specDf$comment <- str_trim(specDf$comment)
+               specDf$comment <- strsplitboth(specDf$comment)
                specDf$species <- 'unid'
                goodEvents <- c('BEAK', 'FORG')
                specDf$species <- 'unid'
-               specDf$species[specDf$eventType %in% goodEvents] <- str_split(specDf$comment[specDf$eventType %in% goodEvents],
-                                                                             ' ', simplify=TRUE)[, 1]
+               # specDf$species[specDf$eventType %in% goodEvents] <- str_split(specDf$comment[specDf$eventType %in% goodEvents],
+               #                                                               ' ', simplify=TRUE)[, 1]
+               specDf$species[specDf$eventType %in% goodEvents] <- sapply(specDf$comment[specDf$eventType %in% goodEvents], 
+                                                                          function(x) {
+                                                                              strsplit(x, ' ')[[1]][1]
+                                                                          }, USE.NAMES = FALSE)
+                   
                specDf$species <- tolower(specDf$species)
                specDf$species[specDf$species %in% c('mmme', 'mm')] <- 'unid'
 

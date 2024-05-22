@@ -116,11 +116,12 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
             calibration <- x@pps@calibration$ClickDetector[[1]]
         }
     }
-    clickData <- getClickData(ev)[c('eventId', 'UID')]
+    clickData <- getClickData(ev)[c('eventId', 'UID', 'UTC')]
     if(is.null(clickData)) {
         stop('No clicks in this event')
         return(NULL)
     }
+    clickData <- arrange(clickData, .data$UTC)[c('eventId', 'UID')]
     clickData <- distinct(clickData)
     clickUID <- clickData$UID
     # reordering because they get put in UID order
