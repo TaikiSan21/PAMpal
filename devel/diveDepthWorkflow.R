@@ -7,8 +7,8 @@
 # change this to location of R file
 source('./devel/diveDepthFunctions.R')
 # DB and Binaries for processing
-db <- '../Data/AMTask/3D2PAMr_test_files/HB1603_MF_Master_Leg3_Skala.sqlite3'
-bin <- '../Data/AMTask/3D2PAMr_test_files/BinaryFiles_20160815_WithUID/'
+db <- '../Data/3D2PAMr_test_files/HB1603_MF_Master_Leg3_Skala.sqlite3'
+bin <- '../Data/3D2PAMr_test_files/BinaryFiles_20160815_WithUID/'
 
 # Run PAMpal (any settings here can be changed to your desired values)
 pps <- PAMpalSettings(db=db, binaries=bin, sr_hz='auto', filterfrom_khz=5, filterto_khz=NULL, winLen_sec=.0025)
@@ -37,8 +37,8 @@ hasLocalization <- sapply(events(goodData), function(x) {
   if(is.null(tarMo)) {
     return(FALSE)
   }
-  !is.na(tarMo$TMLatitude1) &
-    !is.na(tarMo$TMPerpendicularDistance1)
+  !is.na(tarMo$locLat) &
+    !is.na(tarMo$perpDist)
 })
 goodData <- goodData[hasLocalization]
 
@@ -56,14 +56,14 @@ commSpec <- read.csv('SpeciesValidation.csv', stringsAsFactors = FALSE)
 #
 goodData <- setSpecies(goodData, method='manual', value=commSpec) %>%
   filter(!is.na(species))
-
+goodData <- setSpecies(goodData, method='manual', value='trues')
 # Folder where wav clips should be stored, if it doesnt exist yet funciton will create it
 clipDir <- '../Data/3D2PAMr_test_files/WavClips'
 wavs <- writeEventClips(goodData,
                         buffer = c(0, 0.2),
                         outDir = clipDir,
                         mode = 'detection',
-                        channel = 5,
+                        channel = 6,
                         useSample = TRUE)
 
 # effort can be .xlsx or .csv of just that sheet
@@ -85,6 +85,31 @@ effortTable <- '../Data/3D2PAMr_test_files/HB1603beaufort_effort.xlsx'
 # "depthSensAcc" accuracy term in table
 
 height <- readBftNEFSC(effortTable)
+library(RSQLite)
+con <- dbConnect('../Data/3D2PAMr_test_files/HB1603_MF_Master_Leg3_Skala.sqlite3', drv=SQLite())
+gps <- dbReadTable(con, 'gpsData')
+gps$UTC <- as.POSIXct(gps$UTC, format='%Y-%m-%d %H:%M:%S', tz='UTC')
+dbDisconnect(con)
+str(gps)
+height <- addGps(height, gps)
+height <- height[!is.na(height$Latitude), ]
+height <- height %>% rename('ClickTime'='UTC') %>% 
+    addWaveHeight(height[c('UTC', 'beaufort')])
+edi <- PAMmisc::erddapToEdinfo(dataset='hawaii_soest_98bb_253a_eb1c', 
+                               baseurl = 'https://apdrc.soest.hawaii.edu/erddap',
+                               chooseVars='htsgwsfc')
+height <- PAMmisc::matchEnvData(height, nc=edi)
+height <- PAMmisc::matchEnvData(height, nc='NWW3_Global_Best', var=c('Thgt', 'shgt', 'whgt'))
+ggplot(height, aes(x=waveHeight)) +
+    geom_point(aes(y=htsgwsfc_mean), col='black') +
+    geom_smooth(aes(y=htsgwsfc_mean), col='black') +
+    geom_point(aes(y=Thgt_mean), col='blue') +
+    geom_smooth(aes(y=Thgt_mean), col='blue') +
+    geom_point(aes(y=shgt_mean), col='darkgreen') +
+    geom_smooth(aes(y=shgt_mean), col='darkgreen') +
+    geom_point(aes(y=whgt_mean), col='purple') +
+    geom_smooth(aes(y=whgt_mean), col='purple') +
+    geom_abline(intercept=0, slope=1)
 depthOutputs <- export_diveDepthNEFSC(goodData,
                               outDir = NULL,
                               file = NULL,

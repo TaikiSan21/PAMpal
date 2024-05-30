@@ -1,6 +1,5 @@
 # sim tdoa / angle
 
-
 simPath <- function(ship, target, end, n=100, plot=T, changeDepth=FALSE) {
     path <- matrix(c(
         seq(ship[1], end[1], length.out=n),
@@ -13,15 +12,20 @@ simPath <- function(ship, target, end, n=100, plot=T, changeDepth=FALSE) {
     arrPath[, 2] <- arrPath[, 2] - arrSep
     diffs <- numeric(n)
     if(changeDepth) {
-        tarDepths <- c(seq(from=0, to=target[3], length.out=n %/% 2),
-                       seq(from=target[3], length.out = (n %/% 2) + (n %% 2)))
+        # tarDepths <- c(seq(from=0, to=target[3], length.out=n %/% 2),
+        #                seq(from=target[3], length.out = (n %/% 2) + (n %% 2)))
+        tarDepths <- c(
+            seq(from=0, to=target[3], length.out = n %/% 3),
+            rep(target[3], n %/% 3),
+            seq(from=target[3], to=0, length.out = (n %/% 3) + (n %% 3))
+        )
     } else {
         tarDepths <- rep(target[3], n)
     }
     for(i in 1:nrow(path)) {
-        target[3] <- tarDepths[i]
-        dist1 <- sqrt(sum((path[i, ] - target)^2))
-        dist2 <- sqrt(sum((arrPath[i, ] - target)^2))
+        # target[3] <- tarDepths[i]
+        dist1 <- sqrt(sum((path[i, ] - c(target[1:2], tarDepths[i]))^2))
+        dist2 <- sqrt(sum((arrPath[i, ] - c(target[1:2], tarDepths[i]))^2))
         diffs[i] <- dist2 - dist1
         # diffs[i] <- dist1 - dist2
     }
@@ -40,10 +44,10 @@ simPath <- function(ship, target, end, n=100, plot=T, changeDepth=FALSE) {
 }
 whale <- c(2e3, 1e3, 0)
 ship <- c(0, 0, 0) #0, -.1, 0 array?
-end <- c(0, 2e3, 0)
+end <- c(0, 3e3, 0)
 
 surface <- simPath(ship, whale, end, n=20, changeDepth = T)
-deep <- simPath(ship, whale - c(0, 0, -1000), end, n=20, changeDepth = T)
+deep <- simPath(ship, whale - c(0, 0, -1000), end, n=20, changeDepth = F)
 # okay so this definitely only works if depth is fixed, and in this
 # case the tarmo loc definitely matches at the point that we correctly
 # undo with pythag after figuring out depth. But for very changing depth
@@ -51,3 +55,5 @@ deep <- simPath(ship, whale - c(0, 0, -1000), end, n=20, changeDepth = T)
 
 # ACTUALLY it might be fine based on sims for a very simple dive profile?
 # or its at least not wrong by a lot
+
+# Okay using a pretend dive-stay-surface profile its less clear

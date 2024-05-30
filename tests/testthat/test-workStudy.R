@@ -376,3 +376,17 @@ test_that('Test measure functions', {
     exStudy <- addMeasures(exStudy, measDf, replace=TRUE)
     expect_equal(getMeasures(exStudy)$a, c(20, 5))
 })
+
+test_that('Test wav clip name parser',  {
+    # so Det|Ev_db.OE#.UIDCH_TIME(14_3|8_6_3).wav
+    posix <- as.POSIXct('2020-10-31 12:00:11', tz='UTC') + .5
+    posixChar <- psxToChar(posix)
+    evName <- paste0('folder/', 'Event_Databasename.OE4CH3_', posixChar, '.wav')
+    detName <- paste0('folder/', 'Detection_Databasename.OE4.1234567CH3_', posixChar, '.wav')
+    expect_equal(parseEventClipName(evName, part='event'), 'Databasename.OE4')
+    expect_equal(parseEventClipName(evName, part='UID'), NA)
+    expect_equal(parseEventClipName(detName, part='UID'), '1234567')
+    expect_equal(parseEventClipName(evName, part='channel'), '3')
+    expect_equal(parseEventClipName(evName, part='time'), posix)
+    expect_equal(parseEventClipName(evName, part='UTC'), posix)
+})

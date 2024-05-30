@@ -18,7 +18,7 @@ writeEventClips(
   fixLength = FALSE
 )
 
-parseEventClipName(file, part = c("event", "time"))
+parseEventClipName(file, part = c("event", "time", "UID", "channel", "UTC"))
 }
 \arguments{
 \item{x}{\linkS4class{AcousticStudy} object containing data to make wav clips for}

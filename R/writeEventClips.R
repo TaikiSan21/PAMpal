@@ -129,224 +129,51 @@ psxToChar <- function(x) {
 #'
 #' @export
 #'
-parseEventClipName <- function(file, part=c('event', 'time')) {
-    pattern <- '(Event|Detection)_(.*)CH[0-9]{1,2}_([0-9]{14}_[0-9]{3}|[0-9]{8}_[0-9]{6}_[0-9]{3})\\.wav$'
+parseEventClipName <- function(file, part=c('event', 'time', 'UID', 'channel', 'UTC')) {
+    if(length(file) > 1) {
+        return(sapply(file, function(x) {
+            parseEventClipName(x, part=part)
+        }, USE.NAMES=FALSE))
+    }
+    file <- basename(file)
+    pattern <- '(Event|Detection)_(.*)(CH[0-9]{1,2})_([0-9]{14}_[0-9]{3}|[0-9]{8}_[0-9]{6}_[0-9]{3})\\.wav$'
     switch(match.arg(part),
            'event' = {
-               return(gsub(pattern, '\\2', file))
+               result <- gsub(pattern, '\\2', file)
+               result <- strsplit(result, '\\.')[[1]]
+               result <- paste0(result[1], '.', result[2])
+               result
+           },
+           'UID' = {
+               if(gsub(pattern, '\\1', file) == 'Event') {
+                   return(NA)
+               }
+               result <- gsub(pattern, '\\2', file)
+               result <- strsplit(result, '\\.')[[1]][3]
+               result
+           },
+           'channel' = {
+               result <- gsub(pattern, '\\3', file)
+               result <- gsub('CH', '', result)
+               result
            },
            'time' = {
-               result <- gsub(pattern, '\\3', file)
+               result <- gsub(pattern, '\\4', file)
                milli <- gsub('(.*)_([0-9]{3})$', '\\2', result)
                result <- gsub('(.*)_([0-9]{3})$', '\\1', result)
                result <- gsub('_', '', result)
                result <- as.POSIXct(result, format='%Y%m%d%H%M%S', tz='UTC')
                result <- result + as.numeric(milli)/1e3
                result
-               # result <- sapply(strsplit(result, '_'), function(t) {
-               #     time <- as.POSIXct(t[1], format='%Y%m%d%H%M%S', tz='UTC')
-               #     time <- time + as.numeric(t[2])/1e3
-               #     time
-               # })
-               # as.POSIXct(result, origin='1970-01-01 00:00:00', tz='UTC')
+           },
+           'UTC' = {
+               result <- gsub(pattern, '\\4', file)
+               milli <- gsub('(.*)_([0-9]{3})$', '\\2', result)
+               result <- gsub('(.*)_([0-9]{3})$', '\\1', result)
+               result <- gsub('_', '', result)
+               result <- as.POSIXct(result, format='%Y%m%d%H%M%S', tz='UTC')
+               result <- result + as.numeric(milli)/1e3
+               result
            }
     )
 }
-
-# writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', 'detection'),
-#                             channel = 1, useSample=FALSE, progress=TRUE, verbose=TRUE) {
-#     if(!is.AcousticStudy(x)) {
-#         stop('"x" must be an AcousticStudy object.')
-#     }
-#     fileExists <- checkRecordings(x)
-#     mode <- match.arg(mode) #### WAV CLIP SPECIFIC
-#     if(length(channel) > 2) {  #### WAV CLIP SPECIFIC
-#         message('R can only write wav files with 2 or less channels, channels will be split',
-#                 ' across multiple files.')
-#         allFiles <- character(0)
-#         for(i in 1:(ceiling(length(channel)/2))) {
-#             ix <- (i-1)*2 +1
-#             if((ix+1) <= length(channel)) {
-#                 thisChan <- channel[ix:(ix+1)]
-#             } else {
-#                 thisChan <- channel[ix]
-#             }
-#             allFiles <- c(allFiles, writeEventClips(x, buffer, outDir, mode, channel = thisChan, progress))
-#         }
-#         return(allFiles)
-#     }
-#     if(!dir.exists(outDir)) dir.create(outDir)
-#     evDbs <- sapply(events(x), function(e) files(e)$db)
-#     dbMap <- split(files(x)$recordings, files(x)$recordings$db)
-#
-#     if(length(buffer) == 1) {
-#         buffer <- buffer * c(-1, 1)
-#     }
-#     buffer <- abs(buffer) * c(-1, 1)
-#     # each database can have a different set of assigned recordings,
-#     # so we break up by DB
-#
-#     # setup warning storage
-#     noMatch <- character(0)
-#     multMatch <- character(0)
-#     nonConsec <- character(0)
-#     fileDNE <- character(0)
-#     noChan <- character(0)
-#     result <- character(0)
-#     on.exit({  #### WAV CLIP SPECIFIC just the secific messages
-#         if(length(noMatch) > 0) {
-#             warning('Could not find matching wav files for ', mode, ' ', printN(noMatch, 6), call.=FALSE)
-#         }
-#         if(length(multMatch) > 0) {
-#             warning(oneUpper(mode), ' ', printN(multMatch, 6),
-#                     ' matched more than 1 possible wav file, could not create clip.', call.=FALSE)
-#         }
-#         if(length(nonConsec) > 0) {
-#             warning(oneUpper(mode), ' ', printN(nonConsec, 6),
-#                     ' spanned two non-consecutive wav files, could not create clip.', call.=FALSE)
-#         }
-#         if(length(fileDNE) > 0) {
-#             warning('Wav files for ', mode, ' ', printN(fileDNE, 6), ' could not be found on disk.',
-#                     ' Function "updateFiles" can help relocate files that have moved.', call. = FALSE)
-#         }
-#         if(length(noChan) > 0) {
-#             warning('Wav files for ', mode, ' ', printN(noChan, 6),
-#                     ' did not have the desired channels.', call.=FALSE)  #### WAV CLIP SPECIFIC
-#         }
-#     })
-#     # one DB at a time
-#     for(d in seq_along(dbMap)) {
-#         thisDbData <- x[which(evDbs == names(dbMap)[d])]
-#         if(length(events(thisDbData)) == 0) next
-#         wavMap <- dbMap[[d]]
-#         allTimes <- getTimeRange(thisDbData, mode=mode, sample=useSample)
-#         allFiles <- vector('character', length = length(allTimes))
-#         names(allFiles) <- names(allTimes)
-#         if(progress) {
-#             cat('Writing wav files for database ', basename(names(dbMap)[d]),
-#                 '(', d, ' of ', length(dbMap),') ...\n', sep='') #### WAV CLIP SPECIFIC
-#             pb <- txtProgressBar(min=0, max=length(allFiles), style = 3)
-#         }
-#         for(i in seq_along(allFiles)) {
-#             # browser()
-#             timeRange <- c(allTimes[[i]]$start, allTimes[[i]]$end) + buffer
-#             # for start and end check if in range. if we buffered, try undoing that first.
-#             # so like if buffer put us before first file, start and beginning of first file instead.
-#             startIx <- checkIn(timeRange[1], wavMap)
-#             if(length(startIx) > 1) {
-#                 multMatch <- c(multMatch, names(allFiles)[i])
-#                 allFiles[[i]] <- NA
-#                 if(progress) {
-#                     setTxtProgressBar(pb, value=i)
-#                 }
-#                 next
-#             }
-#             if(is.na(startIx)) {
-#                 startIx <- checkIn(timeRange[1] - buffer[1], wavMap)
-#                 if(is.na(startIx)) {
-#                     noMatch <- c(noMatch, names(allFiles)[i])
-#                     # warning('Could not find matching wav files for ', mode, names(allFiles)[i])
-#                     allFiles[[i]] <- NA
-#                     if(progress) {
-#                         setTxtProgressBar(pb, value=i)
-#                     }
-#                     next
-#                 }
-#                 timeRange[1] <- wavMap$start[startIx]
-#             }
-#             endIx <- checkIn(timeRange[2], wavMap)
-#             if(length(endIx) > 1) {
-#                 multMatch <- c(multMatch, names(allFiles)[i])
-#                 allFiles[[i]] <- NA
-#                 if(progress) {
-#                     setTxtProgressBar(pb, value=i)
-#                 }
-#                 next
-#             }
-#             if(is.na(endIx)) {
-#                 endIx <- checkIn(timeRange[2] - buffer[2], wavMap)
-#                 if(is.na(endIx)) {
-#                     # warning('Could not find matching wav files for ', mode, names(allFiles)[i])
-#                     noMatch <- c(noMatch, names(allFiles)[i])
-#                     allFiles[[i]] <- NA
-#                     if(progress) {
-#                         setTxtProgressBar(pb, value=i)
-#                     }
-#                     next
-#                 }
-#                 timeRange[2] <- wavMap$end[endIx]
-#             }
-#             if(wavMap$fileGroup[startIx] != wavMap$fileGroup[endIx]) {
-#                 nonConsec <- c(nonConsec, names(allFiles)[i])
-#                 # warning(oneUpper(mode), names(allFiles)[i],
-#                 #         ' spanned two non-consecutive wav files, could not create clip.', call.=FALSE)
-#                 allFiles[[i]] <- NA_character_
-#                 if(progress) {
-#                     setTxtProgressBar(pb, value=i)
-#                 }
-#                 next
-#             }
-#             if(any(!file.exists(wavMap$file[startIx:endIx]))) {
-#                 fileDNE <- c(fileDNE, names(allFiles)[i])
-#                 # warning('Wav files for ', mode, names(allFiles)[i], ' could not be found on disk.',
-#                 #         ' Function "updateFiles" can help relocate files that have moved.', call. = FALSE)
-#                 allFiles[[i]] <- NA_character_
-#                 if(progress) {
-#                     setTxtProgressBar(pb, value=i)
-#                 }
-#                 next
-#             }
-#             startTime <- as.numeric(difftime(timeRange[1], wavMap$start[startIx], units='secs'))
-#             endTime <- as.numeric(difftime(timeRange[2], wavMap$start[endIx], units='secs'))
-#             wavResult <- vector('list', length = endIx)
-#             for(w in startIx:endIx) {
-#                 readStart <- 0
-#                 readEnd <- Inf
-#                 if(w == startIx) {
-#                     readStart <- startTime
-#                 }
-#                 if(w == endIx) {
-#                     readEnd <- endTime
-#                 }
-#                 wavResult[[w]] <- readWave(wavMap$file[w], from = readStart, to = readEnd, units = 'seconds', toWaveMC = TRUE)
-#             }
-#
-#             wavResult <- wavResult[!sapply(wavResult, is.null)]
-#             wavResult <- do.call(bind, wavResult) # [, 1:min(2, ncol(wavResult))]
-#             chanIn <- channel <= ncol(wavResult@.Data)
-#             if(!any(chanIn)) {
-#                 noChan <- c(noChan, names(allFiles)[i])
-#                 # warning('Wav files for ', mode, names(allFiles)[i], ' did not have the desired channels',
-#                 #         ' (file had ', ncol(wavResult), ' channels, you wanted ',
-#                 #         paste0(channel, collapse=', '))
-#                 allFiles[[i]] <- NA_character_
-#                 if(progress) {
-#                     setTxtProgressBar(pb, value = i)
-#                 }
-#                 next
-#             }
-#             if(!all(chanIn)) {
-#                 noChan <- c(noChan, names(allFiles)[i])
-#             }
-#             wavResult <- wavResult[, channel[chanIn]]
-#             colnames(wavResult) <- MCnames$name[1:ncol(wavResult)]
-#             fileName <- paste0(oneUpper(mode), '_', names(allFiles)[i], 'CH', paste0(channel[chanIn], collapse=''))
-#             fileName <- paste0(fileName, '_',psxToChar(timeRange[1]))
-#             fileName <- paste0(gsub('\\.wav$', '', fileName), '.wav')
-#             # timeRange[1] is actual start time in posix
-#             fileName <- file.path(outDir, fileName)
-#             writeWave(wavResult, fileName, extensible = FALSE)
-#             allFiles[[i]] <- fileName
-#             if(progress) {
-#                 setTxtProgressBar(pb, value=i)
-#             }
-#         }
-#         isNa <- is.na(allFiles)
-#         if(verbose) {
-#             cat('\n', paste0('Wrote ', sum(!isNa), ' wav file(s).\n'))
-#         }
-#         # names(allFiles) <- sapply(event, function(x) x@id)
-#         result <- c(result, allFiles)
-#     }
-#     invisible(result)
-# }

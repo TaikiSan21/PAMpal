@@ -1,3 +1,8 @@
+## PAMpal 1.2.0
+
+- Adding dive depth related functions for DCLDE2024 workshop: `addWaveHeight`,
+`calculateEchoDepth`, `filterEchoDepths`, and `runDepthReview`
+
 ## PAMpal 1.1.0
 
 - Dropping `stringr` dependency
