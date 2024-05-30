@@ -123,7 +123,7 @@ runDepthReview <- function(x) {
         output$scatterplot <- renderPlot({
             plotData <- smf$data %>% 
                 dplyr::filter(.data$eventId == input$evSelect)
-            g <- ggplot(plotData, aes(x = .data$UTC, y = .data[[input$plotValue]], col=.data$keepClick)) +
+            g <- ggplot(plotData, aes(x = .data[['UTC']], y = .data[[input$plotValue]], col=.data[['keepClick']])) +
                 geom_point(na.rm=TRUE) + 
                 ggtitle(input$evSelect) +
                 xlab("Click time (HH:MM)") + ylab(yLabels[[input$plotValue]]) +
@@ -221,7 +221,7 @@ runDepthReview <- function(x) {
             input$plot_brush_ # only update on either brush or flag change
             input$paintFlag
         }, {
-            df = brushedPoints(smf$data, brush = input$plot_brush_, yvar=input$plotValue, allRows = TRUE) # get column with false and true with AllRows = T
+            df = brushedPoints(smf$data, brush = input$plot_brush_, xvar='UTC', yvar=input$plotValue, allRows = TRUE) # get column with false and true with AllRows = T
             # removing datapoints selected by brush, select values are stored as chars
             smf$data$keepClick[df$selected_ & df$eventId == input$evSelect] <- input$paintFlag == 'TRUE'
         })
