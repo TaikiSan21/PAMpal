@@ -1,8 +1,8 @@
 #' @title Summarise Dive Depth
-#' 
-#' @description Summarise results of dive depth estimation using 
+#'
+#' @description Summarise results of dive depth estimation using
 #'   \link{calculateEchoDepth} and related functions
-#'   
+#'
 #' @param x an \linkS4class{AcousticStudy} that has been
 #'   processed with \link{calculateEchoDepth}
 #' @param hpDepthError hydrophone depth error to use for error estimation
@@ -10,9 +10,9 @@
 #'   any localization, only using previously calculated
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
-#' 
+#'
 #' @export
-#' 
+#'
 summariseDiveDepth <- function(x, hpDepthError=1, locType='PGTargetMotion') {
     clicks <- getClickData(x, measures=FALSE)
     if(!'maxDepth' %in% colnames(clicks)) {
@@ -30,21 +30,20 @@ summariseDiveDepth <- function(x, hpDepthError=1, locType='PGTargetMotion') {
                      .data$eventId %in% hasLoc,
                      .data$keepClick)
     clicks$hpDepthPct <- hpDepthError / clicks$hpDepth
-    clicks <- left_join(clicks, locData[c('eventId', 'perpDist', 'perpDistErr')], by='eventId') %>% 
+    clicks <- left_join(clicks, locData[c('eventId', 'perpDist', 'perpDistErr')], by='eventId') %>%
         mutate(srPct = .data$perpDistErr / .data$perpDist,
                errPct = sqrt(.data$hpDepthPct^2 + .data$srPct^2),
                depthErr = .data$maxDepth * .data$errPct)
-    
-    smry <- clicks %>% 
-        group_by(.data$eventId) %>% 
-        summarise(minDepth = min(.data$maxDepth),
+
+    smry <- clicks %>%
+        group_by(.data$eventId) %>%
+        summarise(meanDepth = mean(.data$maxDepth),
+                  minDepth = min(.data$maxDepth),
                   maxDepth = max(.data$maxDepth),
-                  meanDepth = mean(.data$maxDepth),
                   meanErrPct = mean(.data$errPct),
                   originalDistance = mean(.data$perpDist),
-                  originalDistErr = mean(.data$perpDistErr)) %>% 
+                  originalDistErr = mean(.data$perpDistErr)) %>%
         mutate(correctedDistance = suppressWarnings(sqrt(.data$originalDistance^2 - .data$meanDepth^2)))
     smry$correctedDistance[is.na(smry$correctedDistance)] <- 0
     smry
 }
-    
