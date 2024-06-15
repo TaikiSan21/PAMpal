@@ -11,6 +11,17 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
+#' @return a dataframe with columns summarising the estimated dive depth
+#'   for each event in \code{x}
+#'
+#' @examples
+#' # example not run because \link{calculateEchoDepth} must be run first,
+#' # and it requires a large amount of data not stored in the package
+#' \dontrun{
+#' study <- calculateEchoDepth(study, wav='path/to/wavFiles')
+#' summariseDiveDepth(study)
+#' }
+#'
 #' @export
 #'
 summariseDiveDepth <- function(x, hpDepthError=1, locType='PGTargetMotion') {

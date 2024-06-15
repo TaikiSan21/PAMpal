@@ -1,16 +1,26 @@
 #' @title Run Echo Depth Review App
-#' 
+#'
 #' @description Runs a Shiny app to review the slant delay and esimated depths
 #'   of an \linkS4class{AcousticStudy} object that has been processed with
 #'   \link{calculateEchoDepth}. App allows users to select detections that
 #'   should not be included in future analysis and marks them with the tag
-#'   \code{keepClick=FALSE}, similar to \link{filterEchoDepths}. 
-#' 
+#'   \code{keepClick=FALSE}, similar to \link{filterEchoDepths}.
+#'
 #' @param x an \linkS4class{AcousticStudy} object that has been processed with
 #'   \link{calculateEchoDepth}
-#'   
+#'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
-#' 
+#'
+#' @return the object as \code{x}, with updated \code{keepClick} column
+#'
+#' @examples
+#' # example not run because \link{calculateEchoDepth} must be run first,
+#' # and it requires a large amount of data not stored in the package
+#' \dontrun{
+#' study <- calculateEchoDepth(study, wav='path/to/wavFiles')
+#' study <- runDepthReview(x)
+#' }
+#'
 #' @importFrom shiny fluidPage selectInput HTML fluidRow plotOutput column
 #' @importFrom shiny radioButtons actionButton sliderInput div textInput
 #' @importFrom shiny reactiveValues updateSelectInput observeEvent tags
@@ -18,10 +28,10 @@
 #' @importFrom shiny brushedPoints runApp shinyApp isolate onSessionEnded
 #' @importFrom ggplot2 geom_point ggtitle xlab ylab theme element_text
 #' @importFrom ggplot2 element_blank element_line aes scale_color_manual ylim
-#' @importFrom signal butter 
-#' 
+#' @importFrom signal butter
+#'
 #' @export
-#' 
+#'
 runDepthReview <- function(x) {
     inStudy <- is.AcousticStudy(x)
     inDf <- is.data.frame(x)
@@ -55,7 +65,7 @@ runDepthReview <- function(x) {
         # brush argument will enable the brush, sends the data point information to the server side
         plotOutput(outputId = "scatterplot", brush = "plot_brush_"), # brush ID is plot_brush, brush argument enables the brush
         fluidRow(
-            column(width=3, 
+            column(width=3,
                    radioButtons('paintFlag',
                                 label='Select paint action',
                                 choices=list('Remove selections'=FALSE, 'Keep selections'=TRUE)
@@ -64,17 +74,17 @@ runDepthReview <- function(x) {
                    radioButtons('plotValue',
                                 label='Plot time delay or depth',
                                 choices=list('Time delay'='maxTime', 'Depth'='maxDepth'), inline=TRUE),
-                   sliderInput('yLims', 
+                   sliderInput('yLims',
                                label='Depth limit',
                                min=-4000, max=0, value=-4000,
                                width='100%'),
-                   fluidRow(div('Echogram filter values (Hz)', 
-                                style='font-weight:bold; font-size:14px; text-align:center'), 
-                            column(width=6,textInput('freqLow', label='Lower bound', 
+                   fluidRow(div('Echogram filter values (Hz)',
+                                style='font-weight:bold; font-size:14px; text-align:center'),
+                            column(width=6,textInput('freqLow', label='Lower bound',
                                                      value='2000', width='100%')),
                             column(width=6, textInput('freqHigh', 'Higher bound', value='16000', width='100%'))
                    ),
-                   actionButton('loadEcho', 
+                   actionButton('loadEcho',
                                 label='Load echogram data (slow)'),
                    actionButton("save","Save") # when clicked saves brushed dataframe to file
             ),
@@ -83,12 +93,12 @@ runDepthReview <- function(x) {
             )
         )
     )
-    
+
     # Server code begins here
     server <- function(input, output, session) {
         # making the dataset reactiveValues so that any changes in mt$data later could be reflected throughout
         smf <- reactiveValues(data=SHINYDATA,
-                              echoData=list()) 
+                              echoData=list())
         # this populates dropdown with event names
         updateSelectInput(inputId='evSelect', choices=unique(SHINYDATA$eventId))
         yLabels <- list(
@@ -101,18 +111,18 @@ runDepthReview <- function(x) {
         }, {
             if(input$evSelect != '') {
                 yLims <- switch(
-                    input$plotValue, 
+                    input$plotValue,
                     'maxDepth' = {
                         yRange <- range(smf$data$maxDepth[smf$data$eventId == input$evSelect], na.rm=TRUE)
                         yRange[1] <- round(yRange[1] -50, 0)
-                        updateSliderInput(session, 'yLims', 
+                        updateSliderInput(session, 'yLims',
                                           label='Depth limit', min=yRange[1], max=0, value=yRange[1],
                                           step=50)
                     },
                     'maxTime' = {
                         yRange <- range(smf$data$maxTime[smf$data$eventId == input$evSelect], na.rm=TRUE)
                         yRange[2] <- round(yRange[2] + .001, 3)
-                        updateSliderInput(session, 'yLims', 
+                        updateSliderInput(session, 'yLims',
                                           label='Time limit', min=0, max=yRange[2], value=yRange[2],
                                           step=.001)
                     }
@@ -121,21 +131,21 @@ runDepthReview <- function(x) {
         })
         #### scatterplot ####
         output$scatterplot <- renderPlot({
-            plotData <- smf$data %>% 
+            plotData <- smf$data %>%
                 dplyr::filter(.data$eventId == input$evSelect)
             g <- ggplot(plotData, aes(x = .data[['UTC']], y = .data[[input$plotValue]], col=.data[['keepClick']])) +
-                geom_point(na.rm=TRUE) + 
+                geom_point(na.rm=TRUE) +
                 ggtitle(input$evSelect) +
                 xlab("Click time (HH:MM)") + ylab(yLabels[[input$plotValue]]) +
-                theme(axis.text = element_text(size = 14), # format axis font 
+                theme(axis.text = element_text(size = 14), # format axis font
                       axis.title = element_text(size = 16, face = "bold"),
-                      text = element_text(size=14), 
-                      panel.background = element_blank(), 
-                      axis.line = element_line(colour = "black"), 
-                      panel.grid.major = element_blank(), 
+                      text = element_text(size=14),
+                      panel.background = element_blank(),
+                      axis.line = element_line(colour = "black"),
+                      panel.grid.major = element_blank(),
                       panel.grid.minor = element_blank())  +
                 scale_color_manual(values=c('#F8766D', '#00BFC4'), breaks=c(FALSE, TRUE))
-            
+
             if(input$plotValue == 'maxDepth') {
                 g <- g + ylim(input$yLims, 0)
             }
@@ -144,14 +154,14 @@ runDepthReview <- function(x) {
             }
             g
         })
-        
+
         #### load echo data ####
         observeEvent(input$loadEcho, {
             # check if we've already loaded this events data
-            
+
             low <- suppressWarnings(as.numeric(input$freqLow))
             high <- suppressWarnings(as.numeric(input$freqHigh))
-            
+
             # if(input$evSelect %in% names(smf$echoData)) {
             #     thisEcho <- smf$echoData[[input$evSelect]]
             # } else {
@@ -209,13 +219,13 @@ runDepthReview <- function(x) {
                     echoData <- smf$echoData[[input$evSelect]]
                     echoWavs <- echoData$echo[, toPlot]
                     par(mar=c(3.1, 4.1, 3.1, 2.1))
-                    image(z=t(echoWavs), x=1:ncol(echoWavs), y=(1:nrow(echoWavs))/echoData$sr*1e3, 
+                    image(z=t(echoWavs), x=1:ncol(echoWavs), y=(1:nrow(echoWavs))/echoData$sr*1e3,
                           xlab='', ylab='Time (ms)', main='Echogram',
                           col=viridis32, useRaster=TRUE)
                 }
             }
         })
-        
+
         #### observe brush ####
         observeEvent({
             input$plot_brush_ # only update on either brush or flag change
@@ -241,10 +251,10 @@ runDepthReview <- function(x) {
             SHINYDATA <<- isolate(smf$data)
         })
     }
-    
+
     # Create a Shiny app object
     app <- shinyApp(ui = ui, server = server)
-    
+
     #open shiny app
-    runApp(app)  
+    runApp(app)
 }
