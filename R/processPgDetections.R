@@ -563,8 +563,8 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup', 'clickTrain'), id=N
     tarMoCols <- ppVars()$tarMoCols
     extraCols <- tarMoCols
     if('clickTrain' %in% grouping) {
-        ctCols <- ppVars()$ctCols
-        extraCols <- c(extraCols, ctCols)
+        # ctCols <- ppVars()$ctCols
+        extraCols <- c(extraCols,  ppVars()$ctCols)
     }
     names(modWarn) <- modList
     allAcEv <- lapply(allDb, function(db) {
@@ -668,8 +668,8 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup', 'clickTrain'), id=N
                     colnames(evTarMo) <- ppVars()$locCols
                 }
                 # clicktrain stuff
-                if(all(ctCols %in% colnames(ev[[1]]))) {
-                    ctData <- ev[[1]][1, ctCols]
+                if(all( ppVars()$ctCols %in% colnames(ev[[1]]))) {
+                    ctData <- ev[[1]][1,  ppVars()$ctCols]
                 } else {
                     ctData <- NULL
                 }
@@ -882,7 +882,9 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
     }
 
     if(!('eventLabel' %in% colnames(allDetections))) {
-        allDetections$eventLabel <- NA
+        allDetections$eventLabel <- NA_character_
+    } else {
+        allDetections$eventLabel <- as.character(allDetections$eventLabel)
     }
     if(doSR) {
         allDetections <- matchSR(allDetections, db, extraCols=c('SystemType'))

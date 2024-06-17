@@ -1,3 +1,8 @@
+## PAMpal 1.2.1
+
+- Reworked `plotDataExplorer` to use `shiny` instead of `manipulate` since
+the manipulate version stopped working a long time ago
+
 ## PAMpal 1.2.0
 
 - Adding dive depth related functions for DCLDE2024 workshop: `addWaveHeight`,
