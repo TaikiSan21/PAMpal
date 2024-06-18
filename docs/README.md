@@ -203,15 +203,14 @@ myStudy <- processPgDetections(myPps,
 ```
 
 And you're done! Let's take a look at what you got with one of PAMpal's built in plotting functions,
-`plotDataExplorer`. After calling `plotDataExplorer(myStudy)`, you might be asked to select a
-call type to explore, then you should see something like this:
+`plotDataExplorer`. After calling `plotDataExplorer(myStudy)`, a window will pop up with the `shiny`
+app that should look like this:
 
-<a href="images/PlotExplorer.png" data-lightbox="data-explorer" data-title="Data explorer plot - click the gear to see dropdown menus">![](images/PlotExplorer.png)</a>
+<a href="images/PlotExplorerNew.png" data-lightbox="data-explorer" data-title="Data explorer plot">![](images/PlotExplorerNew.png)</a>
 
-Click the gear in the top left of the plot, then you'll see drop down menus that you can use to
-choose which data you'd like to graph, and options for coloring and facetting (splitting into
-multiple plots). For more details see `?plotDataExplorer`. If the gear does not appear in your 
-plot, calling `library(manipulate)` and then trying to create the plot again usually fixes it.
+The boxes below the plot are dropdown menus that let you select what type of detection to plot
+data for, which parameters to plot, and options for coloring and facetting (splitting into multiple
+plots) are also present.
 
 Plots are pretty and all, but what did PAMpal actually do and what exactly is in your `myStudy`
 output object? For each detection in each of your events, PAMpal checks what type of detection

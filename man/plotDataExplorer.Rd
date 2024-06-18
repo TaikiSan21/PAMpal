@@ -23,7 +23,6 @@ Runs an interactive Shiny plot of detector data. Allows user to
 data(exStudy)
 
 if(interactive()) plotDataExplorer(exStudy)
-if(interactive()) plotDataExplorer(exStudy)
 
 }
 \author{

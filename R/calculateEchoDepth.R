@@ -120,7 +120,7 @@ calculateEchoDepth <- function(x,
     # x <- x[hasLoc]
     clickData <- getClickData(x[hasLoc], measures=FALSE)
     if(!'hpDepth' %in% colnames(clickData)) {
-        stop('Hydrophone depth data not found, please add with "addHyrophoneDepth"')
+        stop('Hydrophone depth data not found, please add with "addHydrophoneDepth"')
     }
     if(!all(c('Latitude', 'Longitude') %in% colnames(clickData))) {
         stop('GPS data not found, please add with "addGps"')

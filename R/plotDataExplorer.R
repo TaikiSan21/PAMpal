@@ -16,7 +16,6 @@
 #' data(exStudy)
 #'
 #' if(interactive()) plotDataExplorer(exStudy)
-#' if(interactive()) plotDataExplorer(exStudy)
 #'
 #' @importFrom shiny fluidPage plotOutput fluidRow column selectInput
 #' @importFrom shiny updateSelectInput reactiveVal observeEvent renderPlot
