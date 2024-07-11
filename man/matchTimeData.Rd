@@ -58,7 +58,7 @@ This function lets you match any arbitrary data to a PAMpal object
   as long as it has a time associated with it. Data will be attached to
   detector dataframes for \code{mode='detection'} or to the event "measures"
   location for \code{mode='event'} (this is where \link{calculateICI} and
-  \link{matchEnvData} store their event data). These can be accessed with the
+  \link{matchEnvData,AcousticStudy-method} store their event data). These can be accessed with the
   \link{getMeasures} function and are also exported in the various "getXXX"
   functions (\link{getClickData} etc.) if \code{measures=TRUE} (default).
 

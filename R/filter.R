@@ -14,7 +14,7 @@
 #'   calculated parameters.
 #'
 #'   If the name of an environmental variable added using
-#'   \link{matchEnvData} is provided, will filter to only events with environmental
+#'   \link{matchEnvData,AcousticStudy-method} is provided, will filter to only events with environmental
 #'   variables matching those conditions.
 #'
 #'   If a provided logical expression uses
@@ -44,6 +44,7 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #' @rdname filter
+#' @method filter AcousticStudy
 #' @importFrom dplyr filter
 #' @importFrom rlang as_label quos parse_expr
 #' @export
@@ -161,6 +162,7 @@ filter.AcousticStudy <- function(.data, ..., .preserve=FALSE) {
 # AcEv method no longer used internally because it was really slow, keeping because it doesnt hurt
 # speed is not an issue for single events
 #' @export
+#' @method filter AcousticEvent
 #'
 filter.AcousticEvent <- function(.data, ..., .preserve=FALSE, dotChars=NULL) {
     # browser()

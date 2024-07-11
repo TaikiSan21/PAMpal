@@ -28,7 +28,7 @@ Most expression provided will be used to filter out detections based on
   calculated parameters.
 
   If the name of an environmental variable added using
-  \link{matchEnvData} is provided, will filter to only events with environmental
+  \link{matchEnvData,AcousticStudy-method} is provided, will filter to only events with environmental
   variables matching those conditions.
 
   If a provided logical expression uses
