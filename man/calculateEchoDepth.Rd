@@ -49,9 +49,27 @@ in no plots being created}
 
 \item{verbose}{logical flag to show messages}
 }
+\value{
+the AcousticStudy object \code{x} with estimated dive depth outputs
+  added for each detection that had a matching wav clip file in \code{wav}.
+  Detections that either did not have matchinf wav files or did not have
+  localizations will have \code{NA} for all dive depth outputs. The depth outputs
+  are
+  \describe{
+     \item{maxTime}{Delay time with maximum correlation value}
+     \item{pair2Time}{Delay time with second highest correlation value}
+     \item{pair3Time}{Delay time with third highest correlation value}
+     \item{maxMag}{Correlation magnitude for "maxTime"}
+     \item{pair2Mag}{Correlation magnitude for "pair2Time"}
+     \item{pair3Mag}{Correlation magnitude for "pair3Time"}
+     \item{maxDepth}{Calculated depth for "maxTime"}
+     \item{pair2Depth}{Calculated depth for "pair2Time"}
+     \item{pair3Depth}{Calculated depth for "pair3Time"}
+  }
+}
 \description{
 Calculate the estimated depth of echolocation clicks using
-  surface reflected echoes. This uses the time delay between the received 
+  surface reflected echoes. This uses the time delay between the received
   signal and its surface echo to estimate the depth of a calling animal.
   Requires that a set of waveform clips has been
   created using \link{writeEventClips}, and that events have been localized.
@@ -59,26 +77,37 @@ Calculate the estimated depth of echolocation clicks using
 \details{
 \code{spParams} allows for species-specific filtering and acceptable
   echo time delays to be specified. These are provided as a list with elements
-  \code{freqLow} and \code{freqHigh} specifying the lower and upper ends of a 
+  \code{freqLow} and \code{freqHigh} specifying the lower and upper ends of a
   bandpass filter to apply to the signals (in Hz), which can aid in properly
   detecting the echoes. Parameters \code{minTime} and \code{maxTime} can
   also be supplied to define ranges on allowed time delay values. Alternatively
   if \code{maxTime} is \code{NULL} or not present it will be calculated from the
   hydrophone geometry, and \code{minTime} can be calculated from geometry by
   providing \code{minDepth} and \code{maxRange} as the minimum detectable depth
-  and maximum detectable range (in meters). 
-  
+  and maximum detectable range (in meters).
+
   If the same values for these parameters should be used for all detections in
   \code{x}, then \code{spParams} can be provided as a list with each parameter named,
   e.g. \preformatted{
   list(freqLow=10e3, freqHigh=50e3, minTime=.001, maxTime=NULL)}
-  
+
   If different values should be used for different species, then \code{spParams}
   must be a named list where the names match the species in \code{x}, providing
   a separate list of values for each species. e.g.
   \preformatted{
   list(Zc=list(freqLow=10e3, freqHigh=50e3, minTime=.001, maxTime=NULL),
        Pm=list(freqLow=2e3, freqHigh=16e3, minTime=.001, maxTime=NULL))}
+}
+\examples{
+# example not run because it requires access to large files not present
+# in the package testing material
+\dontrun{
+study <- addRecordings(study, folder='path/to/recordings')
+wavPath <- 'path/to/wavFiles'
+writeEventClips(study, outDir=wavPath, mode='detection')
+study <- calculateEchoDepth(study, wav=wavPath)
+}
+
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

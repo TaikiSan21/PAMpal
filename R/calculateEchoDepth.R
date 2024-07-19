@@ -1,11 +1,11 @@
 #' @title Calculate Depth from Echoes
-#' 
+#'
 #' @description Calculate the estimated depth of echolocation clicks using
-#'   surface reflected echoes. This uses the time delay between the received 
+#'   surface reflected echoes. This uses the time delay between the received
 #'   signal and its surface echo to estimate the depth of a calling animal.
 #'   Requires that a set of waveform clips has been
 #'   created using \link{writeEventClips}, and that events have been localized.
-#' 
+#'
 #' @param x \linkS4class{AcousticStudy} object
 #' @param wav either folder containing wave clips or list of wave clip files
 #' @param clipLen length (seconds) of clip to analyze
@@ -21,48 +21,75 @@
 #'   in no plots being created
 #' @param progress logical flag to show progress bar
 #' @param verbose logical flag to show messages
-#' 
+#'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
-#' 
+#'
 #' @details \code{spParams} allows for species-specific filtering and acceptable
 #'   echo time delays to be specified. These are provided as a list with elements
-#'   \code{freqLow} and \code{freqHigh} specifying the lower and upper ends of a 
+#'   \code{freqLow} and \code{freqHigh} specifying the lower and upper ends of a
 #'   bandpass filter to apply to the signals (in Hz), which can aid in properly
 #'   detecting the echoes. Parameters \code{minTime} and \code{maxTime} can
 #'   also be supplied to define ranges on allowed time delay values. Alternatively
 #'   if \code{maxTime} is \code{NULL} or not present it will be calculated from the
 #'   hydrophone geometry, and \code{minTime} can be calculated from geometry by
 #'   providing \code{minDepth} and \code{maxRange} as the minimum detectable depth
-#'   and maximum detectable range (in meters). 
-#'   
+#'   and maximum detectable range (in meters).
+#'
 #'   If the same values for these parameters should be used for all detections in
 #'   \code{x}, then \code{spParams} can be provided as a list with each parameter named,
 #'   e.g. \preformatted{
 #'   list(freqLow=10e3, freqHigh=50e3, minTime=.001, maxTime=NULL)}
-#'   
+#'
 #'   If different values should be used for different species, then \code{spParams}
 #'   must be a named list where the names match the species in \code{x}, providing
 #'   a separate list of values for each species. e.g.
 #'   \preformatted{
 #'   list(Zc=list(freqLow=10e3, freqHigh=50e3, minTime=.001, maxTime=NULL),
-#'        Pm=list(freqLow=2e3, freqHigh=16e3, minTime=.001, maxTime=NULL))} 
+#'        Pm=list(freqLow=2e3, freqHigh=16e3, minTime=.001, maxTime=NULL))}
+#'
+#' @return the AcousticStudy object \code{x} with estimated dive depth outputs
+#'   added for each detection that had a matching wav clip file in \code{wav}.
+#'   Detections that either did not have matchinf wav files or did not have
+#'   localizations will have \code{NA} for all dive depth outputs. The depth outputs
+#'   are
+#'   \describe{
+#'      \item{maxTime}{Delay time with maximum correlation value}
+#'      \item{pair2Time}{Delay time with second highest correlation value}
+#'      \item{pair3Time}{Delay time with third highest correlation value}
+#'      \item{maxMag}{Correlation magnitude for "maxTime"}
+#'      \item{pair2Mag}{Correlation magnitude for "pair2Time"}
+#'      \item{pair3Mag}{Correlation magnitude for "pair3Time"}
+#'      \item{maxDepth}{Calculated depth for "maxTime"}
+#'      \item{pair2Depth}{Calculated depth for "pair2Time"}
+#'      \item{pair3Depth}{Calculated depth for "pair3Time"}
+#'   }
+#'
+#' @examples
+#' # example not run because it requires access to large files not present
+#' # in the package testing material
+#' \dontrun{
+#' study <- addRecordings(study, folder='path/to/recordings')
+#' wavPath <- 'path/to/wavFiles'
+#' writeEventClips(study, outDir=wavPath, mode='detection')
+#' study <- calculateEchoDepth(study, wav=wavPath)
+#' }
 #'
 #' @importFrom PAMmisc findEchoTimes
 #' @importFrom graphics layout
 #' @importFrom grDevices dev.off png
-#' 
+#'
 #' @export
-#' 
-calculateEchoDepth <- function(x, 
-                               wav, 
+#'
+calculateEchoDepth <- function(x,
+                               wav,
                                clipLen=.03,
-                               spParams=NULL, 
-                               soundSpeed=1500, 
-                               hpDepthError=1, 
+                               spParams=NULL,
+                               soundSpeed=1500,
+                               hpDepthError=1,
                                locType='PGTargetMotion',
                                plot=TRUE,
-                               nPlot=400, 
-                               nCol=5, 
+                               nPlot=400,
+                               nCol=5,
                                plotDir=NULL,
                                progress=TRUE,
                                verbose=TRUE) {
@@ -93,27 +120,27 @@ calculateEchoDepth <- function(x,
     # x <- x[hasLoc]
     clickData <- getClickData(x[hasLoc], measures=FALSE)
     if(!'hpDepth' %in% colnames(clickData)) {
-        stop('Hydrophone depth data not found, please add with "addHyrophoneDepth"')
+        stop('Hydrophone depth data not found, please add with "addHydrophoneDepth"')
     }
     if(!all(c('Latitude', 'Longitude') %in% colnames(clickData))) {
         stop('GPS data not found, please add with "addGps"')
     }
-    
-    addedCols <- c('radialDist', 'wavFile', 
+
+    addedCols <- c('radialDist', 'wavFile',
                    'maxTime', 'pair2Time', 'pair3Time',
-                   'maxMag', 'pair2Mag', 'pair3Mag', 
+                   'maxMag', 'pair2Mag', 'pair3Mag',
                    'maxDepth', 'pair2Depth','pair3Depth')
-    
+
     # dropping these if they already present for join
     clickData <- dropCols(clickData, addedCols)
-    
-    clickData <- left_join(clickData, locData[c('eventId', 'locName', 
+
+    clickData <- left_join(clickData, locData[c('eventId', 'locName',
                                                 'locLat', 'locLong',
                                                 'perpDist', 'perpDistErr')],
                            by='eventId')
     clickData$radialDist <- distGeo(matrix(c(clickData$Longitude, clickData$Latitude), ncol=2),
                                     matrix(c(clickData$locLong, clickData$locLat), ncol=2))
-    
+
     wavMatchDf <- data.frame(wavFile=wav,
                              UID=parseEventClipName(wav, 'UID'),
                              Channel=parseEventClipName(wav, 'channel'),
@@ -121,7 +148,7 @@ calculateEchoDepth <- function(x,
     # drop this col in case already exists before join
     clickData$wavFile <- NULL
     clickData <- left_join(clickData, wavMatchDf, by=c('eventId', 'UID', 'Channel'))
-    
+
     wavNoMatch <- !wav %in% clickData$wavFile[!is.na(clickData$wavFile)]
     hasMatch <- !is.na(clickData$wavFile) #clickData$wavFile %in% basename(wav)
     if(!any(hasMatch)) {
@@ -132,9 +159,9 @@ calculateEchoDepth <- function(x,
         wav <- wav[!wavNoMatch]
     }
     # clickData <- clickData[hasMatch, ]
-    
+
     spParams <- checkSpeciesParams(clickData$species, spParams)
-    
+
     clickData <- split(clickData, clickData$eventId)
     if(progress) {
         if(verbose) {
@@ -163,7 +190,7 @@ calculateEchoDepth <- function(x,
         nPlot <- min(nPlot, sum(hasWav))
         nRow <- ceiling(nPlot / nCol) * 2
         if(nPlot > 0) {
-            png(file.path(plotDir, paste0(ev$eventId[1], '_Wavs.png')), 
+            png(file.path(plotDir, paste0(ev$eventId[1], '_Wavs.png')),
                 width = 2*nCol, height=2*nRow, units='in', res=300)
             on.exit(dev.off())
             par(mfrow=c(nRow, nCol))
@@ -200,7 +227,7 @@ calculateEchoDepth <- function(x,
             #### POSSIBLE ADD DECIMATION ####
             # thisWav <- WaveMC(downsample(thisWav, 96e3), samp.rate=96e3, bit=16)
             waveHeightErr <- ifelse('waveHeight' %in% colnames(ev), ev$waveHeight[i], 0)
-            
+
             if(is.null(thisParams$minTime)) {
                 minTime <- 2*(ev$hpDepth[i] + hpDepthError + waveHeightErr) * thisParams$minDepth /
                     (soundSpeed * thisParams$maxRange)
@@ -221,8 +248,8 @@ calculateEchoDepth <- function(x,
                                       plot=doPlot,
                                       clipLen=clipLen,
                                       plotText=paste0('UID: ',ev$UID[i], '\nIndex: ', which(i==which(hasWav))))
-            
-            thisDepth <- calculateDepth(arrDepth=ev$hpDepth[i], 
+
+            thisDepth <- calculateDepth(arrDepth=ev$hpDepth[i],
                                         slantRange =  ev$radialDist[i],
                                         delayTime = thisEcho$time,
                                         soundSpeed = soundSpeed
@@ -254,11 +281,11 @@ calculateEchoDepth <- function(x,
             png(file.path(plotDir, paste0(ev$eventId[1], '_Summary.png')), width=12, height=8, units='in', res=300)
             on.exit(dev.off())
             f <- layout(
-                matrix(c(1,1,2,2,3,3, 4,4,4,5,5,5), ncol=2, byrow=F)#, 
+                matrix(c(1,1,2,2,3,3, 4,4,4,5,5,5), ncol=2, byrow=F)#,
             )
             par(mar=c(2,4,2,1))
             result <- arrange(result, UTC)
-            
+
             plot(x=(result$UTC), y=result$pair2Time * 1e3, col='black',
                  main=ev$eventId[1],
                  ylab='Time (ms)')
@@ -266,33 +293,34 @@ calculateEchoDepth <- function(x,
             points(x=(result$UTC), y=result$maxTime * 1e3, col='red')
             ## Depth Plot
             plot(x=result$UTC, y=-result$pair2Depth, col='black', ylim=c(-4e3,0),
-                 main='^ Delay Times ^ - v Estimated Depth v', 
+                 main='^ Delay Times ^ - v Estimated Depth v',
                  xlab='', ylab='Depth (m)')
             points(x=result$UTC, y=-result$pair3Depth, col='black')
             points(x=result$UTC, y=-result$maxDepth, col='red')
-            
+
             ## Angle Plot
             plot(x=result$UTC, y=result$angle * 180 / pi,
                  main='Received Angle', ylab='Angle', xlab='UTC')
-            
+
             ## echogram
             thisSr <- readWave(wav[1], header=TRUE)$sample.rate
             wavClips <- do.call(cbind, wavClips)
             plotEchogram(wavClips, q=c(.01, .999), sr=thisSr)
             par(mar=c(4, 4, 2, 1))
-            
+
             ## Concat Clicks
             avgSpec <- calculateAverageSpectra(x[ev$eventId[1]], evNum=1, plot=c(TRUE, FALSE))
         }
         result
     })
-    
+
     if(length(evNoWav) > 0) {
         pamWarning('Events ', printN(evNoWav), ' had no matching wav files.')
     }
+
     clickData <- bind_rows(clickData)
     # dont need to carry these around
-    locCols <- c('locName', 
+    locCols <- c('locName',
                  'locLat', 'locLong',
                  'perpDist', 'perpDistErr')
     clickData <- dropCols(clickData, locCols)
@@ -304,7 +332,7 @@ calculateEchoDepth <- function(x,
     }
     x <- .addPamWarning(x)
     x
-    
+
 }
 
 calculateDepth <- function(arrDepth, slantRange, delayTime, soundSpeed, perpDist=NULL) {
@@ -332,7 +360,7 @@ plotEchogram <- function(wavMat, sr, q=c(.01, .999)) {
                    "#2EB37CFF", "#3ABA76FF", "#48C16EFF", "#58C765FF", "#6ACD5BFF",
                    "#7ED34FFF", "#93D741FF", "#A8DB34FF", "#BEDF26FF", "#D4E21AFF",
                    "#E9E51AFF", "#FDE725FF")
-    image(z=t(wavMat), x=1:ncol(wavMat), y=(1:nrow(wavMat))/sr*1e3, 
+    image(z=t(wavMat), x=1:ncol(wavMat), y=(1:nrow(wavMat))/sr*1e3,
           xlab='', ylab='Time (ms)', main='Echogram',
           col=viridis32)
 }
@@ -355,7 +383,7 @@ checkSpeciesParams <- function(species, params) {
     matchSpecies <- species %in% names(params)
     if(!all(matchSpecies)) {
         noMatch <- species[!matchSpecies]
-        warning('Species ', paste0(noMatch, collapse=', '), 
+        warning('Species ', paste0(noMatch, collapse=', '),
                 ' were present in data but not in provided species params (',
                 paste0(names(params), collapse=', '), ')')
     }

@@ -20,7 +20,7 @@ filterEchoDepths(
 \item{time}{maximum time apart (seconds) for detections. Detections with no
 no other detection within \code{time} seconds will be marked as \code{FALSE}}
 
-\item{depth}{maximum depth difference (meters) between consecutive clicks, 
+\item{depth}{maximum depth difference (meters) between consecutive clicks,
 this value should be determined by maximum swim speed}
 
 \item{speed}{as an alternative to providing \code{depth}, the swim speed
@@ -33,13 +33,27 @@ as \code{time} * \code{speed}}
 \item{minCorr}{detections with autocorrelation magnitude less than this
 will be marked as \code{FALSE}}
 }
+\value{
+the AcousticStudy \code{x} with detections marked with column
+  \code{keepClick} as \code{TRUE} or \code{FALSE} depending if they
+  pass the filter parameters
+}
 \description{
 Filter out possible echo depths from \link{calculateEchoDepth}
-  based on maximum depth, autocorrelation magnitude, and maximum swim 
+  based on maximum depth, autocorrelation magnitude, and maximum swim
   speed criteria. Requires that \link{calculateEchoDepth} has been run
   first. This function adds a \code{keepClick} column to the data to
   track which detections should be used for further depth analysis by
   marking them as \code{FALSE} to be excluded or \code{TRUE} to be used
+}
+\examples{
+# example not run because \link{calculateEchoDepth} must be run first,
+# and it requires a large amount of data not stored in the package
+\dontrun{
+study <- calculateEchoDepth(study, wav='path/to/wavFiles')
+study <- filterEchoDepths(study, time=30, speed=50/30, maxDepth=4000)
+}
+
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

@@ -10,12 +10,24 @@ runDepthReview(x)
 \item{x}{an \linkS4class{AcousticStudy} object that has been processed with
 \link{calculateEchoDepth}}
 }
+\value{
+the object as \code{x}, with updated \code{keepClick} column
+}
 \description{
 Runs a Shiny app to review the slant delay and esimated depths
   of an \linkS4class{AcousticStudy} object that has been processed with
   \link{calculateEchoDepth}. App allows users to select detections that
   should not be included in future analysis and marks them with the tag
   \code{keepClick=FALSE}, similar to \link{filterEchoDepths}.
+}
+\examples{
+# example not run because \link{calculateEchoDepth} must be run first,
+# and it requires a large amount of data not stored in the package
+\dontrun{
+study <- calculateEchoDepth(study, wav='path/to/wavFiles')
+study <- runDepthReview(x)
+}
+
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

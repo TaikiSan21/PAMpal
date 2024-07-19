@@ -127,21 +127,24 @@ depthToDf <- function(x, depth, thresh) {
 
     # setDT(x)
     x <- dropCols(x, 'hpDepth')
-    x <- as.data.table(x)
-    x$dataTime <- x$UTC
-    # depth <- checkGpsKey(depth)
-    if(!inherits(depth, 'data.table')) {
-        setDT(depth)
-    }
-    depth$depthTime <- depth$UTC
-
-    setkeyv(x, 'UTC')
-    setkeyv(depth, 'UTC') # removing channel key from gps if its there i guess
-
-    result <- depth[x, roll='nearest']
-    result[abs(dataTime - depthTime) > thresh, c('hpDepth') := NA]
-    result$UTC <- result$dataTime
-    result[, c('depthTime', 'dataTime') := NULL]
+    ### replace w timeJoin
+    # x <- as.data.table(x)
+    # x$dataTime <- x$UTC
+    # # depth <- checkGpsKey(depth)
+    # if(!inherits(depth, 'data.table')) {
+    #     setDT(depth)
+    # }
+    # depth$depthTime <- depth$UTC
+    #
+    # setkeyv(x, 'UTC')
+    # setkeyv(depth, 'UTC') # removing channel key from gps if its there i guess
+    #
+    # result <- depth[x, roll='nearest']
+    # result[abs(dataTime - depthTime) > thresh, c('hpDepth') := NA]
+    # result$UTC <- result$dataTime
+    # result[, c('depthTime', 'dataTime') := NULL]
+    ### end replace w timeJoin
+    result <- timeJoin(x, depth, thresh=thresh)
     if(any(is.na(result$hpDepth))) {
         pamWarning('Some depth matches exceeded time threshold, setting',
                    'value to NA.')

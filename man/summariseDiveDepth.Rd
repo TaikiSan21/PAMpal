@@ -15,9 +15,22 @@ processed with \link{calculateEchoDepth}}
 \item{locType}{name of localization, note that this function is not computing
 any localization, only using previously calculated}
 }
+\value{
+a dataframe with columns summarising the estimated dive depth
+  for each event in \code{x}
+}
 \description{
-Summarise results of dive depth estimation using 
+Summarise results of dive depth estimation using
   \link{calculateEchoDepth} and related functions
+}
+\examples{
+# example not run because \link{calculateEchoDepth} must be run first,
+# and it requires a large amount of data not stored in the package
+\dontrun{
+study <- calculateEchoDepth(study, wav='path/to/wavFiles')
+summariseDiveDepth(study)
+}
+
 }
 \author{
 Taiki Sakai \email{taiki.sakai@noaa.gov}

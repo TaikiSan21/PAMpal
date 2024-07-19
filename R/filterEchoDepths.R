@@ -1,17 +1,17 @@
 #' @title Filter Candidate Echo Depths
-#' 
+#'
 #' @description Filter out possible echo depths from \link{calculateEchoDepth}
-#'   based on maximum depth, autocorrelation magnitude, and maximum swim 
+#'   based on maximum depth, autocorrelation magnitude, and maximum swim
 #'   speed criteria. Requires that \link{calculateEchoDepth} has been run
 #'   first. This function adds a \code{keepClick} column to the data to
 #'   track which detections should be used for further depth analysis by
 #'   marking them as \code{FALSE} to be excluded or \code{TRUE} to be used
-#' 
+#'
 #' @param x an \linkS4class{AcousticStudy} object that has been processed with
 #'   \link{calculateEchoDepth}
 #' @param time maximum time apart (seconds) for detections. Detections with no
 #'   no other detection within \code{time} seconds will be marked as \code{FALSE}
-#' @param depth maximum depth difference (meters) between consecutive clicks, 
+#' @param depth maximum depth difference (meters) between consecutive clicks,
 #'   this value should be determined by maximum swim speed
 #' @param speed as an alternative to providing \code{depth}, the swim speed
 #'   (meters / second) can be provided and then \code{depth} will be calculated
@@ -20,11 +20,23 @@
 #'   \code{FALSE}
 #' @param minCorr detections with autocorrelation magnitude less than this
 #'   will be marked as \code{FALSE}
-#' 
+#'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
-#' 
+#'
+#' @return the AcousticStudy \code{x} with detections marked with column
+#'   \code{keepClick} as \code{TRUE} or \code{FALSE} depending if they
+#'   pass the filter parameters
+#'
+#' @examples
+#' # example not run because \link{calculateEchoDepth} must be run first,
+#' # and it requires a large amount of data not stored in the package
+#' \dontrun{
+#' study <- calculateEchoDepth(study, wav='path/to/wavFiles')
+#' study <- filterEchoDepths(study, time=30, speed=50/30, maxDepth=4000)
+#' }
+#'
 #' @export
-#' 
+#'
 filterEchoDepths <- function(x, time=30, depth=NULL, speed=NULL,
                          maxDepth=4000, minCorr=.01) {
     if(is.null(depth) && is.null(speed)) {
@@ -87,7 +99,7 @@ filterBySwimSpeed <- function(data, time=30, depth=NULL, speed=NULL) {
         tDiffs <- abs(as.numeric(difftime(data$UTC[i], data$UTC[-i], units='secs')))
         dDiffs <- abs(data$maxDepth[i] - data$maxDepth[-i])
         # only keep if we wer alrady keeping and this test is still good
-        data$keepClick[i] <- data$keepClick[i] & 
+        data$keepClick[i] <- data$keepClick[i] &
             isTRUE(any((tDiffs <= time) & (dDiffs <= depth)))
     }
     data

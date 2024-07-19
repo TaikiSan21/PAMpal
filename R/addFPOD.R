@@ -25,7 +25,7 @@
 #'   the grouping file provided initially. This means that it is possible that
 #'   there are events which initially had zero PAMGuard detections that now have
 #'   FPOD detections. In these cases a new AcousticEvent will be created that only
-#'   has FPOD detections, these events may not work with a variety of other ]code{PAMpal}
+#'   has FPOD detections, these events may not work with a variety of other \code{PAMpal}
 #'   functions.
 #'
 #' @return the same object as \code{x} with FPOD detector data added
