@@ -146,6 +146,7 @@ calculateEchoDepth <- function(x,
        !dir.exists(plotDir)) {
         dir.create(plotDir)
     }
+    evNoWav <- character(0)
     clickData <- lapply(clickData, function(ev) {
         ev <- arrange(ev, UTC)
         if(ev$species[1] %in% names(spParams)) {
@@ -156,6 +157,9 @@ calculateEchoDepth <- function(x,
         result <- vector('list', length=nrow(ev))
         wavClips <- vector('list', length=nrow(ev))
         hasWav <- !is.na(ev$wavFile)
+        if(!any(hasWav)) {
+            evNoWav <<- c(evNoWav, ev$eventId[1])
+        }
         nPlot <- min(nPlot, sum(hasWav))
         nRow <- ceiling(nPlot / nCol) * 2
         if(nPlot > 0) {
@@ -182,6 +186,9 @@ calculateEchoDepth <- function(x,
                                     pair2Depth = NA,
                                     pair3Depth = NA
                 )
+                if(progress) {
+                    setTxtProgressBar(pb, value=i)
+                }
                 next
             }
             doPlot <- i %in% plotIx
@@ -243,7 +250,7 @@ calculateEchoDepth <- function(x,
             dev.off() # closing png plot for wav summary
             on.exit() # and removing that on.exit call
         }
-        if(plot) {
+        if(any(hasWav) && plot) {
             png(file.path(plotDir, paste0(ev$eventId[1], '_Summary.png')), width=12, height=8, units='in', res=300)
             on.exit(dev.off())
             f <- layout(
@@ -280,6 +287,9 @@ calculateEchoDepth <- function(x,
         result
     })
     
+    if(length(evNoWav) > 0) {
+        pamWarning('Events ', printN(evNoWav), ' had no matching wav files.')
+    }
     clickData <- bind_rows(clickData)
     # dont need to carry these around
     locCols <- c('locName', 
@@ -292,6 +302,7 @@ calculateEchoDepth <- function(x,
     if(verbose) {
         cat('\nProcessing took ', procTime, ' seconds', sep='')
     }
+    x <- .addPamWarning(x)
     x
     
 }
