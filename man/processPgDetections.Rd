@@ -6,7 +6,7 @@
 \usage{
 processPgDetections(
   pps,
-  mode = c("db", "time", "recording"),
+  mode = c("db", "time", "recording", "fixed"),
   id = NULL,
   grouping = NULL,
   format = c("\%m/\%d/\%Y \%H:\%M:\%OS", "\%m-\%d-\%Y \%H:\%M:\%OS",
@@ -28,7 +28,9 @@ will organize into events based on timestamps provided in \code{grouping}.
 \code{recording} will organize events by the start and end times of recording
 files found in the database. For \code{time} and \code{recording}, ALL detections
 between the start and end times are included, for \code{db} only selected
-detections are included.}
+detections are included. \code{fixed} is similar to \code{time}, but instead
+of user-defined start and end times it creates events of a fixed time length
+(specified by \code{grouping}) covering the duration of the data.}
 
 \item{id}{an event name or id for this study, will default to today's date if
 not supplied (recommended to supply your own informative id)}
@@ -53,7 +55,12 @@ not supplied (recommended to supply your own informative id)}
   sample rate.
 
   \code{grouping} can be supplied either as a data frame or as
-  a filepath to a csv file.}
+  a filepath to a csv file.
+  
+  For \code{mode = 'fixed'} this should be the time duration for the fixed
+  length events. If this is a numeric value, it is the duration in seconds.
+  If it is a character it should be of the format \code{"NumberUnit"}, e.g.
+  \code{"5min"} or \code{"1hour"}.}
 
 \item{format}{the date format for the \code{start} and \code{end} columns
 in \code{grouping} if it is a csv. Times are assumed to be UTC. See
@@ -110,6 +117,7 @@ grp <- data.frame(start = as.POSIXct('2018-03-20 15:25:10', tz='UTC'),
 exStudyTime <- processPgDetections(exPps, mode='time', grouping=grp, id='Time')
 # process events by recording event
 exStudyRecording <- processPgDetections(exPps, mode='recording', id='Recording')
+exFixed <- processPgDetections(exPps, mode='fixed', grouping='1min', id='1Minute')
 
 }
 \author{

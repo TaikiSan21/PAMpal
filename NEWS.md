@@ -1,3 +1,9 @@
+## PAMpal 1.3.0
+
+- Added `mode='fixed'` option to `processPgDetections` that lets users create
+fixed time length events, processing all data similar to `mode='recording'`
+but organizing into uniform time chunks
+
 ## PAMpal 1.2.1
 
 - Reworked `plotDataExplorer` to use `shiny` instead of `manipulate` since
