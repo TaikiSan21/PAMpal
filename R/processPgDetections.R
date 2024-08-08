@@ -19,7 +19,9 @@
 #'   \code{recording} will organize events by the start and end times of recording
 #'   files found in the database. For \code{time} and \code{recording}, ALL detections
 #'   between the start and end times are included, for \code{db} only selected
-#'   detections are included.
+#'   detections are included. \code{fixed} is similar to \code{time}, but instead
+#'   of user-defined start and end times it creates events of a fixed time length
+#'   (specified by \code{grouping}) covering the duration of the data.
 #' @param id an event name or id for this study, will default to today's date if
 #'   not supplied (recommended to supply your own informative id)
 #' @param grouping For \code{mode = 'db'}, the table to group events by.
@@ -43,6 +45,11 @@
 #'
 #'   \code{grouping} can be supplied either as a data frame or as
 #'   a filepath to a csv file.
+#'   
+#'   For \code{mode = 'fixed'} this should be the time duration for the fixed
+#'   length events. If this is a numeric value, it is the duration in seconds.
+#'   If it is a character it should be of the format \code{"NumberUnit"}, e.g.
+#'   \code{"5min"} or \code{"1hour"}.
 #' @param format the date format for the \code{start} and \code{end} columns
 #'   in \code{grouping} if it is a csv. Times are assumed to be UTC. See
 #'   details section of \link{strptime} for more information on how to properly
@@ -85,6 +92,7 @@
 #' exStudyTime <- processPgDetections(exPps, mode='time', grouping=grp, id='Time')
 #' # process events by recording event
 #' exStudyRecording <- processPgDetections(exPps, mode='recording', id='Recording')
+#' exFixed <- processPgDetections(exPps, mode='fixed', grouping='1min', id='1Minute')
 #'
 #' @importFrom PamBinaries loadPamguardBinaryFile
 #' @importFrom PAMmisc squishList
@@ -95,7 +103,7 @@
 #' @import dplyr
 #' @export
 #'
-processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NULL, grouping=NULL,
+processPgDetections <- function(pps, mode = c('db', 'time', 'recording', 'fixed'), id=NULL, grouping=NULL,
                                 format=c('%m/%d/%Y %H:%M:%OS', '%m-%d-%Y %H:%M:%OS',
                                          '%Y/%m/%d %H:%M:%OS', '%Y-%m-%d %H:%M:%OS'), progress=TRUE, verbose=TRUE, ...) {
     # auto check for mode
@@ -152,6 +160,12 @@ processPgDetections <- function(pps, mode = c('db', 'time', 'recording'), id=NUL
                          }
                          processPgTime(pps=pps, grouping=grouping, format=format, id=id,
                                        progress=progress)
+                     },
+                     'fixed' = {
+                         fixedLength <- unitToPeriod(grouping)
+                         grouping <- dbToFixedGroup(pps@db, timeBin=fixedLength)
+                         processPgTime(pps=pps, grouping=grouping, format=format,
+                                       id=id, progress=progress)
                      }
     )
     checkStudy(result)
@@ -1269,4 +1283,48 @@ findModuleNames <- function(con, module='Detection Group Localiser') {
     result <- distinct(result)
     result$name <- gsub(' ', '_', result$name)
     result$name[result$name %in% dbListTables(con)]
+}
+ #' @importFrom lubridate period
+#'
+unitToPeriod <- function(x) {
+    if(inherits(x, 'Period')) {
+        return(x)
+    }
+    if(is.numeric(x)) {
+        return(period(x, units='second'))
+    }
+    if(!is.character(x)) {
+        stop('"grouping" must be numeric or character')
+    }
+    x <- gsub('([0-9]*)(.*)', '\\1_\\2', x)
+    x <- strsplit(x, '_')[[1]]
+    if(x[1] == '') {
+        x[1] <- '1'
+    }
+    period(as.numeric(x[1]), units=x[2])
+}
+
+#' @importFrom lubridate floor_date
+#' 
+dbToFixedGroup <- function(db, timeBin) {
+    if(length(db) > 1) {
+        return(
+            bind_rows(lapply(db, function(x) {
+                dbToFixedGroup(x, timeBin=timeBin)
+            }))
+        )
+    }
+    con <- dbConnect(db, drv=SQLite())
+    on.exit(dbDisconnect(con))
+    sa <- dbReadTable(con, 'Sound_Acquisition')
+    sa$UTC <- pgDateToPosix(sa$UTC)
+    timeRange <- floor_date(sa$UTC, unit=timeBin)
+    length <- unitToPeriod(timeBin)
+    starts <- seq(from=timeRange[1], to=timeRange[2], by=as.numeric(length))
+    ids <- paste0(gsub('\\.sqlite3', '', basename(db)), '.FT', seq_along(starts))
+    fixGroup <- data.frame(id=ids,
+                           start=starts)
+    fixGroup$end <- fixGroup$start + length
+    fixGroup$db <- basename(db)
+    fixGroup
 }
