@@ -2,9 +2,12 @@
 % Please edit documentation in R/addRecordings.R
 \name{addRecordings}
 \alias{addRecordings}
+\alias{mapWavFolder}
 \title{Add Recordings to an AcousticStudy Object}
 \usage{
 addRecordings(x, folder = NULL, log = FALSE, progress = TRUE)
+
+mapWavFolder(folder = NULL, log = NULL, progress = TRUE)
 }
 \arguments{
 \item{x}{a \linkS4class{AcousticStudy} object to add recordings to}
@@ -34,6 +37,10 @@ Adds recording files to an AcousticStudy object, runs
   provided. No actual
   recordings are stored, a dataframe containing information on the
   start and end times of the recording files is added to the object.
+}
+\details{
+\code{mapWavFolder} returns a dataframe of start and end
+  times
 }
 \examples{
 

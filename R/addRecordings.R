@@ -6,6 +6,9 @@
 #'   recordings are stored, a dataframe containing information on the
 #'   start and end times of the recording files is added to the object.
 #'
+#' @details \code{mapWavFolder} returns a dataframe of start and end
+#'   times
+#'
 #' @param x a \linkS4class{AcousticStudy} object to add recordings to
 #' @param folder a folder of recordings to add. If \code{NULL}, user will be
 #'   prompted to select a folder of recordings for each database present in
@@ -172,23 +175,25 @@ addRecordings <- function(x, folder=NULL, log=FALSE, progress=TRUE) {
     x <- .addPamWarning(x)
     x
 }
-
-mapWavFolder <- function(wavFolder=NULL, log=NULL, progress=TRUE) {
-    if(is.null(wavFolder)) {
-        wavFolder <- tk_choose.dir(caption = 'Select a folder containing your recording files.',
+#' @export
+#' @rdname addRecordings
+#'
+mapWavFolder <- function(folder=NULL, log=NULL, progress=TRUE) {
+    if(is.null(folder)) {
+        folder <- tk_choose.dir(caption = 'Select a folder containing your recording files.',
                                    default = getwd())
     }
-    if(is.na(wavFolder)) {
+    if(is.na(folder)) {
         return(NULL)
     }
-    if(!dir.exists(wavFolder)) {
-        pamWarning('Provided folder ', wavFolder, ' does not exist.')
+    if(!dir.exists(folder)) {
+        pamWarning('Provided folder ', folder, ' does not exist.')
         return(NULL)
     }
-    wavFolder <- normalizePath(wavFolder, winslash = '/')
-    wavs <- list.files(wavFolder, full.names=TRUE, pattern = '\\.wav$', recursive=TRUE)
+    folder <- normalizePath(folder, winslash = '/')
+    wavs <- list.files(folder, full.names=TRUE, pattern = '\\.wav$', recursive=TRUE)
     if(length(wavs) == 0) {
-        pamWarning('No wav files found in folder ', wavFolder)
+        pamWarning('No wav files found in folder ', folder)
         return(NULL)
     }
     wavMap <- wavsToRanges(wavs, log, progress)
