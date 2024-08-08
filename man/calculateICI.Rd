@@ -10,6 +10,7 @@
 calculateICI(
   x,
   time = c("UTC", "peakTime"),
+  iciRange = c(0, Inf),
   callType = c("click", "whistle", "cepstrum", "gpl"),
   verbose = TRUE,
   ...
@@ -18,6 +19,7 @@ calculateICI(
 \S4method{calculateICI}{AcousticStudy}(
   x,
   time = c("UTC", "peakTime"),
+  iciRange = c(0, Inf),
   callType = c("click", "whistle", "cepstrum", "gpl"),
   verbose = TRUE,
   ...
@@ -26,6 +28,7 @@ calculateICI(
 \S4method{calculateICI}{AcousticEvent}(
   x,
   time = c("UTC", "peakTime"),
+  iciRange = c(0, Inf),
   callType = c("click", "whistle", "cepstrum", "gpl"),
   verbose = TRUE,
   ...
@@ -40,6 +43,9 @@ objects, or a single \linkS4class{AcousticEvent} object}
 \item{time}{the time measurement to use. \code{start} will use the \code{UTC} value,
 \code{peak} will use the \code{peakTime} value if present (currently present in
 \code{standardClickCalcs}, this is the time of the peak of the waveform)}
+
+\item{iciRange}{optional range of allowed ICI (time to next detection) values.
+Values outside of this range will be removed before calculating the modal ICI.}
 
 \item{callType}{the call type to calculate ICI for, usually this is \code{click}
 but also allows users to specify \code{whistle} or \code{cepstrum} to calculate this

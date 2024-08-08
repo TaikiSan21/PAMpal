@@ -64,7 +64,7 @@
 #' plotGram(exStudy)
 #'
 #' @importFrom dplyr bind_rows
-#' @importFrom tuneR readWave downsample
+#' @importFrom tuneR readWave
 #' @importFrom grDevices gray.colors
 #' @importFrom graphics points
 #'

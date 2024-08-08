@@ -7,6 +7,8 @@
 #' @param time the time measurement to use. \code{start} will use the \code{UTC} value,
 #'   \code{peak} will use the \code{peakTime} value if present (currently present in
 #'   \code{standardClickCalcs}, this is the time of the peak of the waveform)
+#' @param iciRange optional range of allowed ICI (time to next detection) values.
+#'   Values outside of this range will be removed before calculating the modal ICI.
 #' @param callType the call type to calculate ICI for, usually this is \code{click}
 #'   but also allows users to specify \code{whistle} or \code{cepstrum} to calculate this
 #'   using other detector data
@@ -49,6 +51,7 @@
 #'
 setGeneric('calculateICI', function(x,
                                     time=c('UTC', 'peakTime'),
+                                    iciRange=c(0, Inf),
                                     callType = c('click', 'whistle', 'cepstrum', 'gpl'),
                                     verbose=TRUE,
                                     ...) standardGeneric('calculateICI'))
@@ -58,10 +61,12 @@ setGeneric('calculateICI', function(x,
 #'
 setMethod('calculateICI', 'AcousticStudy', function(x,
                                                     time=c('UTC', 'peakTime'),
+                                                    iciRange=c(0, Inf),
                                                     callType = c('click', 'whistle', 'cepstrum', 'gpl'),
                                                     verbose=TRUE,
                                                     ...) {
-    events(x) <- lapply(events(x), function(e) calculateICI(e, time, callType, verbose, ...))
+    events(x) <- lapply(events(x), function(e) calculateICI(e, time=time, iciRange=iciRange,
+                                                            callType=callType, verbose=verbose, ...))
     x
 })
 
@@ -70,6 +75,7 @@ setMethod('calculateICI', 'AcousticStudy', function(x,
 #'
 setMethod('calculateICI', 'AcousticEvent', function(x,
                                                     time=c('UTC', 'peakTime'),
+                                                    iciRange=c(0, Inf),
                                                     callType = c('click', 'whistle', 'cepstrum', 'gpl'),
                                                     verbose=TRUE,
                                                     ...) {
@@ -87,11 +93,11 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
     iciList <- vector('list', length = length(detNames) + 1)
     names(iciList) <- c(detNames, 'All')
     for(d in detNames) {
-        thisIci <- dfICI(detData[detData$detectorName == d, ], time)
+        thisIci <- dfTimeToNext(detData[detData$detectorName == d, ], time)
         thisIci$detectorName <- d
         iciList[[d]] <- thisIci
     }
-    allIci <- dfICI(detData, time)
+    allIci <- dfTimeToNext(detData, time)
     allIci$detectorName <- 'All'
     iciList[['All']] <- allIci
 
@@ -103,7 +109,7 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
     # browser()
     # filter outliers before mode calc
     iciMode <- lapply(iciList, function(i) {
-        calcIciMode(i$ici)
+        calcIciMode(i$ici, iciRange=iciRange)
     })
     names(iciMode) <- paste0(names(iciMode), '_ici')
     ancillary(x)$measures <- safeListAdd(ancillary(x)$measures, iciMode)
@@ -111,8 +117,13 @@ setMethod('calculateICI', 'AcousticEvent', function(x,
     x
 })
 
-calcIciMode <- function(ici) {
-    ici <- ici[ici > 0]
+calcIciMode <- function(ici, iciRange=c(0, Inf)) {
+    if(length(iciRange) != 2) {
+        iciRange <- c(0, Inf)
+    }
+    inRange <- ici > iciRange[1] &
+        ici < iciRange[2]
+    ici <- ici[inRange]
     if(length(ici) == 0) {
         return(0)
     }
@@ -140,7 +151,7 @@ calcIciMode <- function(ici) {
     mode
 }
 
-dfICI <- function(x, time='UTC') {
+dfTimeToNext <- function(x, time='UTC') {
     # check if peakTime is full time or just time within the waveform
     # 1e4 arbitrary, but UTC as numeric will be ~ 1e9
     if(time == 'peakTime' &&
@@ -150,24 +161,23 @@ dfICI <- function(x, time='UTC') {
     }
     if('Channel' %in% colnames(x)) {
         bind_rows(lapply(unique(x$Channel), function(c) {
-            calcICI(x[x$Channel == c, c('UID', 'BinaryFile', 'Channel', time)], time)
+            calcTimeToNext(x[x$Channel == c, c('UID', 'BinaryFile', 'Channel', time)], time)
         }))
     } else {
-        calcICI(x[, c('UID', 'BinaryFile',time)], time)
+        calcTimeToNext(x[, c('UID', 'BinaryFile',time)], time)
     }
 }
 
-
-calcICI <- function(x, time) {
-    # x <- x[, c('UID', time)]
+calcTimeToNext <- function(x, time) {
     if(nrow(x) == 1) {
         x$ici <- 0
         return(x)
     }
     x$sort <- as.numeric(x[[time]])
     x <- arrange(x, .data$sort)
-    ici <- x$sort - c(x$sort[1], x$sort[1:(nrow(x)-1)])
-    x$ici <- ici
+    # ici <- c(x$sort[2:nrow(x)], x$sort[nrow(x)]) - x$sort
+    # x$ici <- ici
+    x$ici <- c(diff(x$sort), 0)
     x$sort <- NULL
     x
 }
