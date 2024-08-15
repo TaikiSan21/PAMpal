@@ -16,6 +16,9 @@ calculateEchoDepth(
   nPlot = 400,
   nCol = 5,
   plotDir = NULL,
+  plotIci = TRUE,
+  maxIci = 2.5,
+  sr = NULL,
   progress = TRUE,
   verbose = TRUE
 )
@@ -44,6 +47,13 @@ any localization, only using previously calculated}
 
 \item{plotDir}{directory to store plot outputs, default \code{NULL} will result
 in no plots being created}
+
+\item{plotIci}{logical flag to additionally create ICI plots}
+
+\item{maxIci}{maximum allowed ICI value (seconds)}
+
+\item{sr}{if not \code{NULL} (default), clips in \code{wav} will be decimated
+to match this sample rate}
 
 \item{progress}{logical flag to show progress bar}
 

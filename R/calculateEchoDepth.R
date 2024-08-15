@@ -19,6 +19,10 @@
 #' @param nCol number of columns for waveform summary plot
 #' @param plotDir directory to store plot outputs, default \code{NULL} will result
 #'   in no plots being created
+#' @param plotIci logical flag to additionally create ICI plots
+#' @param maxIci maximum allowed ICI value (seconds)
+#' @param sr if not \code{NULL} (default), clips in \code{wav} will be decimated
+#'   to match this sample rate
 #' @param progress logical flag to show progress bar
 #' @param verbose logical flag to show messages
 #'
@@ -75,7 +79,7 @@
 #' }
 #'
 #' @importFrom PAMmisc findEchoTimes
-#' @importFrom graphics layout
+#' @importFrom graphics layout hist
 #' @importFrom grDevices dev.off png
 #'
 #' @export
@@ -91,6 +95,9 @@ calculateEchoDepth <- function(x,
                                nPlot=400,
                                nCol=5,
                                plotDir=NULL,
+                               plotIci=TRUE,
+                               maxIci=2.5,
+                               sr=NULL,
                                progress=TRUE,
                                verbose=TRUE) {
     startTime <- Sys.time()
@@ -125,22 +132,27 @@ calculateEchoDepth <- function(x,
     if(!all(c('Latitude', 'Longitude') %in% colnames(clickData))) {
         stop('GPS data not found, please add with "addGps"')
     }
-
+    if(isTRUE(plotIci) &&
+       !'All_ici' %in% colnames(getMeasures(x[1]))) {
+        if(verbose) message('ICI not found, calculating...\n')
+        x <- calculateICI(x, time='peakTime')
+    }
+    
     addedCols <- c('radialDist', 'wavFile',
                    'maxTime', 'pair2Time', 'pair3Time',
                    'maxMag', 'pair2Mag', 'pair3Mag',
                    'maxDepth', 'pair2Depth','pair3Depth')
-
+    
     # dropping these if they already present for join
     clickData <- dropCols(clickData, addedCols)
-
+    
     clickData <- left_join(clickData, locData[c('eventId', 'locName',
                                                 'locLat', 'locLong',
                                                 'perpDist', 'perpDistErr')],
                            by='eventId')
     clickData$radialDist <- distGeo(matrix(c(clickData$Longitude, clickData$Latitude), ncol=2),
-                                    matrix(c(clickData$locLong, clickData$locLat), ncol=2))
-
+                                               matrix(c(clickData$locLong, clickData$locLat), ncol=2))
+    
     wavMatchDf <- data.frame(wavFile=wav,
                              UID=parseEventClipName(wav, 'UID'),
                              Channel=parseEventClipName(wav, 'channel'),
@@ -148,7 +160,7 @@ calculateEchoDepth <- function(x,
     # drop this col in case already exists before join
     clickData$wavFile <- NULL
     clickData <- left_join(clickData, wavMatchDf, by=c('eventId', 'UID', 'Channel'))
-
+    
     wavNoMatch <- !wav %in% clickData$wavFile[!is.na(clickData$wavFile)]
     hasMatch <- !is.na(clickData$wavFile) #clickData$wavFile %in% basename(wav)
     if(!any(hasMatch)) {
@@ -159,9 +171,20 @@ calculateEchoDepth <- function(x,
         wav <- wav[!wavNoMatch]
     }
     # clickData <- clickData[hasMatch, ]
-
+    
     spParams <- checkSpeciesParams(clickData$species, spParams)
-
+    # add ici
+    if(isTRUE(plotIci)) {
+        clickData <- left_join(clickData, 
+                               filter(getICI(x, 'data'), .data$detectorName == 'All')[c('eventId', 'UID', 'Channel', 'ici')],
+                               by=c('eventId', 'UID', 'Channel'))
+        # mode
+        clickData <- left_join(clickData,
+                               getMeasures(x)[c('eventId', 'All_ici')],
+                               by='eventId')
+    }
+    
+    
     clickData <- split(clickData, clickData$eventId)
     if(progress) {
         if(verbose) {
@@ -174,6 +197,8 @@ calculateEchoDepth <- function(x,
         dir.create(plotDir)
     }
     evNoWav <- character(0)
+    avgWaves <- vector('list', length=length(unique(clickData$eventId)))
+    names(avgWaves) <- unique(clickData$eventId)
     clickData <- lapply(clickData, function(ev) {
         ev <- arrange(ev, UTC)
         if(ev$species[1] %in% names(spParams)) {
@@ -226,8 +251,15 @@ calculateEchoDepth <- function(x,
             }
             #### POSSIBLE ADD DECIMATION ####
             # thisWav <- WaveMC(downsample(thisWav, 96e3), samp.rate=96e3, bit=16)
+            thisWave <- readWave(ev$wavFile[i])
+            if(is.null(sr)) {
+                sr <- thisWave@samp.rate
+            }
+            if(sr < thisWave@samp.rate) {
+                thisWave <- myDownsample(thisWave, srTo=sr)
+            }
             waveHeightErr <- ifelse('waveHeight' %in% colnames(ev), ev$waveHeight[i], 0)
-
+            
             if(is.null(thisParams$minTime)) {
                 minTime <- 2*(ev$hpDepth[i] + hpDepthError + waveHeightErr) * thisParams$minDepth /
                     (soundSpeed * thisParams$maxRange)
@@ -239,20 +271,21 @@ calculateEchoDepth <- function(x,
             } else {
                 maxTime <- thisParams$maxTime
             }
-            thisEcho <- findEchoTimes(wav=ev$wavFile[i],
-                                      filter=c(thisParams$freqLow, thisParams$freqHigh),
-                                      peakMin=.01,
-                                      minTime=minTime,
-                                      maxTime=maxTime,
-                                      n=3,
-                                      plot=doPlot,
-                                      clipLen=clipLen,
-                                      plotText=paste0('UID: ',ev$UID[i], '\nIndex: ', which(i==which(hasWav))))
-
+            # thisEcho <- PAMmisc::findEchoTimes(wav=ev$wavFile[i],
+            thisEcho <- findEchoTimes(thisWave,
+                                               filter=c(thisParams$freqLow, thisParams$freqHigh),
+                                               peakMin=.01,
+                                               minTime=minTime,
+                                               maxTime=maxTime,
+                                               n=3,
+                                               plot=doPlot,
+                                               clipLen=clipLen,
+                                               plotText=paste0('UID: ',ev$UID[i], '\nIndex: ', which(i==which(hasWav))))
+            
             thisDepth <- calculateDepth(arrDepth=ev$hpDepth[i],
-                                        slantRange =  ev$radialDist[i],
-                                        delayTime = thisEcho$time,
-                                        soundSpeed = soundSpeed
+                                                 slantRange =  ev$radialDist[i],
+                                                 delayTime = thisEcho$time,
+                                                 soundSpeed = soundSpeed
             )
             outVals <- list(maxTime = thisEcho$time[1],
                             pair2Time = thisEcho$time[2],
@@ -270,7 +303,25 @@ calculateEchoDepth <- function(x,
                 setTxtProgressBar(pb, value=i)
             }
         }
+        wavClips <- do.call(cbind, wavClips)
+        getClip <- function(x, before=.0005, after=.01, sr=sr) {
+            total <- (before+after)*sr + 1
+            peak <- min(which.max(x[1:total]))
+            start <- ifelse(peak-before*sr < 1, 1, peak - before*sr)
+            end <- ifelse(peak - before*sr < 1, 1+(before+after)*sr, peak+after*sr)
+            x[start:end]
+        }
+        # thisSr <- tuneR::readWave(ev$wavFile[1], header=TRUE)$sample.rate
+        # thisSr <- 96e3
+        shortClips <- apply(wavClips, 2, getClip, before=.0005, after=.01, sr=sr)
+        avgWave <- apply(shortClips, 1,function(x)  mean((x)))
+        attr(avgWave, 'sr') <- sr
+        avgEcho <- findEchoTimes(wav=avgWave, sr=sr, clipLen=length(avgWave)/sr, plot=FALSE)
+        avgWaves[[ev$eventId[1]]] <<- avgWave
         result <- bind_rows(result)
+        result$ipiMax <- avgEcho$time[1]
+        result$ipi2 <- avgEcho$time[2]
+        result$ipi3 <- avgEcho$time[3]
         result <- cbind(ev, result)
         if(nPlot > 0 &&
            !is.null(plotDir)) {
@@ -278,61 +329,156 @@ calculateEchoDepth <- function(x,
             on.exit() # and removing that on.exit call
         }
         if(any(hasWav) && plot) {
-            png(file.path(plotDir, paste0(ev$eventId[1], '_Summary.png')), width=12, height=8, units='in', res=300)
+            png(file.path(plotDir, paste0(ev$eventId[1], '_Summary.png')), width=12, height=8+3*plotIci, units='in', res=300)
             on.exit(dev.off())
-            f <- layout(
-                matrix(c(1,1,2,2,3,3, 4,4,4,5,5,5), ncol=2, byrow=F)#,
-            )
-            par(mar=c(2,4,2,1))
+            #### data prep for plot ####
+            
             result <- arrange(result, UTC)
-
+            ####
+            if(isTRUE(plotIci)) {
+                f <- layout(
+                    matrix(1:8, ncol=2, byrow=FALSE)
+                )
+            } else {
+                f <- layout(
+                    # matrix(c(1,1,2,2,3,3, 4,4,4,5,5,5), ncol=2, byrow=F)#,
+                    matrix(1:6, ncol=2, byrow=FALSE)#,
+                )
+            }
+            par(mar=c(2,4,2,1))
+            ## Delay Time Plot
             plot(x=(result$UTC), y=result$pair2Time * 1e3, col='black',
                  main=ev$eventId[1],
                  ylab='Time (ms)')
             points(x=(result$UTC), y=result$pair3Time * 1e3, col='black')
             points(x=(result$UTC), y=result$maxTime * 1e3, col='red')
+            lines(y=rep(avgEcho$time[2]*1e3, 2), x=range(result$UTC), col='red')
+            lines(y=rep(avgEcho$time[3]*1e3, 2), x=range(result$UTC), col='red')
+            lines(y=rep(avgEcho$time[1]*1e3, 2), x=range(result$UTC), col='green')
             ## Depth Plot
             plot(x=result$UTC, y=-result$pair2Depth, col='black', ylim=c(-4e3,0),
                  main='^ Delay Times ^ - v Estimated Depth v',
                  xlab='', ylab='Depth (m)')
             points(x=result$UTC, y=-result$pair3Depth, col='black')
             points(x=result$UTC, y=-result$maxDepth, col='red')
-
+            
             ## Angle Plot
             plot(x=result$UTC, y=result$angle * 180 / pi,
                  main='Received Angle', ylab='Angle', xlab='UTC')
-
+            
+            ## ICI histogram
+            if(isTRUE(plotIci)) {
+                par(mar=c(4, 4, 2, 1))
+                thisMode <- result$All_ici[1]
+                quants <- quantile(result$ici[result$ici < maxIci], c(.25, .5, .75))
+                iqr <- diff(quants[c(1, 3)])
+                histData <- hist(result$ici[result$ici < maxIci],
+                                 breaks = seq(from=0, to=maxIci, by=.01),
+                                 main=paste0('Modal ICI (s): ', round(thisMode, 2),
+                                             ', Est IPI (ms): ', round(avgEcho$time[1]*1e3, 2)),
+                                 xlab='ICI')
+                lines(x=rep(thisMode, 2), y=c(0, 10e3), col='red')
+                lines(x=rep(quants[1], 2), y=c(0, 10e3), col='blue', lty=2)
+                lines(x=rep(quants[3], 2), y=c(0, 10e3), col='blue', lty=2)
+                lines(x=rep(quants[2], 2), y=c(0, 10e3), col='black', lty=2)
+                denData <- iciDensity(result$ici)
+                lines(x=denData$x, y=denData$y / max(denData$y) * max(histData$count), col='red')
+                par(mar=c(2, 4, 2, 1))
+            }
+            
             ## echogram
-            thisSr <- readWave(wav[1], header=TRUE)$sample.rate
-            wavClips <- do.call(cbind, wavClips)
-            plotEchogram(wavClips, q=c(.01, .999), sr=thisSr)
-            par(mar=c(4, 4, 2, 1))
-
+            
+            plotEchogram(wavClips, q=c(.01, .999), sr=sr)
+            
             ## Concat Clicks
             avgSpec <- calculateAverageSpectra(x[ev$eventId[1]], evNum=1, plot=c(TRUE, FALSE))
+            
+            ## Concat Ceps Try
+            # avgCeps <- calculateAverageSpectra(x[ev$eventId[1]], evNum=1, plot=c(TRUE, FALSE),
+            #                                      mode='ceps', wl=2048)
+            ## Average Wave Peak
+            par(mar=c(4, 4, 2, 1))
+            peakTime <- which.max(avgWave)/sr*1e3
+            plot(x=seq_along(avgWave)/sr*1e3 - peakTime, y=avgWave, type='l',
+                 xlab='Est IPI (ms)', main='Average Wave w/IPI Estimate')
+            lines(x=rep(avgEcho$time[2]*1e3, 2), y=c(-1, 1), col='red', lty=3)
+            lines(x=rep(avgEcho$time[3]*1e3, 2), y=c(-1, 1), col='red', lty=3)
+            lines(x=rep(avgEcho$time[1]*1e3, 2), y=c(-1, 1), col='green', lty=3)
+            
+            ## ICI v Time
+            if(isTRUE(plotIci)) {
+                par(mar=c(2, 4, 2, 1))
+                if(!is.na(result$species[1])) {
+                    plotLab <- paste0('Type: ', result$species[1], 
+                                      ', ICI v Time')
+                } else {
+                    plotLab <- 'ICI v Time'
+                }
+                plot(x=result$UTC, y=result$ici, ylim=c(0, maxIci),
+                     main=plotLab, xlab='UTC', yaxt='n',
+                     xaxs='i', ylab='ICI')
+                axis(2, at=seq(from=0, to=maxIci, by=0.2), xpd=FALSE)
+                lines(x=range(result$UTC), y=rep(thisMode, 2), col='red')
+                lines(x=range(result$UTC), y=rep(quants[1], 2), col='blue', lty=2)
+                lines(x=range(result$UTC), y=rep(quants[3], 2), col='blue', lty=2)
+                lines(x=range(result$UTC), y=rep(quants[2], 2), col='black', lty=2)
+            }
         }
         result
     })
-
+    
     if(length(evNoWav) > 0) {
         pamWarning('Events ', printN(evNoWav), ' had no matching wav files.')
     }
-
+    
     clickData <- bind_rows(clickData)
+    # jank to add ipi stuff
+    ipiVals <- distinct(clickData[c('eventId', 'ipiMax', 'ipi2', 'ipi3')])
     # dont need to carry these around
     locCols <- c('locName',
                  'locLat', 'locLong',
-                 'perpDist', 'perpDistErr')
+                 'perpDist', 'perpDistErr',
+                 'ipiMax', 'ipi2', 'ipi3')
     clickData <- dropCols(clickData, locCols)
     endTime <- Sys.time()
     procTime <- round(as.numeric(difftime(endTime, startTime, units='secs')), 0)
     x <- detDataToStudy(x, clickData)
+    x <- addMeasures(x, ipiVals)
+    for(e in names(avgWaves)) {
+        ancillary(x[[e]])$avgWaveform <- avgWaves[[e]]
+    }
     if(verbose) {
         cat('\nProcessing took ', procTime, ' seconds', sep='')
     }
     x <- .addPamWarning(x)
     x
+}
 
+iciDensity <- function(ici) {
+    ici <- ici[ici > 0]
+    if(length(ici) == 0) {
+        return(0)
+    }
+    if(length(ici) == 1) {
+        return(ici)
+    }
+    if(!is.na(sd(ici)) &&
+       sd(ici) != 0) {
+        iciZ <- (ici - mean(ici)) / sd(ici)
+        ici <- ici[abs(iciZ) < 2]
+        if(any(abs(iciZ) < 2)) {
+            iciZ <- (ici - mean(ici)) / sd(ici)
+            ici <- ici[abs(iciZ) < 2]
+        }
+        if(length(ici) == 0) {
+            return(0)
+        }
+        if(length(ici) == 1) {
+            return(ici)
+        }
+    }
+    den <- density(ici)
+    den
 }
 
 calculateDepth <- function(arrDepth, slantRange, delayTime, soundSpeed, perpDist=NULL) {
@@ -362,7 +508,7 @@ plotEchogram <- function(wavMat, sr, q=c(.01, .999)) {
                    "#E9E51AFF", "#FDE725FF")
     image(z=t(wavMat), x=1:ncol(wavMat), y=(1:nrow(wavMat))/sr*1e3,
           xlab='', ylab='Time (ms)', main='Echogram',
-          col=viridis32)
+          col=viridis32, useRaster=TRUE)
 }
 
 checkSpeciesParams <- function(species, params) {
@@ -374,7 +520,7 @@ checkSpeciesParams <- function(species, params) {
     if(hasParamNames(params)) {
         return(params)
     }
-
+    
     species <- unique(species)
     if(any(is.na(species))) {
         stop('Species labels have not been assigned, either use "setSpecies" or',
@@ -388,7 +534,7 @@ checkSpeciesParams <- function(species, params) {
                 paste0(names(params), collapse=', '), ')')
     }
     speciesProper <- sapply(params, function(x) {
-       hasParamNames(x)
+        hasParamNames(x)
     })
     if(!all(speciesProper)) {
         stop('Not all species have the required fields, check "spParams".')

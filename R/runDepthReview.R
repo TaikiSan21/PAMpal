@@ -94,7 +94,7 @@ runDepthReview <- function(x) {
         )
     )
 
-    # Server code begins here
+    # Server code begins here ####
     server <- function(input, output, session) {
         # making the dataset reactiveValues so that any changes in mt$data later could be reflected throughout
         smf <- reactiveValues(data=SHINYDATA,

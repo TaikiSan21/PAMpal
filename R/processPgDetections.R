@@ -1318,7 +1318,7 @@ dbToFixedGroup <- function(db, timeBin) {
     on.exit(dbDisconnect(con))
     sa <- dbReadTable(con, 'Sound_Acquisition')
     sa$UTC <- pgDateToPosix(sa$UTC)
-    timeRange <- floor_date(sa$UTC, unit=timeBin)
+    timeRange <- floor_date(range(sa$UTC), unit=timeBin)
     length <- unitToPeriod(timeBin)
     starts <- seq(from=timeRange[1], to=timeRange[2], by=as.numeric(length))
     ids <- paste0(gsub('\\.sqlite3', '', basename(db)), '.FT', seq_along(starts))

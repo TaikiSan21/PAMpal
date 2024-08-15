@@ -1,3 +1,7 @@
+## PAMpal 1.3.1
+
+- Adding new ICI features to `calculateEchoDepth`
+
 ## PAMpal 1.3.0
 
 - Added `mode='fixed'` option to `processPgDetections` that lets users create

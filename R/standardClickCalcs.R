@@ -89,8 +89,10 @@ standardClickCalcs <- function(data, sr_hz='auto', calibration=NULL, filterfrom_
         } else {
             sr <- sr_hz
         }
-
-        if(filterfrom_khz > 0) {
+        if(inherits(filterfrom_khz, 'Arma')) {
+            # x <- signal::filter(filter, x)
+            thisWave <- signal::filtfilt(filterfrom_khz, thisWave)@.Data
+        } else if(filterfrom_khz > 0) {
             # kinda janky because NULL * 1e3 is not NULL anymore, its numeric(0)
             if(!is.null(filterto_khz)) {
                 to_hz <- filterto_khz * 1e3
