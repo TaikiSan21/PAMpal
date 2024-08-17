@@ -1,3 +1,8 @@
+## PAMpal 1.3.2
+
+- Adding `runIciReview` function and better functionality for
+`runDepthReview`
+
 ## PAMpal 1.3.1
 
 - Adding new ICI features to `calculateEchoDepth`

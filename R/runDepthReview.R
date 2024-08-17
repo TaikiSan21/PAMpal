@@ -60,8 +60,35 @@ runDepthReview <- function(x) {
     })
     #### UI ####
     ui <- fluidPage(
-        selectInput('evSelect', label='Event', choices=''),
+        # selectInput('evSelect', label='Event', choices=list('Loading...'=1)),
+        # tags$head(tags$style(HTML(".selectize-input {width: 500px;}"))),
+        # keyboard input ####
+        tags$script('$(document).on("keydown",
+                 function (e) {
+                 if(e.which == 37) {
+                    Shiny.onInputChange("left", new Date());
+                 }
+                 if(e.which == 39) {
+                    Shiny.onInputChange("right", new Date());
+                 }
+                 });
+                '),
+        tags$script('
+            Shiny.addCustomMessageHandler("refocus",
+            function(e_id) {
+            document.getElementById(e_id).focus();
+                                  });'),
+        # top bar ####
+        fluidRow(column(9, selectInput('evSelect', label='Event', choices=list('Loading...'=1))),
+                 column(2, 
+                        actionButton('left', label='', icon=icon('chevron-left', lib='glyphicon')),
+                        actionButton('right', label='', icon=icon('chevron-right', lib='glyphicon'))),
+                 column(1,
+                        actionButton('stopApp', label='Stop App'))),
         tags$head(tags$style(HTML(".selectize-input {width: 500px;}"))),
+        tags$head(tags$style(HTML('#left {position: absolute; top: 25px; left: 0%}'))),
+        tags$head(tags$style(HTML('#right {position: absolute; top: 25px; left: 50px}'))),
+        tags$head(tags$style(HTML('#stopApp {position: absolute; top: 25px;}'))),
         # brush argument will enable the brush, sends the data point information to the server side
         plotOutput(outputId = "scatterplot", brush = "plot_brush_"), # brush ID is plot_brush, brush argument enables the brush
         fluidRow(
@@ -93,34 +120,70 @@ runDepthReview <- function(x) {
             )
         )
     )
-
+    
     # Server code begins here ####
     server <- function(input, output, session) {
         # making the dataset reactiveValues so that any changes in mt$data later could be reflected throughout
+        evNames <- unique(SHINYDATA$eventId)
+        evList <- as.list(seq_along(evNames))
+        names(evList) <- evNames
         smf <- reactiveValues(data=SHINYDATA,
-                              echoData=list())
+                              echoData=list(),
+                              evIndex=1,
+                              thisEv=evNames[1])
         # this populates dropdown with event names
-        updateSelectInput(inputId='evSelect', choices=unique(SHINYDATA$eventId))
+        updateSelectInput(inputId='evSelect', choices=evList)
         yLabels <- list(
             'maxDepth' = 'Estimated depth (m)',
             'maxTime' = 'Measured time delay (s)'
         )
+        observeEvent(input$evSelect, {
+            smf$evIndex <- as.numeric(input$evSelect)
+        })
+        observeEvent(smf$evIndex, {
+            session$resetBrush('plot_brush_')
+            smf$thisEv <- evNames[smf$evIndex]
+        })
+        observeEvent(input$left, {
+            if(smf$evIndex > 1) {
+                smf$evIndex <- smf$evIndex - 1
+                updateSelectInput(inputId='evSelect', selected=as.character(smf$evIndex))
+            } else{
+                showNotification('Already at first event!')
+            }
+        })
+        observeEvent(input$right, {
+            if(smf$evIndex < length(evList)) {
+                smf$evIndex <- smf$evIndex + 1
+                updateSelectInput(inputId='evSelect', selected=as.character(smf$evIndex))
+            } else {
+                showNotification('Already at last event!')
+            }
+        })
         observeEvent({
-            input$evSelect
+            input$paintFlag
+            input$plotValue
+            input$yLims
+        }, {
+            session$sendCustomMessage("refocus",list("right"))
+        })
+        observeEvent({
+            # input$evSelect
+            smf$thisEv
             input$plotValue
         }, {
-            if(input$evSelect != '') {
+            if(!all(is.na(smf$data[[input$plotValue]][smf$data$eventId == smf$thisEv]))) {
                 yLims <- switch(
                     input$plotValue,
                     'maxDepth' = {
-                        yRange <- range(smf$data$maxDepth[smf$data$eventId == input$evSelect], na.rm=TRUE)
+                        yRange <- range(smf$data$maxDepth[smf$data$eventId == smf$thisEv], na.rm=TRUE)
                         yRange[1] <- round(yRange[1] -50, 0)
                         updateSliderInput(session, 'yLims',
                                           label='Depth limit', min=yRange[1], max=0, value=yRange[1],
                                           step=50)
                     },
                     'maxTime' = {
-                        yRange <- range(smf$data$maxTime[smf$data$eventId == input$evSelect], na.rm=TRUE)
+                        yRange <- range(smf$data$maxTime[smf$data$eventId == smf$thisEv], na.rm=TRUE)
                         yRange[2] <- round(yRange[2] + .001, 3)
                         updateSliderInput(session, 'yLims',
                                           label='Time limit', min=0, max=yRange[2], value=yRange[2],
@@ -132,10 +195,15 @@ runDepthReview <- function(x) {
         #### scatterplot ####
         output$scatterplot <- renderPlot({
             plotData <- smf$data %>%
-                dplyr::filter(.data$eventId == input$evSelect)
+                dplyr::filter(.data$eventId == smf$thisEv)
+            if(all(is.na(plotData[[input$plotValue]]))) {
+                plot(x=1, y=1, type='n')
+                text(x=1, y=1, label='No plotting data found')
+                return()
+            }
             g <- ggplot(plotData, aes(x = .data[['UTC']], y = .data[[input$plotValue]], col=.data[['keepClick']])) +
                 geom_point(na.rm=TRUE) +
-                ggtitle(input$evSelect) +
+                ggtitle(smf$thisEv) +
                 xlab("Click time (HH:MM)") + ylab(yLabels[[input$plotValue]]) +
                 theme(axis.text = element_text(size = 14), # format axis font
                       axis.title = element_text(size = 16, face = "bold"),
@@ -145,7 +213,7 @@ runDepthReview <- function(x) {
                       panel.grid.major = element_blank(),
                       panel.grid.minor = element_blank())  +
                 scale_color_manual(values=c('#F8766D', '#00BFC4'), breaks=c(FALSE, TRUE))
-
+            
             if(input$plotValue == 'maxDepth') {
                 g <- g + ylim(input$yLims, 0)
             }
@@ -154,21 +222,21 @@ runDepthReview <- function(x) {
             }
             g
         })
-
+        
         #### load echo data ####
         observeEvent(input$loadEcho, {
             # check if we've already loaded this events data
-
+            
             low <- suppressWarnings(as.numeric(input$freqLow))
             high <- suppressWarnings(as.numeric(input$freqHigh))
-
+            
             # if(input$evSelect %in% names(smf$echoData)) {
             #     thisEcho <- smf$echoData[[input$evSelect]]
             # } else {
             # if we havent then load soundfiles
             showNotification('Loading wav clips...')
             thisSr <- NULL
-            thisEcho <- lapply(smf$data$wavFile[smf$data$eventId == input$evSelect], function(x) {
+            thisEcho <- lapply(smf$data$wavFile[smf$data$eventId == smf$thisEv], function(x) {
                 if(is.na(x) || !file.exists(x)) {
                     return(NULL)
                 }
@@ -195,13 +263,13 @@ runDepthReview <- function(x) {
             thisEcho[thisEcho < lims[1]] <- lims[1]
             thisEcho[thisEcho > lims[2]] <- lims[2]
             # store for easy access in future
-            smf$echoData[[input$evSelect]] <- list(echo=thisEcho,
-                                                   sr=thisSr)
+            smf$echoData[[smf$thisEv]] <- list(echo=thisEcho,
+                                               sr=thisSr)
             showNotification('Done loading!')
             # }
         })
         observeEvent(input$allFalse, {
-            smf$data$keepClick[smf$data$eventId == input$evSelect] <- FALSE
+            smf$data$keepClick[smf$data$eventId == smf$thisEv] <- FALSE
         })
         # output from viridisLite::viridis(32)
         viridis32 <- c("#440154FF", "#470D60FF", "#48196BFF", "#482475FF", "#472E7CFF",
@@ -213,10 +281,10 @@ runDepthReview <- function(x) {
                        "#E9E51AFF", "#FDE725FF")
         #### echogram plot ####
         output$echogram <- renderPlot({
-            if(input$evSelect %in% names(smf$echoData)) {
-                toPlot <- smf$data$keepClick[smf$data$eventId == input$evSelect & !is.na(smf$data$wavFile)]
+            if(smf$thisEv %in% names(smf$echoData)) {
+                toPlot <- smf$data$keepClick[smf$data$eventId == smf$thisEv & !is.na(smf$data$wavFile)]
                 if(any(toPlot)) {
-                    echoData <- smf$echoData[[input$evSelect]]
+                    echoData <- smf$echoData[[smf$thisEv]]
                     echoWavs <- echoData$echo[, toPlot]
                     par(mar=c(3.1, 4.1, 3.1, 2.1))
                     image(z=t(echoWavs), x=1:ncol(echoWavs), y=(1:nrow(echoWavs))/echoData$sr*1e3,
@@ -225,7 +293,7 @@ runDepthReview <- function(x) {
                 }
             }
         })
-
+        
         #### observe brush ####
         observeEvent({
             input$plot_brush_ # only update on either brush or flag change
@@ -233,7 +301,7 @@ runDepthReview <- function(x) {
         }, {
             df = brushedPoints(smf$data, brush = input$plot_brush_, xvar='UTC', yvar=input$plotValue, allRows = TRUE) # get column with false and true with AllRows = T
             # removing datapoints selected by brush, select values are stored as chars
-            smf$data$keepClick[df$selected_ & df$eventId == input$evSelect] <- input$paintFlag == 'TRUE'
+            smf$data$keepClick[df$selected_ & df$eventId == smf$thisEv] <- input$paintFlag == 'TRUE'
         })
         # reset brush box when we change events
         observeEvent(input$evSelect, {
@@ -250,11 +318,15 @@ runDepthReview <- function(x) {
         onSessionEnded(function() {
             SHINYDATA <<- isolate(smf$data)
         })
+        observeEvent(input$stopApp, {
+            SHINYDATA <<- isolate(smf$data)
+            stopApp()
+        })
     }
-
+    
     # Create a Shiny app object
     app <- shinyApp(ui = ui, server = server)
-
+    
     #open shiny app
     runApp(app)
 }
