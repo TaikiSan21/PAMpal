@@ -1,6 +1,19 @@
-#' @title Run Echo Depth Review App
+#' @title Run ICI Review App
 #'
-#' @description Runs a Shiny app 
+#' @description Runs a Shiny app that shows three plots - the ICI (time to
+#'   next detection) over time, histogram of ICI values, and the average
+#'   waveform of an event. Average waveform plot is only present if
+#'   \link{calculateEchoDepth} has been run first, otherwise IPI and 
+#'   average waveform data will not be present. ICI plots have a red line 
+#'   showing the modal ICI of the event, and average waveform plot has a
+#'   red line of the estimated IPI level. All plots can be interacted with
+#'   by clicking on a location to select a new ICI / IPI (called the "User 
+#'   ICI/IPI") that will be shown in blue. "Save ICI/IPI" buttons can be
+#'   pressed to use save this "User" value as the new \code{All_ici} or
+#'   \code{ipiMax} value. "Remove ICI/IPI" buttons can be pressed to set
+#'   these values to \code{NA}, which should be done in cases where no
+#'   apparent ICI/IPI exists from the plot. The "Reset" button can be used
+#'   to restore the original modal ICI and estimated IPI values.
 #'
 #' @param x an \linkS4class{AcousticStudy} object that has been processed with
 #'   \link{calculateEchoDepth}
@@ -8,14 +21,15 @@
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
-#' @return the object as \code{x}, with updated \code{keepClick} column
+#' @return the object as \code{x}, with potentially updated \code{All_ici}
+#'   and \code{ipiMax} measures for some events depending on user activity
 #'
 #' @examples
-#' # example not run because \link{calculateEchoDepth} must be run first,
-#' # and it requires a large amount of data not stored in the package
-#' \dontrun{
-#' study <- calculateEchoDepth(study, wav='path/to/wavFiles')
-#' study <- runIciReview(x)
+#' # average waveform/IPI estimates not present because
+#' # calculateEchoDepth must be run first for those to exist
+#' if(interactive()) {
+#' data(exStudy)
+#' exStudy <- runIciReview(exStudy)
 #' }
 #'
 #' @importFrom shiny fluidPage selectInput HTML fluidRow plotOutput column
@@ -35,6 +49,7 @@ runIciReview <- function(x, maxIci=2.5) {
     if(!'All_ici' %in% names(allMeasures)) {
         warning('ICI data not found, calculating ICI')
         x <- calculateICI(x, 'peakTime')
+        allMeasures <- getMeasures(x)
     }
     if(!'ipiMax' %in% names(allMeasures)) {
         warning('IPI estimates not found')
@@ -146,12 +161,14 @@ runIciReview <- function(x, maxIci=2.5) {
             thisIciData <- thisIciData[thisIciData$ici < maxIci, ]
             thisIci <- reVals$measures$All_ici[reVals$measures$eventId == reVals$thisEvent]
             userIci <- round(reVals$userIci, 2)
-            
+            nClicks <- nrow(thisIciData)
+        
             par(mar=c(4,4,2,1))
             plot(x=thisIciData$UTC, y=thisIciData$ici,
                  ylim=c(0, maxIci),
                  ylab='ICI (s)',
-                 xlab='UTC Time')
+                 xlab='UTC Time',
+                 main=paste0('ICI v Time, ', nClicks, ' Detections'))
             lines(x=range(thisIciData$UTC), y=rep(thisIci, 2), col='red', lty=2)
             lines(x=range(thisIciData$UTC), y=rep(userIci, 2), col='blue', lty=2)
         })
@@ -160,6 +177,7 @@ runIciReview <- function(x, maxIci=2.5) {
             thisIciData <- reVals$ici[reVals$ici$eventId == reVals$thisEvent, ]
             thisIciData <- thisIciData[thisIciData$ici < maxIci, ]
             thisIci <- reVals$measures$All_ici[reVals$measures$eventId == reVals$thisEvent]
+            thisIci <- ifelse(is.null(thisIci), NA, thisIci)
             userIci <- round(reVals$userIci, 2)
             par(mar=c(4,2,2,1))
             thisHist <- hist(thisIciData$ici,
@@ -240,11 +258,3 @@ runIciReview <- function(x, maxIci=2.5) {
     app <- shinyApp(ui, server)
     runApp(app)
 }
-
-# ipiData <- readRDS('../Data/PmICI/HB2102_IpiTestStudy.rds')
-### CURRENT PROBLEMS
-## Clicking doesnt work with par mfrow, interacts with second (last) plot
-## Wont be able to interact on both, will have to not do the par way.
-## can google if theres a way to work click input across multi plot
-## Right now the saving part doesnt actually do anything or save it
-# new <- runIciReview(ipiData)

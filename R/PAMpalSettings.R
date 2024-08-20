@@ -11,6 +11,7 @@
 #' @param settings an XML settings file from Pamguard
 #' @param functions a named list of additional functions to add
 #' @param verbose logical flag to show messages
+#' @param default logical flag to use default measurement function parameters
 #' @param \dots values to pass on to default \link{standardClickCalcs} function
 #'
 #' @return A PAMpalSettings object
@@ -29,7 +30,7 @@
 #' @importFrom methods new
 #' @export
 #'
-PAMpalSettings <- function(db=NULL, binaries=NULL, settings=NULL, functions=NULL, verbose=TRUE, ...) {
+PAMpalSettings <- function(db=NULL, binaries=NULL, settings=NULL, functions=NULL, verbose=TRUE, default=FALSE, ...) {
     pps <- new('PAMpalSettings')
     pps <- addDatabase(pps, db, verbose)
     pps <- addBinaries(pps, binaries, verbose)
@@ -38,7 +39,7 @@ PAMpalSettings <- function(db=NULL, binaries=NULL, settings=NULL, functions=NULL
             '"roccaWhistleCalcs" for the "WhistlesMoans" and "GPLDetector" modules,',
             'and "standardCepstrumCalcs" for the "Cepstrum" module.\n')
     }
-    pps <- addFunction(pps, standardClickCalcs, 'ClickDetector', verbose=verbose, ...)
+    pps <- addFunction(pps, standardClickCalcs, 'ClickDetector', verbose=verbose, default=default, ...)
     pps <- addFunction(pps, roccaWhistleCalcs, 'WhistlesMoans', verbose=verbose)
     pps <- addFunction(pps, standardCepstrumCalcs, 'Cepstrum', verbose=verbose)
     pps <- addFunction(pps, roccaWhistleCalcs, 'GPLDetector', verbose=verbose)
@@ -54,7 +55,7 @@ PAMpalSettings <- function(db=NULL, binaries=NULL, settings=NULL, functions=NULL
             thisFchar <- strsplit(thisFchar, '=')[[1]][2]
             thisFchar <- gsub('\\s|\\)$', '', thisFchar)
             attr(functions[[f]], 'fname') <- thisFchar
-            pps <- addFunction(pps, functions[[f]], names(functions)[f], verbose=verbose, ...)
+            pps <- addFunction(pps, functions[[f]], names(functions)[f], verbose=verbose, default=default, ...)
         }
     }
     pps

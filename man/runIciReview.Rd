@@ -2,7 +2,7 @@
 % Please edit documentation in R/runIciReview.R
 \name{runIciReview}
 \alias{runIciReview}
-\title{Run Echo Depth Review App}
+\title{Run ICI Review App}
 \usage{
 runIciReview(x, maxIci = 2.5)
 }
@@ -13,17 +13,31 @@ runIciReview(x, maxIci = 2.5)
 \item{maxIci}{maximum ICI value (seconds) to display on plots}
 }
 \value{
-the object as \code{x}, with updated \code{keepClick} column
+the object as \code{x}, with potentially updated \code{All_ici}
+  and \code{ipiMax} measures for some events depending on user activity
 }
 \description{
-Runs a Shiny app
+Runs a Shiny app that shows three plots - the ICI (time to
+  next detection) over time, histogram of ICI values, and the average
+  waveform of an event. Average waveform plot is only present if
+  \link{calculateEchoDepth} has been run first, otherwise IPI and 
+  average waveform data will not be present. ICI plots have a red line 
+  showing the modal ICI of the event, and average waveform plot has a
+  red line of the estimated IPI level. All plots can be interacted with
+  by clicking on a location to select a new ICI / IPI (called the "User 
+  ICI/IPI") that will be shown in blue. "Save ICI/IPI" buttons can be
+  pressed to use save this "User" value as the new \code{All_ici} or
+  \code{ipiMax} value. "Remove ICI/IPI" buttons can be pressed to set
+  these values to \code{NA}, which should be done in cases where no
+  apparent ICI/IPI exists from the plot. The "Reset" button can be used
+  to restore the original modal ICI and estimated IPI values.
 }
 \examples{
-# example not run because \link{calculateEchoDepth} must be run first,
-# and it requires a large amount of data not stored in the package
-\dontrun{
-study <- calculateEchoDepth(study, wav='path/to/wavFiles')
-study <- runIciReview(x)
+# average waveform/IPI estimates not present because
+# calculateEchoDepth must be run first for those to exist
+if(interactive()) {
+data(exStudy)
+exStudy <- runIciReview(exStudy)
 }
 
 }

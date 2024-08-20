@@ -11,6 +11,7 @@
 #'   ClickDetector, WhistlesMoans, Cepstrum, or GPLDetector. If \code{NULL} (default), user
 #'   will be prompted to select which module it applies to
 #' @param verbose logical flag to show messages
+#' @param default logical flag to use default function parameters if present
 #' @param \dots named arguments to pass to function being added
 #'
 #' @return the same \linkS4class{PAMpalSettings} object as pps, with the function
@@ -28,7 +29,7 @@
 #' @importFrom utils menu
 #' @export
 #'
-addFunction <- function(pps, fun, module=NULL, verbose = TRUE, ...) {
+addFunction <- function(pps, fun, module=NULL, verbose = TRUE, default=FALSE,  ...) {
     modsAllowed <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum', 'GPLDetector')
     if(is.PAMpalSettings(fun)) {
         for(m in modsAllowed) {
@@ -56,7 +57,7 @@ addFunction <- function(pps, fun, module=NULL, verbose = TRUE, ...) {
         cat('Adding function "', fname, '":\n', sep = '')
     }
     oldnames <- names(pps@functions[[module]])
-    fun <- functionParser(fun, ...)
+    fun <- functionParser(fun, default=default, ...)
     # function checker
     if(functionChecker(fun, module)) {
         pps@functions[module] <- list(c(pps@functions[[module]], fun))
@@ -68,13 +69,22 @@ addFunction <- function(pps, fun, module=NULL, verbose = TRUE, ...) {
 }
 
 # I put a function in yo function cuz i heard you like functions
-functionParser <- function(fun, skipArgs = c('data', 'calibration', '...'), ...) {
+functionParser <- function(fun, skipArgs = c('data', 'calibration', '...'), default=FALSE, ...) {
     argList <- formals(fun)
     dotList <- list(...)
     dotArgs <- names(argList)[names(argList) %in% names(dotList)]
     for(d in dotArgs) {
         argList[d] <- dotList[d]
         skipArgs <- c(skipArgs, d)
+    }
+    if(isTRUE(default)) {
+        for(arg in names(argList)) {
+            # "name" class means no default value 
+            if(inherits(argList[[arg]], 'name')) {
+                next
+            }
+            skipArgs <- c(skipArgs, arg)
+        }
     }
     toSet <- names(argList)[!(names(argList) %in% skipArgs)]
     if(length(toSet) > 0) {

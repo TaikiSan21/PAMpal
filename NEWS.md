@@ -3,6 +3,10 @@
 - Adding `runIciReview` function and better functionality for
 `runDepthReview`
 
+- Finally adding `default` option to `PAMpalSettings` and `addFunction` to
+just use all defaults (mostly for my convenience when testing and the 
+values dont matter)
+
 ## PAMpal 1.3.1
 
 - Adding new ICI features to `calculateEchoDepth`

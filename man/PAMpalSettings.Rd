@@ -10,6 +10,7 @@ PAMpalSettings(
   settings = NULL,
   functions = NULL,
   verbose = TRUE,
+  default = FALSE,
   ...
 )
 }
@@ -24,6 +25,8 @@ also be added}
 \item{functions}{a named list of additional functions to add}
 
 \item{verbose}{logical flag to show messages}
+
+\item{default}{logical flag to use default measurement function parameters}
 
 \item{\dots}{values to pass on to default \link{standardClickCalcs} function}
 }
