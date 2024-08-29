@@ -144,18 +144,19 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1,
     if(abs(as.numeric(difftime(timeEnd, end, units='secs'))) > 1) {
         warning('Clip size did not match requested length')
     }
-
-    if(channel > ncol(wav@.Data)) {
-        stop('Specified channel is not present in wav file.', call.=FALSE)
-    }
-    wav <- wav@.Data[, channel]
+    
+    # don't actually need this - getClipData subsets to channel
+    # if(channel > ncol(wav@.Data)) {
+    #     stop('Specified channel is not present in wav file.', call.=FALSE)
+    # }
+    # wav <- wav@.Data[, channel]
     # wav <- wav - mean(wav)
 
     data <- wavToGram(wav, wl=wl, hop=hop, sr=sr, mode=mode)
 
     x <- filter(x, UTC <= timeEnd, UTC >= timeStart)
 
-    yAxis <- myGram(wav[1:wl], mode=mode, wl=wl, channel=channel, sr=sr)[, 1]
+    yAxis <- myGram(wav[1:wl], mode=mode, wl=wl, channel=1, sr=sr)[, 1]
     switch(mode,
            'spec' = {
                if(is.null(title)) {

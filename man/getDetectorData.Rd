@@ -47,12 +47,12 @@ dataframes}
 }
 \value{
 A list of data frames containing all detection data from \code{x},
-  named by call type ('click', 'whistle', or 'cepstrum').
+  named by call type ('click', 'whistle', 'cepstrum', or 'gpl').
 }
 \description{
 Extracts just the detector data from all of \code{x}, and will
   combine all detections from each call type (currently whistle, click,
-  and cepstrum) into a single data frame.
+  cepstrum, and gpl) into a single data frame.
 }
 \details{
 The purpose of this function is to extract your data out of

@@ -47,56 +47,7 @@ calculateModuleData <- function(binData, binFuns=list('ClickDetector'=list(stand
     }
     detName <- gsub(' ', '_', detName)
     detSettings <- settings$detectors[[detName]]
-    # if(!(moduleType %in% names(binFuns)) ||
-    #    length(binFuns[[moduleType]])==0) {
-    #     # warning("I don't have functions for Module Type ", moduleType)
-    #     # If nothing, just UID and detectorName? Fine for now
-    #     result <- data.frame(UID = sapply(binData$data, function(x) x$UID),
-    #                          UTC = sapply(binData$data, function(x) x$date))
-    #     result$UID <- as.character(result$UID)
-    #     result$UTC <- convertPgDate(result$UTC)
-    #     result$detectorName <- rep(detName, nrow(result))
-    #     result$BinaryFile <- rep(binData$fileInfo$fileName, nrow(result))
-    #     return(result)
-    # }
-    # Adding this to binFuns for PG version so we always at least get UID and time
-    # ClickDetector gets 1 row for each channel, has 'nChan' in it
-    # getBasic <- function(type) {
-    #     switch(type,
-    #            'ClickDetector' = function(x) {
-    #                nRep <- ncol(x$wave)
-    #                chan <- 1:ncol(x$wave)
-    #                if('channelMap' %in% names(x)) {
-    #                    mapChans <- cmapToChan(x$channelMap)
-    #                    if(length(mapChans) == nRep) {
-    #                        chan <- mapChans
-    #                    }
-    #                }
-    #
-    #                result <- data.frame(UID = rep(as.character(x$UID), nRep),
-    #                                     UTC = rep(x$date, nRep),
-    #                                     stringsAsFactors = FALSE)
-    #                result$Channel <- as.character(chan)
-    #                angs <- x$angles
-    #                if(length(angs) == 2) {
-    #                    pamWarning('More than one angle for click UID' , result$UID[1],
-    #                            ', only using first.')
-    #                }
-    #                result$angle <- angs[1]
-    #                result$angleError <- x$angleErrors[1]
-    #                result
-    #            }, function(x) {
-    #                nRep <- if('nChan' %in% names(x)) {
-    #                    x$nChan
-    #                } else {
-    #                    1
-    #                }
-    #                data.frame(UID = rep(as.character(x$UID), nRep),
-    #                           UTC = rep(x$date, nRep),
-    #                           stringsAsFactors = FALSE)
-    #            })
-    #
-    # }
+
     # if you add new modules need to add to addBinaries - weve filtered them out there
     result <- switch(
         moduleType,

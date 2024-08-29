@@ -104,8 +104,13 @@ setSpecies <- function(x, method=c('pamguard', 'manual', 'reassign'), value, typ
                    return(x)
                }
                if(inherits(value, 'data.frame')) {
+                   # jank to make it work with eventId bc I have regrets
+                   if('eventId' %in% colnames(value) &&
+                      !'event' %in% colnames(value)) {
+                       colnames(value)[colnames(value) == 'eventId'] <- 'event'
+                   }
                    if(!all(c('species', 'event') %in% colnames(value))) {
-                       pamWarning('If "value" is a dataframe it must contain columns species and event.')
+                       pamWarning('If "value" is a dataframe it must contain columns "species" and "event" or "eventId".')
                        return(x)
                    }
                    allIds <- sapply(acev, id)

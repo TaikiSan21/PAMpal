@@ -2,7 +2,7 @@
 #'
 #' @description Extracts just the detector data from all of \code{x}, and will
 #'   combine all detections from each call type (currently whistle, click,
-#'   and cepstrum) into a single data frame.
+#'   cepstrum, and gpl) into a single data frame.
 #'
 #' @param x data to extract detector data from, either an \code{AcousticStudy},
 #'   \code{AcousticEvent} or list of \code{AcousticEvent} object
@@ -20,7 +20,7 @@
 #'   call type will be combined into a single large data frame
 #'
 #' @return A list of data frames containing all detection data from \code{x},
-#'   named by call type ('click', 'whistle', or 'cepstrum').
+#'   named by call type ('click', 'whistle', 'cepstrum', or 'gpl').
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
