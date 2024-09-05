@@ -244,7 +244,7 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
                                                      ncol=nchannel(wavResult[[w]]),
                                                      nrow=thisSr*zeroBuff[2]),
                                          samp.rate=thisSr, bit=wavResult[[w]]@bit)
-                    wavResult[[w]] <- bind(thisZeroes, wavResult[[w]])
+                    wavResult[[w]] <- bind(wavResult[[w]], thisZeroes)
                 }
                 if(fillZeroes &&
                    w != endIx &&
