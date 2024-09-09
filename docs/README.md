@@ -243,6 +243,8 @@ can't find, or if there's anything else you want PAMpal to do!
 
 To learn more about what PAMpal can do for you, click on the links below
 
+- [Parallel Processing][parallel] As of version 1.4.0, `PAMpal` can benefit from
+parallel prcoessing to reduce analysis time
 - [Data processing: Next steps][next-steps-processing] Adding GPS data, assigning
 species ID, more info on how to access and manipulate your data, and much more
 - [Case Studies][case-studies] Some tutorials of working through a specific problem,
@@ -304,3 +306,4 @@ For bug fixes and feature additions in each version see the [NEWS][news] file
 [tcltk-err]: https://swvanderlaan.github.io/post/getting-r-with-tcl-tk-on-my-mac/
 [banter-guide]: banterGuide.html
 [avg-spec]: AvgSpec.html
+[parallel]: ParallelProcessing.html

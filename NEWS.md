@@ -1,3 +1,7 @@
+## PAMpal 1.4.0
+
+- Adding supprt for parallel processing using the `future` package framework
+
 ## PAMpal 1.3.2
 
 - Adding `runIciReview` function and better functionality for
