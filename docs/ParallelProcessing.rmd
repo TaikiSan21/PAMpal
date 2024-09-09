@@ -1,0 +1,136 @@
+---
+output: html_document
+title: Parallel Processing in PAMpal
+layout: default
+theme: default
+---
+
+```{css, echo=FALSE}
+code {
+color: #efefef ! important;
+background-color: #303030 ! important;
+}
+pre {
+background-color: #303030 ! important;
+}
+section {
+width: 652px;
+}
+div.sourceCode {
+background-color: #303030 ! important;
+}
+.hljs-literal {
+color: #990073;
+}
+.hljs-number {
+color: #099;
+}
+.hljs-comment {
+color: #998;
+font-style: italic;
+}
+.hljs-keyword {
+color: #efef8f;
+font-weight: bold;
+}
+.hljs-string {
+color: #90a959;
+}
+```
+
+## Parallel Processing in PAMpal
+
+As of version 1.4.0, `processPgDetections` can benefit from parallel processing
+using the `future` package framework. This requires a small amount of setup on 
+the user's end, and does have some potential drawbacks, but can greatly reduce
+the amount of time required to process really large datasets.
+
+### Parallel Processing Basics
+
+First, a very brief and basic intro on roughly how this works. Most modern
+computer processors now come with multiple (usually many!) processing cores,
+but by default R will only use one at a time. You may have noticed this if you
+have the Task Manager open while processing a large dataset with R, often the
+CPU usage will not rise above a fairly low percent even if it sounds like your
+computer is working hard. This is because it takes specialized code to make use
+of the extra processing power. 
+
+Generally this works by breaking up a larger task into smaller independent pieces
+that can be sent off to the different cores to be processed in parallel. For
+`PAMpal` this task is loading and applying processing functions to binary file
+data. However, an important point is that using multiple cores for processing
+requires a certain amount of overhead. New R sessions must be created on the
+other cores, and all relevant data and functions have to be passed to those
+cores before the processing can happen. There is additional overhead in
+managing all the work of sending data back and forth between the cores as they
+complete their tasks. So, more cores means faster processing but it also means
+more memory and more fixed overhead.
+
+The important thing you need to know for this is that parallel processing
+will not be significantly faster for smaller tasks, and using lots of cores
+can use up all of your memory.
+
+### Parallel Processing in Practice
+
+Okay, so how do we actually make it happen? Lucky for us, the `future` framework
+(specifically the [future.apply][fapply] package) makes it really easy. The premise
+of the package is that the end user should always decide what kind of processing to
+use, since different users and different environments will have different resources
+available. We tell `future` what kind of processing we want to do using the `plan`
+function. 
+
+Calling `plan()` will tell you what the current mode is (`sequential` 
+means the normal processing you always use).
+
+```{r}
+library(future)
+plan()
+```
+
+To use parallel processing, we use `multisession`, and we need to tell it how
+many cores we want to use. `availableCores` will tell us how many our computer
+has available.
+
+```{r}
+availableCores(logical=FALSE)
+```
+
+Then we can set `workers` to some number less than or equal to that. Remember that
+more cores means more memory used, so we may not want to use all of them
+
+```{r}
+plan(multisession(workers=8))
+plan()
+```
+
+Now we can just process our data like normal using the regular `PAMpal` functions.
+One important note is that **progress bars do not work** when parallel processing,
+so you will see it stuck at zero until it finishes. But it should hopefully
+finish much faster than before! Also for small to medium projects using
+`mode='db'` there is likely only a small difference between parallel and regular
+processing due to the overhead incurred, so this is really most valuable for
+`mode='recording'` and `mode='time'`.
+
+```{r, eval=FALSE}
+data <- processPgDetections(pps, mode='recording')
+```
+
+Once you are done, you need to reset your plan back to `sequential` to free up
+all the memory that was being used for the multiple-core processing
+
+```{r}
+plan(sequential)
+```
+
+### TLDR
+
+It works like this:
+
+```{r, eval=FALSE}
+library(future)
+plan(multisession(workers=min(availableCores(), 8))) # 8 is an arbitrary number I picked
+data <- processPgDetections(pps, mode='recording')
+plan(sequential)
+```
+
+[fapply]: https://www.jottr.org/2018/06/23/future.apply_1.0.0/

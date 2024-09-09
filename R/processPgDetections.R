@@ -100,12 +100,14 @@
 #' @importFrom tcltk tk_choose.files
 #' @importFrom purrr transpose
 #' @importFrom lubridate interval int_overlaps
+#' @importFrom future.apply future_lapply
 #' @import dplyr
 #' @export
 #'
 processPgDetections <- function(pps, mode = c('db', 'time', 'recording', 'fixed'), id=NULL, grouping=NULL,
                                 format=c('%m/%d/%Y %H:%M:%OS', '%m-%d-%Y %H:%M:%OS',
-                                         '%Y/%m/%d %H:%M:%OS', '%Y-%m-%d %H:%M:%OS'), progress=TRUE, verbose=TRUE, ...) {
+                                         '%Y/%m/%d %H:%M:%OS', '%Y-%m-%d %H:%M:%OS'), 
+                                progress=TRUE, verbose=TRUE, ...) {
     # auto check for mode
     if(missing(mode)) {
         mode <- autoMode(pps, grouping)
@@ -205,14 +207,14 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     binList <- pps@binaries$list
     binFuns <- pps@functions
     allDbs <- pps@db
-
+    
     # study <- AcousticStudy(id=id, pps = pps)
     # Check for what DB shit should be associated with, get full list of SA data
     # first, gonna match event times to that since its roughly the times assoicated
     # with a database
     saList <- lapply(allDbs, readSa)
     names(saList) <- allDbs
-
+    
     if(!('db' %in% colnames(grouping))) {
         grouping$db <- NA_character_
     }
@@ -244,7 +246,7 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
             } else { # case if you just specified basename of the database it will find it
                 dbPossible <- grep(grouping$db[i], allDbs, value=TRUE, fixed=TRUE)
             }
-
+            
             if(length(dbPossible) == 0 ||
                is.na(dbPossible)) {
                 editGroup <- TRUE
@@ -293,11 +295,11 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
         }
         message('\nLast file I tried to read: ', failBin)
     })
-
+    
     if(!('sr' %in% colnames(grouping))) {
         grouping$sr <- NA_integer_
     }
-
+    
     # assign each db in grouping to its unique SRs so we dont have to search again later
     # saByDb <- lapply(saList, function(x) unique(x$sampleRate))
     # for(d in 1:nrow(grouping)) {
@@ -336,13 +338,13 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
         sr <- readline()
         grouping$sr[is.na(grouping$sr)] <- as.numeric(sr)
     }
-
+    
     # from here can check "simple SR" mode - all SR in DBs and
     # the one we selected are the same, avoid doing shit later
-
+    
     calibrationUsed <- names(pps@calibration[[1]])
     if(length(calibrationUsed)==0) calibrationUsed <- 'None'
-
+    
     binExists <- file.exists(binList)
     if(sum(binExists) == 0) {
         stop('No valid binary files found. Either none have been added, or the ',
@@ -366,12 +368,15 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     modList <- c('ClickDetector', 'WhistlesMoans', 'Cepstrum', 'GPLDetector')
     modWarn <- c(FALSE, FALSE, FALSE, FALSE)
     names(modWarn) <- modList
-    binData <- lapply(binList, function(bin) {
+    
+    binDone <- vector('logical', length=length(binList))
+    names(binDone) <- binList
+    binData <- future_lapply(binList, function(bin) {
         # should i do here - read in head/foot only, then check those
         # times against grouplist, if none can skip, if one we know
         # what db to match sr with. if more than one... hope they have the
         # same SR? or go fys?
-
+        
         # debugger
         failBin <<- bin
         # flag if weve loaded data, need because incomplete binaries dont have footer for check
@@ -387,25 +392,23 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
             dataLen <- length(thisBin$data)
             if(dataLen == 0) {
                 if(progress) {
-                    setTxtProgressBar(pb, value=which(binList==bin))
+                    binDone[[bin]] <<- TRUE
+                    setTxtProgressBar(pb, value=sum(binDone))
                 }
                 return(NULL)
             }
             binBounds <- convertPgDate(c(thisBin$data[[1]]$date, thisBin$data[[dataLen]]$date))
         }
         binInt <- interval(binBounds[1], binBounds[2])
-
-        # evPossible <- (binBounds[1] >= grouping$start & binBounds[1] <= grouping$end) |
-        #     (binBounds[2] >= grouping$start & binBounds[2] <= grouping$end) |
-        #     (binBounds[1] <= grouping$start & binBounds[2] >= grouping$end)
+        
         evPossible <- int_overlaps(binInt, grouping$interval)
-        # if(!identical(evPossible2, evPossible)) {
-        #     browser()
-        # }
+        
         # if not overlapping any events, skip doing data part mobetta
         if(!any(evPossible)) {
             if(progress) {
-                setTxtProgressBar(pb, value=which(binList==bin))
+                # setTxtProgressBar(pb, value=which(binList==bin))
+                binDone[[bin]] <<- TRUE
+                setTxtProgressBar(pb, value=sum(binDone))
             }
             return(NULL)
         }
@@ -414,7 +417,9 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
         }
         if(length(thisBin$data) == 0) {
             if(progress) {
-                setTxtProgressBar(pb, value=which(binList==bin))
+                binDone[[bin]] <<- TRUE
+                setTxtProgressBar(pb, value=sum(binDone))
+                # setTxtProgressBar(pb, value=which(binList==bin))
             }
             return(NULL)
         }
@@ -444,10 +449,13 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
         }
         thisBinData <- calculateModuleData(thisBin, binFuns, pps@settings)
         if(progress) {
-            setTxtProgressBar(pb, value=which(binList==bin))
+            binDone[[bin]] <<- TRUE
+            setTxtProgressBar(pb, value=sum(binDone))
+            # setTxtProgressBar(pb, value=which(binList==bin))
         }
         thisBinData
-    })
+    }, future.seed=NULL, future.stdout=NA)
+
     if(progress) {
         cat('\n') # space after progress bar finished
     }
@@ -460,10 +468,10 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
     binData <- lapply(binData, function(x) split(x, x$detectorName))
     binData <- unlist(binData, recursive = FALSE)
     binData <- squishList(binData)
-
+    
     acousticEvents <- vector('list', length = nrow(grouping))
     evName <- as.character(grouping$id)
-
+    
     colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentID',
                     'sr', 'callType', 'newUID')
     names(acousticEvents) <- evName
@@ -555,12 +563,12 @@ processPgTime <- function(pps, grouping=NULL, format='%Y-%m-%d %H:%M:%OS', id=NU
 processPgDb <- function(pps, grouping=c('event', 'detGroup', 'clickTrain'), id=NULL,
                         progress=TRUE, ...) {
     allDb <- pps@db
-
+    
     # awk diff init values between modes have to reset this here
     if(is.null(grouping)) {
         grouping <- c('event', 'detGroup', 'clickTrain')
     }
-
+    
     nBin <- sum(sapply(allDb, nBins, grouping=grouping))
     if(nBin == 0) {
         warning('No detections found within database, are you sure you want',
@@ -606,8 +614,8 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup', 'clickTrain'), id=N
             dbData <- dropCols(dbData, 'SystemType')
             calibrationUsed <- names(pps@calibration[[1]])
             if(length(calibrationUsed)==0) calibrationUsed <- 'None'
-
-            dbData <- lapply(
+            
+            dbData <- future_lapply(
                 split(dbData, dbData$BinaryFile), function(x) {
                     if(progress) {
                         setTxtProgressBar(pb, value = binNo)
@@ -639,7 +647,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup', 'clickTrain'), id=N
                             inner_join(x, by='UID', relationship='many-to-many') %>%
                             distinct()
                     }
-                }
+                }, future.stdout=NA
             )
             if(length(missBins) > 0) {
                 pamWarning('Could not find the matching binary files for binaries ',
@@ -648,31 +656,31 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup', 'clickTrain'), id=N
             }
             # This is a list for each binary, we want for each detector
             dbData <- dbData[sapply(dbData, function(x) !is.null(x))]
-
+            
             dbData <- lapply(dbData, function(x) split(x, x$detectorName))
             names(dbData) <- NULL
             dbData <- unlist(dbData, recursive = FALSE)
             dbData <- squishList(dbData)
-
+            
             # Split into events, then swap from Detector(Events) to Event(Detectors)
             # .names necessary to make sure we have all event numbers
             dbData <- transpose(
                 lapply(dbData, function(x) split(x, x$parentID)),
                 .names = unique(unlist(sapply(dbData, function(x) x$parentID)))
             )
-
+            
             # Should this function store the event ID? Right now its just the name
             # in the list, but is this reliable? Probably not
-
+            
             colsToDrop <- c('Id', 'comment', 'sampleRate', 'detectorName', 'parentID',
                             'sr', 'callType', 'newUID', extraCols, 'BinaryUsed')
-
+            
             acousticEvents <- lapply(dbData, function(ev) {
                 ev <- ev[sapply(ev, function(x) !is.null(x))]
                 binariesUsed <- sapply(ev, function(x) unique(x$BinaryUsed)) %>%
                     unlist(recursive = FALSE) %>% unique()
                 # binariesUsed <- unlist(sapply(binariesUsed, function(x) grep(x, binList, value=TRUE, fixed=TRUE), USE.NAMES = FALSE))
-
+                
                 evId <- paste0(gsub('\\.sqlite3', '', basename(db)), '.', unique(ev[[1]]$parentID))
                 if(all(tarMoCols %in% colnames(ev[[1]]))) {
                     evTarMo <- ev[[1]][1, tarMoCols]
@@ -721,7 +729,7 @@ processPgDb <- function(pps, grouping=c('event', 'detGroup', 'clickTrain'), id=N
             return(NULL)
         })
     })
-
+    
     if(progress) {
         cat('\n')
     }
@@ -807,7 +815,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
                } else {
                    label <- NULL
                }
-
+               
                eventColumns <- unique(c('Id', label, 'Text_Annotation'))
                evName <- 'DGL'
            },
@@ -823,7 +831,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
                stop("I don't know how to group by ", grouping, '.\n', call.=FALSE)
            }
     )
-
+    
     if(length(detTables)==0 ||
        length(eventTables)==0) {
         pamWarning('Could not find event tables for grouping method "', grouping,
@@ -845,7 +853,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
                    '" in database ', basename(db), which = -1)
         return(NULL)
     }
-
+    
     allEvents <- bind_rows(
         lapply(eventTables, function(table) {
             et <- dbReadTable(con, table)
@@ -861,10 +869,10 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
                    '" in database ', basename(db), which = -1)
         return(NULL)
     }
-
+    
     eventColumns <- eventColumns[eventColumns %in% colnames(allEvents)]
     allEvents <- select(allEvents, any_of(c(eventColumns, extraCols)))
-
+    
     # Do i want all detections in clicks, or only all in events?
     # left_join all det, inner_join ev only
     if(!('Id' %in% names(allEvents)) ||
@@ -873,7 +881,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
                 ', these are required to process data.')
         return(NULL)
     }
-
+    
     allDetections <- inner_join(
         allDetections, allEvents, by=c('parentID'='Id'), relationship='many-to-one'
     )
@@ -884,9 +892,9 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
         mutate(BinaryFile = strsplitboth(.data$BinaryFile),
                # UTC = as.POSIXct(as.character(UTC), format='%Y-%m-%d %H:%M:%OS', tz='UTC')) %>%
                UTC = pgDateToPosix(.data$UTC)) %>%
-
+        
         select(any_of(unique(c(eventColumns, 'UTC', 'UID', 'parentID', 'BinaryFile', 'newUID', extraCols))))
-
+    
     # rename column to use as label - standardize across event group types
     colnames(allDetections)[which(colnames(allDetections)==label)] <- 'eventLabel'
     if(grouping == 'detGroup' &&
@@ -894,7 +902,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
        'Text_Annotation' %in% colnames(allDetections)) {
         colnames(allDetections)[colnames(allDetections) == 'Text_Annotation'] <- 'comment'
     }
-
+    
     if(!('eventLabel' %in% colnames(allDetections))) {
         allDetections$eventLabel <- NA_character_
     } else {
@@ -903,7 +911,7 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
     if(doSR) {
         allDetections <- matchSR(allDetections, db, extraCols=c('SystemType'))
     }
-
+    
     # apply strsplitboth to all character columns
     whichChar <- which(sapply(allDetections, function(x) 'character' %in% class(x)))
     for(i in whichChar) {
@@ -930,7 +938,7 @@ getMatchingBinaryData <- function(dbData, binList, dbName, idCol = 'UID') {
     dbData$matched <- FALSE
     for(bin in seq_along(allBinFiles)) {
         thisBin <- loadPamguardBinaryFile(allBinFiles[bin], keepUIDs = unique(c(dbData[['UID']], dbData[['newUID']])))
-
+        
         # We've found the right file if theres any data
         if(length(thisBin$data) > 0) {
             # thisBin$data <- thisBin$data[names(thisBin$data) %in% dbData[[idCol]]]
@@ -1147,7 +1155,7 @@ wavToGroup <- function(db) {
         sa <- rbind(sa, newStuff)
         sa <- arrange(sa, Id)
     }
-
+    
     if(is.na(wavCol)) {
         pamWarning('Wav file names not saved in database, events will be labelled numerically')
         saGrp <- select(sa, c('UTC', 'Status', 'SystemType'))
@@ -1167,7 +1175,7 @@ wavToGroup <- function(db) {
             pamWarning('Could not find appropriate start and stop times in Sound_Acquisition table')
             return(NULL)
         }
-
+        
         saGrp <- data.frame(start=saGrp$Start, end=saGrp$Stop, id=saGrp$id)
     } else {
         for(i in which(is.na(sa[[wavCol]]))) {
@@ -1284,7 +1292,7 @@ findModuleNames <- function(con, module='Detection Group Localiser') {
     result$name <- gsub(' ', '_', result$name)
     result$name[result$name %in% dbListTables(con)]
 }
- #' @importFrom lubridate period
+#' @importFrom lubridate period
 #'
 unitToPeriod <- function(x) {
     if(inherits(x, 'Period')) {
