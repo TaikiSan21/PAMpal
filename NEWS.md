@@ -1,3 +1,7 @@
+## PAMpal 1.4.1
+
+- Fixing bug with `updateFiles` paths in some edge cases
+
 ## PAMpal 1.4.0
 
 - Adding supprt for parallel processing using the `future` package framework

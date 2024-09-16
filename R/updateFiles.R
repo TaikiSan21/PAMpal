@@ -150,6 +150,7 @@ fileMatcher <- function(old, new) {
     # old <- normalizePath(old, winslash = '/')
     # old <- normalizePath(old, winslash = '/', mustWork = FALSE)
     old <- gsub('\\\\', '/', old)
+    new  <- gsub('\\\\', '/', new)
     ###
     toCheck <- rep(TRUE, length(old))
     nCheck <- sum(toCheck)
@@ -252,6 +253,15 @@ checkNextDir <- function(x,y) {
 # get base parts of paths that differ - c/taiki/files vs c/greg/files
 # use this to gsub c/taiki for c/greg
 findPathDiff <- function(x, y) {
+    # need to check for \\\\ start
+    xhas4 <- identical(substr(x, 1, 2), '\\\\')
+    yhas4 <- identical(substr(y, 1, 2), '\\\\')
+    if(xhas4) {
+        x <- substr(x, 3, nchar(x))
+    }
+    if(yhas4) {
+        y <- substr(y, 3, nchar(y))
+    }
     splitx <- strsplit(x, '/|\\\\')[[1]]
     splity <- strsplit(y, '/|\\\\')[[1]]
     nx <- length(splitx)
@@ -261,9 +271,15 @@ findPathDiff <- function(x, y) {
             break
         }
     }
-    c(
-        paste0(splitx[1:(nx-i+1)], collapse='/'),
-        paste0(splity[1:(ny-i+1)], collapse='/'))
+    outx <- paste0(splitx[1:(nx-i+1)], collapse='/')
+    outy <- paste0(splity[1:(ny-i+1)], collapse='/')
+    if(xhas4) {
+        outx <- paste0('\\\\', outx)
+    }
+    if(yhas4) {
+        outy <- paste0('\\\\', outy)
+    }
+    c(outx, outy)
 }
 
 fileLister <- function(x, label, pattern, verbose=TRUE, check=TRUE) {
