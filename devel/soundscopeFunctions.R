@@ -5,8 +5,8 @@ library(lubridate)
 # Updated 2024-09-11 with recording renamer
 
 export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum'),
-                              bin=NULL, extraCols=NULL,
-                              offset=0, channel=NULL, filename) {
+                              bin=NULL, binIci=FALSE, extraCols=NULL,
+                              offset=0, channel=NULL) {
     recData <- files(x)$recordings
     if(is.null(recData)) {
         stop('Recording information not found, use "addRecordings" first.')
@@ -20,16 +20,30 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum
         x <- filter(x, Channel == channel)
     }
     if(!is.null(bin)) {
-        x$UTC <- floor_date(x$UTC, unit=bin)
-        x <- x %>% 
-            group_by(.data$UTC, .data$Channel) %>% 
+        x[['BINDATE']] <- floor_date(x$UTC, unit=bin)
+        # x$UTC <- floor_date(x$UTC, unit=bin)
+        if(isTRUE(binIci)) {
+            x <- bind_rows(lapply(split(x, x[['BINDATE']]), function(b) {
+                thisIci <- PAMpal:::calcIciMode(
+                    PAMpal:::dfTimeToNext(b, time='peakTime')$ici
+                )
+                b$binIci <- thisIci
+                b
+            }))
+            extraCols <- c('binIci', extraCols)
+        }
+        x <- x %>%
+            group_by(.data$BINDATE, .data$Channel) %>%
             summarise(across(any_of(extraCols), median),
                       n=n(),
-                      species=unique(.data$species)) %>% 
+                      species=unique(.data$species)) %>%
             ungroup()
         extraCols <- unique(c('n', extraCols))
+
+        x$UTC <- NULL
+        x <- rename(x, 'UTC' = 'BINDATE')
     }
-    
+
     x <- joinRecordingData(x, recData, columns=c('file', 'start', 'sr'))
     noWavMatch <- is.na(x$file)
     if(all(noWavMatch)) {
@@ -40,7 +54,7 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum
                 ' they will not be included in NetCDF output.')
         x <- x[!noWavMatch, ]
     }
-    
+
     x <- arrange(x, 'UTC')
     nDets <- nrow(x)
     if(length(unique(x$UTC)) != nDets) {
@@ -134,7 +148,7 @@ createTimeVar <- function(x) {
     x <- as.numeric(x) - startNum
     x <- round(x * 1e3, 0) # now milliseconds since start
     startString <- format(
-        as.POSIXct(floor(startNum), origin='1970-01-01 00:00:00', tz='UTC'), 
+        as.POSIXct(floor(startNum), origin='1970-01-01 00:00:00', tz='UTC'),
         format='%Y-%m-%d %H:%M:%S'
     )
     startString <- paste0(startString, '.', startMillis)
@@ -215,7 +229,7 @@ renameSoundscopeRecordings <- function(nc, rec) {
     on.exit(close.nc(con))
     oldDirs <- var.get.nc(con, variable='audio_file_dir')
     newDirs <- list.dirs(rec, full.names=TRUE, recursive=TRUE)
-    
+
     newValues <- PAMpal:::fileMatcher(old=oldDirs, new=newDirs)
     changed <- newValues != oldDirs
     cat(sum(changed), 'out of', length(changed), 'values were changed.')

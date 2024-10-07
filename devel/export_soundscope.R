@@ -1,17 +1,20 @@
 #' @title Export a Soundscope NetCDF
-#' 
+#'
 #' @description Exports the data in an \linkS4class{AcousticStudy}
 #'   object to a NetCDF file compatible with the Soundscope program
-#'   
+#'
 #' @param x a \linkS4class{AcousticStudy} object
-#' 
+#'
 #' @return file path to the exported NetCDF file
-#' 
+#'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
-#' 
+#'
 #' @importFrom uuid UUIDgenerate
 #' @export
-#' 
+#'
+##################################################################
+##### !!!STOP!!! UPDATE THIS FROM SOUNDSCOPEFUNCTIONS.R FIRST ####
+##################################################################
 export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum'),
                               bin=NULL, extraCols=NULL,
                               offset=0, channel=NULL, filename) {
@@ -29,15 +32,15 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum
     }
     if(!is.null(bin)) {
         x$UTC <- floor_date(x$UTC, unit=bin)
-        x <- x %>% 
-            group_by(.data$UTC, .data$Channel) %>% 
+        x <- x %>%
+            group_by(.data$UTC, .data$Channel) %>%
             summarise(across(any_of(extraCols), median),
                       n=n(),
-                      species=unique(.data$species)) %>% 
+                      species=unique(.data$species)) %>%
             ungroup()
         extraCols <- unique(c('n', extraCols))
     }
-            
+
     x <- joinRecordingData(x, recData, columns=c('file', 'start', 'sr'))
     noWavMatch <- is.na(x$file)
     if(all(noWavMatch)) {
@@ -48,7 +51,7 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum
                 ' they will not be included in NetCDF output.')
         x <- x[!noWavMatch, ]
     }
-    
+
     x <- arrange(x, 'UTC')
     nDets <- nrow(x)
     if(length(unique(x$UTC)) != nDets) {
@@ -142,7 +145,7 @@ createTimeVar <- function(x) {
     x <- as.numeric(x) - startNum
     x <- round(x * 1e3, 0) # now milliseconds since start
     startString <- format(
-        as.POSIXct(floor(startNum), origin='1970-01-01 00:00:00', tz='UTC'), 
+        as.POSIXct(floor(startNum), origin='1970-01-01 00:00:00', tz='UTC'),
         format='%Y-%m-%d %H:%M:%S'
     )
     startString <- paste0(startString, '.', startMillis)
