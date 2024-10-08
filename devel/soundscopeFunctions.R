@@ -2,6 +2,7 @@ library(RNetCDF)
 library(PAMpal)
 library(uuid)
 library(lubridate)
+# Updated 2024-10-07 with ICI for time bins
 # Updated 2024-09-11 with recording renamer
 
 export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum'),
@@ -24,10 +25,14 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum
         # x$UTC <- floor_date(x$UTC, unit=bin)
         if(isTRUE(binIci)) {
             x <- bind_rows(lapply(split(x, x[['BINDATE']]), function(b) {
-                thisIci <- PAMpal:::calcIciMode(
-                    PAMpal:::dfTimeToNext(b, time='peakTime')$ici
-                )
-                b$binIci <- thisIci
+                iciVals <- PAMpal:::dfTimeToNext(b, time='peakTime')$ici
+                iciVals <- iciVals[!is.na(iciVals)]
+                if(length(iciVals) == 0) {
+                    b$binIci <- 0
+                } else {
+                    thisIci <- PAMpal:::calcIciMode(iciVals)
+                    b$binIci <- thisIci
+                }
                 b
             }))
             extraCols <- c('binIci', extraCols)
@@ -39,11 +44,11 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum
                       species=unique(.data$species)) %>%
             ungroup()
         extraCols <- unique(c('n', extraCols))
-
+        
         x$UTC <- NULL
         x <- rename(x, 'UTC' = 'BINDATE')
     }
-
+    
     x <- joinRecordingData(x, recData, columns=c('file', 'start', 'sr'))
     noWavMatch <- is.na(x$file)
     if(all(noWavMatch)) {
@@ -54,7 +59,7 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum
                 ' they will not be included in NetCDF output.')
         x <- x[!noWavMatch, ]
     }
-
+    
     x <- arrange(x, 'UTC')
     nDets <- nrow(x)
     if(length(unique(x$UTC)) != nDets) {
@@ -229,7 +234,7 @@ renameSoundscopeRecordings <- function(nc, rec) {
     on.exit(close.nc(con))
     oldDirs <- var.get.nc(con, variable='audio_file_dir')
     newDirs <- list.dirs(rec, full.names=TRUE, recursive=TRUE)
-
+    
     newValues <- PAMpal:::fileMatcher(old=oldDirs, new=newDirs)
     changed <- newValues != oldDirs
     cat(sum(changed), 'out of', length(changed), 'values were changed.')
