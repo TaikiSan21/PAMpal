@@ -287,8 +287,18 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
                         FOUNDFORMAT <<- f
                         break
                     }
+                },
+                'AMAR' = {
+                    #'AMAR668.9.20210823T231318Z.wav' example
+                    date <- gsub('.*([0-9]{8}T[0-9]{6}Z)\\.wav$', '\\1', x)
+                    posix <- as.POSIXct(date, format='%Y%m%dT%H%M%SZ', tz='UTC')
+                    millis <- 0
+                    if(!is.na(posix)) {
+                        FOUNDFORMAT <<- f
+                        break
+                    }
                 }
-            ) #'AMAR668.9.20210823T231318Z.wav'
+            ) 
         }
         if(progress) {
             setTxtProgressBar(pb, value=wix)
