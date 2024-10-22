@@ -262,7 +262,7 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
                     }
                 },
                 'sm3' = {
-                    date <- gsub('.*\\_([0-9]{8}_[0-9]{6})\\.wav$', '\\1', x)
+                    date <- gsub('.*\\_([0-9]{8}_[0-9]{6})Z?\\.wav$', '\\1', x)
                     posix <- as.POSIXct(date, format = '%Y%m%d_%H%M%S', tz='UTC')
                     millis <- 0
                     if(!is.na(posix)) {
@@ -288,7 +288,7 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
                         break
                     }
                 }
-            )
+            ) #'AMAR668.9.20210823T231318Z.wav'
         }
         if(progress) {
             setTxtProgressBar(pb, value=wix)
