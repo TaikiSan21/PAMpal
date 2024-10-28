@@ -228,7 +228,7 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
             len <- header$samples / sr
             sampleLength <- header$samples
         }
-        format <- c(FOUNDFORMAT, c('pamguard', 'pampal', 'soundtrap', 'sm3', 'icListens1', 'icListens2'))
+        format <- c(FOUNDFORMAT, c('pamguard', 'pampal', 'soundtrap', 'sm3', 'icListens1', 'icListens2', 'AMAR'))
         for(f in format) {
             switch(
                 f,
@@ -289,7 +289,7 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
                     }
                 },
                 'AMAR' = {
-                    #'AMAR668.9.20210823T231318Z.wav' example
+                    # 'AMAR668.9.20210823T231318Z.wav' example
                     date <- gsub('.*([0-9]{8}T[0-9]{6}Z)\\.wav$', '\\1', x)
                     posix <- as.POSIXct(date, format='%Y%m%dT%H%M%SZ', tz='UTC')
                     millis <- 0

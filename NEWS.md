@@ -1,3 +1,7 @@
+## PAMpal 1.4.2
+
+- Oops didnt properly add AMAR wav file to `addRecordings`
+
 ## PAMpal 1.4.1
 
 - Fixing bug with `updateFiles` paths in some edge cases
