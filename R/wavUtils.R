@@ -128,7 +128,7 @@ myDownsample <- function(wav, srFrom=NULL, srTo) {
     wav
 }
 
-# list of binary files to matrix of spectra
+# list of binary files to list of spectra
 binToSpecMat <- function(bin, channel=1, freq, wl, filterfrom_khz, filterto_khz,
                          sr, decimate, mode, noise=FALSE, calFun, ...) {
     lapply(bin, function(x) {

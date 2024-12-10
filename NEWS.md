@@ -1,3 +1,7 @@
+## PAMpal 1.4.3
+
+- Big with all 0 wav clips in `calculateAverageSpectra` causing errors
+
 ## PAMpal 1.4.2
 
 - Oops didnt properly add AMAR wav file to `addRecordings`

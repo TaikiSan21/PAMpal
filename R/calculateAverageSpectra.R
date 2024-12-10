@@ -151,7 +151,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     specData <- binToSpecMat(binData, channel=channel, wl=wl, sr=sr, freq=freq,
                              calFun=calFun, mode=mode, noise=FALSE, decimate=decimate,
                              filterfrom_khz=filterfrom_khz, filterto_khz = filterto_khz, ...)
-    specData <- specData[!sapply(specData, is.null)]
+    specData <- specData[!sapply(specData, function(x) all(is.na(x)))]
     specMat <- matrix(NA,nrow=length(specData[[1]]), ncol=length(specData))
 
     for(i in seq_along(specData)) {
@@ -162,7 +162,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     noiseData <- binToSpecMat(binData, channel=channel, wl=wl, sr=sr, freq=freq,
                               calFun=calFun, mode=mode, noise=TRUE, decimate=decimate,
                               filterfrom_khz=filterfrom_khz, filterto_khz = filterto_khz, ...)
-    noiseData <- noiseData[!sapply(noiseData, is.null)]
+    noiseData <- noiseData[!sapply(noiseData, function(x) all(is.na(x)))]
     noiseMat <- matrix(NA,nrow=length(noiseData[[1]]), ncol=length(noiseData))
 
     for(i in seq_along(noiseData)) {
