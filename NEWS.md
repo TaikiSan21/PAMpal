@@ -2,6 +2,8 @@
 
 - Big with all 0 wav clips in `calculateAverageSpectra` causing errors
 
+- Oops changing fix so that only non-noise clips with all 0 get dropped
+
 ## PAMpal 1.4.2
 
 - Oops didnt properly add AMAR wav file to `addRecordings`
