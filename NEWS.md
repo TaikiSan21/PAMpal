@@ -1,3 +1,7 @@
+## PAMpal 1.4.4
+
+- Fixed rare problem with finding whistle sample rate
+
 ## PAMpal 1.4.3
 
 - Big with all 0 wav clips in `calculateAverageSpectra` causing errors

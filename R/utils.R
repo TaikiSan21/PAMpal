@@ -264,15 +264,15 @@ getPamFft <- function(data, method=c('new', 'old')) {
             }
             
             hops <- diff(samplePairs$start) / diff(samplePairs$slice)
+            hops <- as.integer(hops)
             hops <- unique(hops)
             hops <- hops[is.finite(hops)]
             if(length(hops) > 1) {
-                hops <- as.integer(hops)
                 checkPow2 <- round(log2(hops)) == log2(hops)
                 if(!any(checkPow2)) {
                     fftHop <- hops[1]
                 } else {
-                    fftHop <- which(checkPow2)[1]
+                    fftHop <- hops[which(checkPow2)[1]]
                 }
             } else {
                 fftHop <- hops
