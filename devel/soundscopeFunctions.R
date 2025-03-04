@@ -2,10 +2,12 @@ library(RNetCDF)
 library(PAMpal)
 library(uuid)
 library(lubridate)
-# Updated 2024-10-07 with ICI for time bins
-# Updated 2024-09-11 with recording renamer
+# Updated 2024-11-12: fill in different fields from different detectors
+#                     and error when not-binned
+# Updated 2024-10-07: ICI for time bins
+# Updated 2024-09-11: recording renamer
 
-export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum'),
+export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl'),
                               bin=NULL, binIci=FALSE, extraCols=NULL,
                               offset=0, channel=NULL) {
     recData <- files(x)$recordings
@@ -47,6 +49,8 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum
         
         x$UTC <- NULL
         x <- rename(x, 'UTC' = 'BINDATE')
+    } else {
+        x$n <- 1
     }
     
     x <- joinRecordingData(x, recData, columns=c('file', 'start', 'sr'))
@@ -70,13 +74,34 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum
     ncAttributes$measurer_name <- 'PAMGuard'
     ncAttributes$measurer_version <- '1.0'
     # do these just let it look at them?
-    ncAttributes$measurements_name <- c('frequency_bandwidth', 'amplitude')
+    # ncAttributes$measurements_name <- c('frequency_bandwidth', 'amplitude')
     ncData$uuid <- uuid::UUIDgenerate(n=nDets)
     # just in case theres a dupe just try again
     if(length(unique(ncData$uuid)) < nDets) {
         ncData$uuid <- uuid::UUIDgenerate(n=nDets)
     }
-    duration <- ifelse(is.null(bin), .0025, as.numeric(unitToPeriod(bin)))
+    # some fields are detector type specific
+    switch(detector, 
+           'click' = {
+               duration <- ifelse(is.null(bin), .0025, as.numeric(unitToPeriod(bin)))
+               freqMin <- (x$centerkHz_10dB - x$BW_10dB/2)*1e3
+               freqMax <- (x$centerkHz_10dB + x$BW_10dB/2)*1e3
+               chan <- as.numeric(x$Channel)
+           },
+           'whistle' = {
+               duration <- x$duration
+               freqMin <- x$freqMin
+               freqMax <- x$freqMax
+               chan <- 1
+           },
+           'gpl' = {
+               duration <- x$duration
+               freqMin <- x$freqMin
+               freqMax <- x$freqMax
+               chan <- 1
+           }
+    )
+    # duration <- ifelse(is.null(bin), .0025, as.numeric(unitToPeriod(bin)))
     ncData$time_min_offset <- as.numeric(x$UTC) - as.numeric(x$start) # "startSeconds" so should be time into file?
     ncData$time_max_offset <- ncData$time_min_offset + duration # + duration
     ncData$audio_file_dir <- dirname(x$file) # join it earlier
@@ -93,11 +118,11 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl', 'cepstrum
     ncData$UTC_offset <- offset
     ncData$confidence <- x$n #1
     ncData$software_name <- detector #just do detector?
-    ncData$audio_channel <- as.numeric(x$Channel) #
+    ncData$audio_channel <- chan
     ncData$entry_date <- '' # PCTime column from database. Hm.
-    ncData$frequency_min <- 200 #(x$centerkHz_10dB - x$BW_10dB/2)*1e3#'' # these are just detector settings im pretty sure
-    ncData$frequency_max <- 16e3 #(x$centerkHz_10dB + x$BW_10dB/2)*1e3
-    ncData$frequency_bandwidth <- ''
+    ncData$frequency_min <- freqMin #(x$centerkHz_10dB - x$BW_10dB/2)*1e3#'' # these are just detector settings im pretty sure
+    ncData$frequency_max <- freqMax #(x$centerkHz_10dB + x$BW_10dB/2)*1e3
+    ncData$frequency_bandwidth <- ncData$frequency_max - ncData$frequency_min
     ncData$amplitude <- '' # never knew where this came from
     ncAttributes$deployment_file <- '' # deployment_info.csv ???
     ## adjusting UTC offset and changing utc offset???
