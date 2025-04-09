@@ -15,6 +15,17 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl'),
         stop('Recording information not found, use "addRecordings" first.')
     }
     detector <- match.arg(detector)
+    switch(detector,
+           'click' = {
+               extraCols <- unique(c(extraCols, 'centerkHz_10dB', 'BW_10dB'))
+           },
+           'whistle' = {
+               extraCols <- unique(c('duration', 'freqMin', 'freqMax'))
+           },
+           'gpl' = {
+               extraCols <- unique(c('duration', 'freqMin', 'freqMax'))
+           }
+    )
     x <- getDetectorData(x, measures=TRUE)[[detector]]
     if('Channel' %in% colnames(x)) {
         if(is.null(channel)) {
@@ -22,6 +33,7 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl'),
         }
         x <- filter(x, Channel == channel)
     }
+    x <- joinRecordingData(x, recData, columns=c('file', 'start', 'sr'))
     if(!is.null(bin)) {
         x[['BINDATE']] <- floor_date(x$UTC, unit=bin)
         # x$UTC <- floor_date(x$UTC, unit=bin)
@@ -43,17 +55,20 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl'),
             group_by(.data$BINDATE, .data$Channel) %>%
             summarise(across(any_of(extraCols), median),
                       n=n(),
-                      species=unique(.data$species)) %>%
+                      species=unique(.data$species),
+                      file=unique(.data$file),
+                      start=unique(.data$start),
+                      sr=unique(.data$sr)) %>%
             ungroup()
         extraCols <- unique(c('n', extraCols))
-        
+
         x$UTC <- NULL
         x <- rename(x, 'UTC' = 'BINDATE')
     } else {
         x$n <- 1
     }
-    
-    x <- joinRecordingData(x, recData, columns=c('file', 'start', 'sr'))
+
+
     noWavMatch <- is.na(x$file)
     if(all(noWavMatch)) {
         stop('No detections had matching wav files, could not create NetCDF')
@@ -63,7 +78,7 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl'),
                 ' they will not be included in NetCDF output.')
         x <- x[!noWavMatch, ]
     }
-    
+
     x <- arrange(x, 'UTC')
     nDets <- nrow(x)
     if(length(unique(x$UTC)) != nDets) {
@@ -81,7 +96,7 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl'),
         ncData$uuid <- uuid::UUIDgenerate(n=nDets)
     }
     # some fields are detector type specific
-    switch(detector, 
+    switch(detector,
            'click' = {
                duration <- ifelse(is.null(bin), .0025, as.numeric(unitToPeriod(bin)))
                freqMin <- (x$centerkHz_10dB - x$BW_10dB/2)*1e3
@@ -186,7 +201,7 @@ createTimeVar <- function(x) {
     list(vals=x, units=units)
 }
 
-createSoundscopeNc <- function(data, attributes, file) {
+createSoundscopeNc <- function(data, attributes, file, deflate=NA, skipString=FALSE, shuffle=TRUE) {
     if(is.list(data) &&
        all(c('data', 'attributes') %in% names(data))) {
         attributes <- data$attributes
@@ -195,11 +210,14 @@ createSoundscopeNc <- function(data, attributes, file) {
     nc <- create.nc(file, prefill=FALSE, format='netcdf4', diskless=FALSE)
     dateVar <- createTimeVar(data$date)
     dim.def.nc(nc, 'date', dimlength=length(dateVar$vals))
-    var.def.nc(nc, varname='date', vartype='NC_INT64', dimensions='date')
+    var.def.nc(nc, varname='date', vartype='NC_INT64', dimensions='date', deflate=deflate, shuffle=shuffle)
     att.put.nc(nc, 'date', 'units', 'NC_CHAR', dateVar$units)
     att.put.nc(nc, 'date', 'calendar', 'NC_CHAR', 'proleptic_gregorian')
     var.put.nc(nc, variable='date', data=dateVar$vals)
-    on.exit(close.nc(nc))
+    on.exit({
+        close.nc(nc)
+        print(file.size(file))
+        })
     data$date <- NULL
     for(col in colnames(data)) {
         # cat('Column ', col, '\n')
@@ -209,26 +227,27 @@ createSoundscopeNc <- function(data, attributes, file) {
         }
         switch(thisClass,
                'character' = {
-                   var.def.nc(nc, varname=col, vartype='NC_STRING', dimensions='date')
+                   if(skipString) next
+                   var.def.nc(nc, varname=col, vartype='NC_STRING', dimensions='date', deflate=NA, shuffle=shuffle)
                    var.put.nc(nc, variable=col, data=data[[col]])
                },
                'POSIXct' = {
                    dateVar <- createTimeVar(data[[col]])
-                   var.def.nc(nc, varname=col, vartype='NC_INT64', dimensions='date')
+                   var.def.nc(nc, varname=col, vartype='NC_INT64', dimensions='date', deflate=deflate, shuffle=shuffle)
                    att.put.nc(nc, variable=col, 'units', 'NC_CHAR', dateVar$units)
                    att.put.nc(nc, variable=col, 'calendar', 'NC_CHAR', 'proleptic_gregorian')
                    var.put.nc(nc, variable=col, data=dateVar$vals)
                },
                'numeric' = {
-                   var.def.nc(nc, varname=col, vartype='NC_DOUBLE', dimensions='date')
+                   var.def.nc(nc, varname=col, vartype='NC_DOUBLE', dimensions='date', deflate=deflate, shuffle=shuffle)
                    var.put.nc(nc, variable=col, data=data[[col]])
                },
                'integer' = {
-                   var.def.nc(nc, varname=col, vartype='NC_INT', dimensions='date')
+                   var.def.nc(nc, varname=col, vartype='NC_INT', dimensions='date', deflate=deflate, shuffle=shuffle)
                    var.put.nc(nc, variable=col, data=data[[col]])
                },
                'logical' = {
-                   var.def.nc(nc, varname=col, vartype='NC_BYTE', dimensions='date')
+                   var.def.nc(nc, varname=col, vartype='NC_BYTE', dimensions='date', deflate=deflate, shuffle=shuffle)
                    att.put.nc(nc, variable=col, 'dtype', 'NC_CHAR', 'bool')
                    var.put.nc(nc, variable=col, data=as.numeric(data[[col]]))
                },
@@ -259,7 +278,7 @@ renameSoundscopeRecordings <- function(nc, rec) {
     on.exit(close.nc(con))
     oldDirs <- var.get.nc(con, variable='audio_file_dir')
     newDirs <- list.dirs(rec, full.names=TRUE, recursive=TRUE)
-    
+
     newValues <- PAMpal:::fileMatcher(old=oldDirs, new=newDirs)
     changed <- newValues != oldDirs
     cat(sum(changed), 'out of', length(changed), 'values were changed.')
