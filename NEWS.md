@@ -1,3 +1,7 @@
+## PAMpal 1.4.5
+
+- Attempting fixes for pre-2.0 data
+
 ## PAMpal 1.4.4
 
 - Fixed rare problem with finding whistle sample rate

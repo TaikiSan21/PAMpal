@@ -872,7 +872,21 @@ getDbData <- function(db, grouping=c('event', 'detGroup', 'clickTrain'), label=N
     
     eventColumns <- eventColumns[eventColumns %in% colnames(allEvents)]
     allEvents <- select(allEvents, any_of(c(eventColumns, extraCols)))
-    
+    # Attempts for force-fix pre-PG2.0 
+    pg2 <- TRUE
+    if(!'parentID' %in% names(allDetections) &&
+       'EventId' %in% names(allDetections)) {
+        allDetections$parentID <- allDetections$EventId
+        pg2 <- FALSE
+    }
+    if(!'UID' %in% names(allDetections)) {
+        allDetections$UID <- -1
+        pg2 <- FALSE
+    }
+    if(isFALSE(pg2)) {
+        pamWarning('Database appears to be earlier than PAMGuard 2.0,',
+                   ' attempted fixes may be imperfect.')
+    }
     # Do i want all detections in clicks, or only all in events?
     # left_join all det, inner_join ev only
     if(!('Id' %in% names(allEvents)) ||
