@@ -318,6 +318,10 @@ This is an in-depth topic that has its [own page][avg-spec]
 
 ## Adding Environmental Data {#adding-environmental-data}
 
+**Note** The examples below are shown with an `AcousticStudy` object
+called `myStudy`, but will also work for a regular dataframe as long
+as it contains columns "UTC", "Latitude", and "Longitude".
+
 Trying to download and match up environmental data to your
 acoustic data can be quite a pain, but lucky for you PAMpal is
 here to make it easier. This currently works with data from ERDDAP
