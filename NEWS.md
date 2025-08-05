@@ -1,3 +1,10 @@
+## PAMpal 1.4.6
+
+- Bug fixes for `calculateAverageSpectra` - returning safely with all-NA events
+instead of erroring
+
+- Added `snrVals` output to `calculateAverageSpectra`
+
 ## PAMpal 1.4.5
 
 - Better warning for pre-2.0 data

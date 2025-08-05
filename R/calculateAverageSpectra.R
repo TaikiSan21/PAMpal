@@ -64,7 +64,8 @@
 #'   \code{UID} - the UID of each click, \code{avgSpec} - the average spectra of the event,
 #'   \code{allSpec} - the individual spectrum of each click in the event as a matrix with
 #'   each spectrum in a separate column, \code{avgNoise} - the average noise spectra,
-#'   \code{allNoise} - the individual noise spectrum for each click
+#'   \code{allNoise} - the individual noise spectrum for each click, \code{snrVals} -
+#'   the estimated signal-to-noise ratio for each click
 #'
 #' @author Taiki Sakai \email{taiki.sakai@@noaa.gov}
 #'
@@ -152,6 +153,10 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                              calFun=calFun, mode=mode, noise=FALSE, decimate=decimate,
                              filterfrom_khz=filterfrom_khz, filterto_khz = filterto_khz, ...)
     zeroClip <- sapply(specData, function(x) all(is.na(x)))
+    if(all(zeroClip)) {
+        warning('All events had all-zero click waveforms, could not compute click spectra')
+        return(NULL)
+    }
     specData <- specData[!zeroClip]
     specMat <- matrix(NA,nrow=length(specData[[1]]), ncol=length(specData))
 
@@ -173,34 +178,41 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     #     mean(10^(x/20), na.rm=TRUE)
     # }))
     averageNoise <- doLogAvg(noiseMat, log=mode=='spec')
-    if(snr > 0) {
-        snrVals <- vector('numeric', length = ncol(specMat))
-        for(i in seq_along(snrVals)) {
-            minX <- switch(mode,
-                           'spec' = 1,
-                           # 'ceps' = sum(freq < .0004)
-                           'ceps' = min(which(specMat[-(1:2), i] < 3*median(specMat[-(1:2), i]))) + 2
-            )
-            wherePeak <- which.max(specMat[minX:nrow(specMat), i]) + minX - 1
-            if(length(wherePeak) == 0) {
-                snrVals[i] <- NA
-                next
-            }
-            if(is.na(noiseMat[wherePeak, i])) {
-                snrVals[i] <- Inf
-                next
-            }
-            snrVals[i] <- specMat[wherePeak, i] - noiseMat[wherePeak, i]
+    if(all(is.na(averageNoise)) &&
+       isTRUE(noise)) {
+        warning('All events had all-zero noise waveforms, could not compute noise spectra')
+        noise <- FALSE
+    }
+    snrVals <- vector('numeric', length = ncol(specMat))
+    for(i in seq_along(snrVals)) {
+        minX <- switch(mode,
+                       'spec' = 1,
+                       # 'ceps' = sum(freq < .0004)
+                       'ceps' = min(which(specMat[-(1:2), i] < 3*median(specMat[-(1:2), i]))) + 2
+        )
+        wherePeak <- which.max(specMat[minX:nrow(specMat), i]) + minX - 1
+        if(length(wherePeak) == 0) {
+            snrVals[i] <- NA
+            next
         }
-
+        if(is.na(noiseMat[wherePeak, i])) {
+            snrVals[i] <- Inf
+            next
+        }
+        snrVals[i] <- specMat[wherePeak, i] - noiseMat[wherePeak, i]
+    }
+    if(snr > 0) {
         if(!any(snrVals >= snr)) {
             if(is.AcousticEvent(x)) {
                 evId <- id(x)
             }
             if(is.AcousticStudy(x)) {
-                evId <- id(x[[evNum]])
+                evId <- sapply(evNum, function(ev) {
+                    id(x[[ev]])
+                })
+                # evId <- id(x[[evNum]])
             }
-            warning('No clicks above SNR threshold for event ', evId, call.=FALSE)
+            warning('No clicks above SNR threshold for event ', printN(evId, 6), call.=FALSE)
             return(NULL)
         }
         snrKeep <- snrVals >= snr
@@ -327,7 +339,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
 
     }
     invisible(list(freq=freq, UID = names(specData), avgSpec=averageSpec, allSpec=specMat,
-                   avgNoise=averageNoise, allNoise=noiseMat))
+                   avgNoise=averageNoise, allNoise=noiseMat, snrVals=snrVals))
 }
 
 doLogAvg <- function(x, log=TRUE) {

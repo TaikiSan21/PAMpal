@@ -117,7 +117,8 @@ invisibly returns a list with six items: \code{freq} - the frequency,
   \code{UID} - the UID of each click, \code{avgSpec} - the average spectra of the event,
   \code{allSpec} - the individual spectrum of each click in the event as a matrix with
   each spectrum in a separate column, \code{avgNoise} - the average noise spectra,
-  \code{allNoise} - the individual noise spectrum for each click
+  \code{allNoise} - the individual noise spectrum for each click, \code{snrVals} -
+  the estimated signal-to-noise ratio for each click
 }
 \description{
 Calculates the average spectra of all the clicks present in an
