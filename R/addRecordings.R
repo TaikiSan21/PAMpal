@@ -297,6 +297,25 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
                         FOUNDFORMAT <<- f
                         break
                     }
+                },
+                'WISPR' = {
+                    # 'WISPR_230504_195202.wav' example
+                    date <- gsub('.*_([0-9]{6}_[0-9]{6})$', '\\1', x)
+                    posix <- as.POSIXct(date, format='%y%m%d_%H%M%S', tz='UTC')
+                    millis <- 0
+                    if(!is.na(posix)) {
+                        break
+                    }
+                },
+                'PMAR' = {
+                    # 'template_230411-221029.038.wav' example
+                    date <- gsub('.*_([0-9]{6}-[0-9]{6}\\.[0-9]{3})$', '\\1', x)
+                    posix <- as.POSIXct(substr(date, 1, 13), tz = 'UTC', format = '%y%m%d-%H%M%S')
+                    if(is.na(posix)) next
+                    millis <- as.numeric(substr(date, 15, 17)) / 1e3
+                    if(!is.na(posix)) {
+                        break
+                    }
                 }
             ) 
         }
