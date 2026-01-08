@@ -1,3 +1,9 @@
+## PAMpal 1.4.7
+
+-Bug fix for `bindStudies` when duplicate event names are detected it wouldnt
+check that the new candidate name already existed, so it could create more
+unknown duplicates
+
 ## PAMpal 1.4.6
 
 - Bug fixes for `calculateAverageSpectra` - returning safely with all-NA events

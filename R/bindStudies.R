@@ -51,10 +51,21 @@ bindStudies <- function(...) {
             if(length(whichThis) == 1) {
                 next
             }
+            newIx <- 1
             for(w in seq_along(whichThis)) {
-                id(newEv[[whichThis[w]]]) <- paste0(names(newEv)[whichThis[w]], '_', w)
-                names(newEv)[whichThis[w]] <- id(newEv[[whichThis[w]]])
-                newNames <- c(newNames, id(newEv[[whichThis[w]]]))
+                for(i in newIx:length(newEv)) {
+                    newName <- paste0(names(newEv)[whichThis[w]], '_', i)
+                    if(!newName %in% c(evNames, newNames)) {
+                        newIx <- i+1
+                        break
+                    }
+                }
+                # id(newEv[[whichThis[w]]]) <- paste0(names(newEv)[whichThis[w]], '_', w)
+                # names(newEv)[whichThis[w]] <- id(newEv[[whichThis[w]]])
+                # newNames <- c(newNames, id(newEv[[whichThis[w]]]))
+                id(newEv[[whichThis[w]]]) <- newName
+                names(newEv)[whichThis[w]] <- newName
+                newNames <- c(newNames, newName)
             }
         }
         pamWarning('Duplicate names found in combined study, numbers have been added to the end ',
