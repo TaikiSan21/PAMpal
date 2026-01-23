@@ -1,3 +1,8 @@
+## PAMpal 1.5.0
+
+- Adding `fileFormat` and `dateFormat` options to `addRecordings` to allow
+for easier ways to deal with file formats I don't know about
+
 ## PAMpal 1.4.7
 
 -Bug fix for `bindStudies` when duplicate event names are detected it wouldnt

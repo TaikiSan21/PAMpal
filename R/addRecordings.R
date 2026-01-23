@@ -6,8 +6,30 @@
 #'   recordings are stored, a dataframe containing information on the
 #'   start and end times of the recording files is added to the object.
 #'
-#' @details \code{mapWavFolder} returns a dataframe of start and end
-#'   times
+#' @details \strong{Custom Date Format} using \code{fileFormat} and \code{dateFormat}.
+#'   This is optional, and only required if the built in options do not work
+#'   and you get the warning message "Could not convert wav names to time properly
+#'   for files..."
+#'    
+#'   \code{fileFormat} must be a regular expression designed to extract the
+#'   numbers that represent the datetime from the recording file, and only
+#'   these numbers. This portion of the regex must be wrapped in parentheses.
+#'   
+#'   \code{dateFormat} must be a strptime style date format that matches the
+#'   datetime text extracted by \code{fileFormat}. 
+#'   
+#'   Examples: a wav file named "Recording_20101201-230112.wav" (where the
+#'   numbers are in yyyymmdd-hhmmss) would have 
+#'   \code{fileFormat=".*_([0-9]{8}\\\\-[0-9]{6})\\\\.wav$"} and
+#'   \code{dateFormat="\%Y\%m\%d-\%H\%M\%S"}.
+#'   
+#'   A wav file named "01122010230112_CH2.wav" (where the numbers are in
+#'   ddmmyyyyhhmmss) would have 
+#'   \code{fileFormat="([0-9]{14})_CH[0-9]{1}\\\\.wav$"} and
+#'   \code{dateFormat="\%d\%m\%Y\%H\%M\%S"}. Both examples are for a file datetime
+#'   of "2010-12-01 23:01:12".
+#' 
+#'   \code{mapWavFolder} returns a dataframe of start and end times
 #'
 #' @param x a \linkS4class{AcousticStudy} object to add recordings to
 #' @param folder a folder of recordings to add. If \code{NULL}, user will be
@@ -20,6 +42,10 @@
 #'   will be prompted to provide a folder (selecting no folder is a valid option here).
 #'   If \code{FALSE} this step will be skipped. If a single folder or multiple folders
 #'   will be applied similar to \code{folder}
+#' @param fileFormat optional file date format regex to extract date from file names
+#'   See Details for more information.
+#' @param dateFormat matching date format for \code{fileFormat} in \link{strptime}
+#'   format. See Details for more information.
 #' @param progress logical flag to show progress bars
 #'
 #' @return the same object as \code{x} with recording information added
@@ -38,7 +64,7 @@
 #' @importFrom tcltk tk_choose.dir
 #' @export
 #'
-addRecordings <- function(x, folder=NULL, log=FALSE, progress=TRUE) {
+addRecordings <- function(x, folder=NULL, log=FALSE, fileFormat=NULL, dateFormat=NULL, progress=TRUE) {
     dbMap <- vector('list', length = length(files(x)$db))
     names(dbMap) <- files(x)$db
     if(is.null(log)) {
@@ -95,7 +121,7 @@ addRecordings <- function(x, folder=NULL, log=FALSE, progress=TRUE) {
         if(folder[d] %in% isMapped) {
             wavMap <- dbMap[[min(which(folder == folder[d]))]]
         } else {
-            wavMap <- mapWavFolder(folder[d], log=logList[[as.character(log[d])]], progress)
+            wavMap <- mapWavFolder(folder[d], log=logList[[as.character(log[d])]], progress, fileFormat=fileFormat, dateFormat=dateFormat)
             # Try to do start sample
             if(!is.null(wavMap)) {
                 if(!file.exists(names(dbMap)[d])) {
@@ -178,7 +204,7 @@ addRecordings <- function(x, folder=NULL, log=FALSE, progress=TRUE) {
 #' @export
 #' @rdname addRecordings
 #'
-mapWavFolder <- function(folder=NULL, log=NULL, progress=TRUE) {
+mapWavFolder <- function(folder=NULL, log=NULL, progress=TRUE, fileFormat=NULL, dateFormat=NULL) {
     if(is.null(folder)) {
         folder <- tk_choose.dir(caption = 'Select a folder containing your recording files.',
                                    default = getwd())
@@ -196,7 +222,7 @@ mapWavFolder <- function(folder=NULL, log=NULL, progress=TRUE) {
         pamWarning('No wav files found in folder ', folder)
         return(NULL)
     }
-    wavMap <- wavsToRanges(wavs, log, progress)
+    wavMap <- wavsToRanges(wavs, log, progress, fileFormat=fileFormat, dateFormat=dateFormat)
     if(is.null(wavMap) ||
        nrow(wavMap) == 0) {
         return(NULL)
@@ -206,7 +232,7 @@ mapWavFolder <- function(folder=NULL, log=NULL, progress=TRUE) {
     wavMap
 }
 
-wavsToRanges <- function(wav, log, progress=TRUE) {
+wavsToRanges <- function(wav, log, progress=TRUE, fileFormat=NULL, dateFormat=NULL) {
     FOUNDFORMAT <- NULL
     if(progress) {
         cat('Mapping wav folder...\n')
@@ -228,10 +254,23 @@ wavsToRanges <- function(wav, log, progress=TRUE) {
             len <- header$samples / sr
             sampleLength <- header$samples
         }
-        format <- c(FOUNDFORMAT, c('pamguard', 'pampal', 'soundtrap', 'sm3', 'icListens1', 'icListens2', 'AMAR'))
+        format <- c(FOUNDFORMAT, c('CUSTOM', 'pamguard', 'pampal', 'soundtrap', 'sm3', 
+                                   'icListens1', 'icListens2', 'AMAR', 'WISPR', 'PMAR'))
         for(f in format) {
             switch(
                 f,
+                'CUSTOM' = {
+                    if(is.null(fileFormat) || is.null(dateFormat)) {
+                        next
+                    }
+                    date <- gsub(fileFormat, '\\1', x)
+                    posix <- as.POSIXct(date, format = dateFormat, tz='UTC')
+                    millis <- 0
+                    if(!is.na(posix)) {
+                        FOUNDFORMAT <<- f
+                        break
+                    }
+                },
                 'pamguard' = {
                     date <- gsub('.*([0-9]{8}_[0-9]{6}_[0-9]{3})\\.wav$', '\\1', x)
                     posix <- as.POSIXct(substr(date, 1, 15), tz = 'UTC', format = '%Y%m%d_%H%M%S')

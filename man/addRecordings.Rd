@@ -5,9 +5,22 @@
 \alias{mapWavFolder}
 \title{Add Recordings to an AcousticStudy Object}
 \usage{
-addRecordings(x, folder = NULL, log = FALSE, progress = TRUE)
+addRecordings(
+  x,
+  folder = NULL,
+  log = FALSE,
+  fileFormat = NULL,
+  dateFormat = NULL,
+  progress = TRUE
+)
 
-mapWavFolder(folder = NULL, log = NULL, progress = TRUE)
+mapWavFolder(
+  folder = NULL,
+  log = NULL,
+  progress = TRUE,
+  fileFormat = NULL,
+  dateFormat = NULL
+)
 }
 \arguments{
 \item{x}{a \linkS4class{AcousticStudy} object to add recordings to}
@@ -24,6 +37,12 @@ will be prompted to provide a folder (selecting no folder is a valid option here
 If \code{FALSE} this step will be skipped. If a single folder or multiple folders
 will be applied similar to \code{folder}}
 
+\item{fileFormat}{optional file date format regex to extract date from file names
+See Details for more information.}
+
+\item{dateFormat}{matching date format for \code{fileFormat} in \link{strptime}
+format. See Details for more information.}
+
 \item{progress}{logical flag to show progress bars}
 }
 \value{
@@ -39,8 +58,30 @@ Adds recording files to an AcousticStudy object, runs
   start and end times of the recording files is added to the object.
 }
 \details{
-\code{mapWavFolder} returns a dataframe of start and end
-  times
+\strong{Custom Date Format} using \code{fileFormat} and \code{dateFormat}.
+  This is optional, and only required if the built in options do not work
+  and you get the warning message "Could not convert wav names to time properly
+  for files..."
+   
+  \code{fileFormat} must be a regular expression designed to extract the
+  numbers that represent the datetime from the recording file, and only
+  these numbers. This portion of the regex must be wrapped in parentheses.
+  
+  \code{dateFormat} must be a strptime style date format that matches the
+  datetime text extracted by \code{fileFormat}. 
+  
+  Examples: a wav file named "Recording_20101201-230112.wav" (where the
+  numbers are in yyyymmdd-hhmmss) would have 
+  \code{fileFormat=".*_([0-9]{8}\\\\-[0-9]{6})\\\\.wav$"} and
+  \code{dateFormat="\%Y\%m\%d-\%H\%M\%S"}.
+  
+  A wav file named "01122010230112_CH2.wav" (where the numbers are in
+  ddmmyyyyhhmmss) would have 
+  \code{fileFormat="([0-9]{14})_CH[0-9]{1}\\\\.wav$"} and
+  \code{dateFormat="\%d\%m\%Y\%H\%M\%S"}. Both examples are for a file datetime
+  of "2010-12-01 23:01:12".
+
+  \code{mapWavFolder} returns a dataframe of start and end times
 }
 \examples{
 
