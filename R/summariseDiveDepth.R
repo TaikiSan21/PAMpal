@@ -26,6 +26,7 @@
 #'
 summariseDiveDepth <- function(x, hpDepthError=1, locType='PGTargetMotion') {
     clicks <- getClickData(x, measures=FALSE)
+    clicks <- distinct(dropCols(clicks, 'detectorName'))
     if(!'maxDepth' %in% colnames(clicks)) {
         stop('Data has not been processed with "calculateEchoDepth"')
     }

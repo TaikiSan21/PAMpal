@@ -169,6 +169,7 @@ dfTimeToNext <- function(x, time='UTC') {
 }
 
 calcTimeToNext <- function(x, time) {
+    x <- distinct(x)
     if(nrow(x) == 1) {
         x$ici <- 0
         return(x)

@@ -126,6 +126,9 @@ calculateEchoDepth <- function(x,
     hasLoc <- locData$eventId[!is.na(locData$locLat)]
     # x <- x[hasLoc]
     clickData <- getClickData(x[hasLoc], measures=FALSE)
+    # drop "duplicated" detections
+    detNameHolder <- select(clickData, any_of(c('UID', 'eventId', 'Channel', 'detectorName')))
+    clickData <- distinct(dropCols(clickData, c('detectorName', 'ici')))
     if(!'hpDepth' %in% colnames(clickData)) {
         stop('Hydrophone depth data not found, please add with "addHydrophoneDepth"')
     }
@@ -151,7 +154,7 @@ calculateEchoDepth <- function(x,
                                                 'perpDist', 'perpDistErr')],
                            by='eventId')
     clickData$radialDist <- distGeo(matrix(c(clickData$Longitude, clickData$Latitude), ncol=2),
-                                               matrix(c(clickData$locLong, clickData$locLat), ncol=2))
+                                    matrix(c(clickData$locLong, clickData$locLat), ncol=2))
     
     wavMatchDf <- data.frame(wavFile=wav,
                              UID=parseEventClipName(wav, 'UID'),
@@ -176,7 +179,7 @@ calculateEchoDepth <- function(x,
     # add ici
     if(isTRUE(plotIci)) {
         clickData <- left_join(clickData, 
-                               filter(getICI(x, 'data'), .data$detectorName == 'All')[c('eventId', 'UID', 'Channel', 'ici')],
+                               distinct(filter(getICI(x, 'data'), .data$detectorName == 'All')[c('eventId', 'UID', 'Channel', 'ici')]),
                                by=c('eventId', 'UID', 'Channel'))
         # mode
         clickData <- left_join(clickData,
@@ -273,19 +276,19 @@ calculateEchoDepth <- function(x,
             }
             # thisEcho <- PAMmisc::findEchoTimes(wav=ev$wavFile[i],
             thisEcho <- findEchoTimes(thisWave,
-                                               filter=c(thisParams$freqLow, thisParams$freqHigh),
-                                               peakMin=.01,
-                                               minTime=minTime,
-                                               maxTime=maxTime,
-                                               n=3,
-                                               plot=doPlot,
-                                               clipLen=clipLen,
-                                               plotText=paste0('UID: ',ev$UID[i], '\nIndex: ', which(i==which(hasWav))))
+                                      filter=c(thisParams$freqLow, thisParams$freqHigh),
+                                      peakMin=.01,
+                                      minTime=minTime,
+                                      maxTime=maxTime,
+                                      n=3,
+                                      plot=doPlot,
+                                      clipLen=clipLen,
+                                      plotText=paste0('UID: ',ev$UID[i], '\nIndex: ', which(i==which(hasWav))))
             
             thisDepth <- calculateDepth(arrDepth=ev$hpDepth[i],
-                                                 slantRange =  ev$radialDist[i],
-                                                 delayTime = thisEcho$time,
-                                                 soundSpeed = soundSpeed
+                                        slantRange =  ev$radialDist[i],
+                                        delayTime = thisEcho$time,
+                                        soundSpeed = soundSpeed
             )
             outVals <- list(maxTime = thisEcho$time[1],
                             pair2Time = thisEcho$time[2],
@@ -440,6 +443,12 @@ calculateEchoDepth <- function(x,
                  'perpDist', 'perpDistErr',
                  'ipiMax', 'ipi2', 'ipi3')
     clickData <- dropCols(clickData, locCols)
+    clickData <- left_join(
+        detNameHolder,
+        clickData,
+        by=c('UID', 'eventId', 'Channel'),
+        relationship='many-to-one'
+    )
     endTime <- Sys.time()
     procTime <- round(as.numeric(difftime(endTime, startTime, units='secs')), 0)
     x <- detDataToStudy(x, clickData)

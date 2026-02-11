@@ -2,6 +2,7 @@ library(RNetCDF)
 library(PAMpal)
 library(uuid)
 library(lubridate)
+# Updated 2025-??-??: fix offset
 # Updated 2024-11-12: fill in different fields from different detectors
 #                     and error when not-binned
 # Updated 2024-10-07: ICI for time bins
@@ -31,7 +32,7 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl'),
         if(is.null(channel)) {
             channel <- x$Channel[1]
         }
-        x <- filter(x, Channel == channel)
+        x <- dplyr::filter(x, Channel == channel)
     }
     x <- joinRecordingData(x, recData, columns=c('file', 'start', 'sr'))
     if(!is.null(bin)) {
@@ -41,6 +42,7 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl'),
             x <- bind_rows(lapply(split(x, x[['BINDATE']]), function(b) {
                 iciVals <- PAMpal:::dfTimeToNext(b, time='peakTime')$ici
                 iciVals <- iciVals[!is.na(iciVals)]
+                #
                 if(length(iciVals) == 0) {
                     b$binIci <- 0
                 } else {
@@ -58,7 +60,8 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl'),
                       species=unique(.data$species),
                       file=unique(.data$file),
                       start=unique(.data$start),
-                      sr=unique(.data$sr)) %>%
+                      sr=unique(.data$sr),
+                      .groups='drop_last') %>%
             ungroup()
         extraCols <- unique(c('n', extraCols))
 
@@ -79,6 +82,7 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl'),
         x <- x[!noWavMatch, ]
     }
 
+    
     x <- arrange(x, 'UTC')
     nDets <- nrow(x)
     if(length(unique(x$UTC)) != nDets) {
@@ -116,15 +120,16 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl'),
                chan <- 1
            }
     )
-    # duration <- ifelse(is.null(bin), .0025, as.numeric(unitToPeriod(bin)))
+    # if binning force duration to that
+    duration <- ifelse(is.null(bin), duration, as.numeric(unitToPeriod(bin)))
     ncData$time_min_offset <- as.numeric(x$UTC) - as.numeric(x$start) # "startSeconds" so should be time into file?
     ncData$time_max_offset <- ncData$time_min_offset + duration # + duration
     ncData$audio_file_dir <- dirname(x$file) # join it earlier
     ncData$audio_file_name <- tools::file_path_sans_ext(basename(x$file)) # join it earlier
     ncData$audio_file_extension <- paste0('.', tools::file_ext(basename(x$file))) # join it earlier
-    ncData$audio_file_start_date <- x$start
-    ncData$time_min_date <- x$UTC # this was file start + startSeconds but why not just UTC?
-    ncData$time_max_date <- x$UTC + duration # + dur again
+    ncData$audio_file_start_date <- x$start + offset*3600
+    ncData$time_min_date <- x$UTC + offset*3600# this was file start + startSeconds but why not just UTC?
+    ncData$time_max_date <- x$UTC + duration + offset*3600 # + dur again
     ncData$label_class <- x$species #this was manual + SpeciesCode
     ncData$duration <- duration #max - min offset. why is this not just duration???
     ncData$from_detector <- TRUE
@@ -137,11 +142,11 @@ export_soundscope <- function(x, detector=c('click', 'whistle', 'gpl'),
     ncData$entry_date <- '' # PCTime column from database. Hm.
     ncData$frequency_min <- freqMin #(x$centerkHz_10dB - x$BW_10dB/2)*1e3#'' # these are just detector settings im pretty sure
     ncData$frequency_max <- freqMax #(x$centerkHz_10dB + x$BW_10dB/2)*1e3
-    ncData$frequency_bandwidth <- ncData$frequency_max - ncData$frequency_min
+    ncData$frequency_bandwidth <- freqMax - freqMin
     ncData$amplitude <- '' # never knew where this came from
     ncAttributes$deployment_file <- '' # deployment_info.csv ???
     ## adjusting UTC offset and changing utc offset???
-    ncData$date <- ncData$time_min_date + offset*3600
+    ncData$date <- ncData$time_min_date #+ offset*3600
     # these were missing ####
     ncData$software_version <- as.character(packageVersion('PAMpal'))
     ncData$audio_bit_depth <- 16
@@ -201,7 +206,7 @@ createTimeVar <- function(x) {
     list(vals=x, units=units)
 }
 
-createSoundscopeNc <- function(data, attributes, file, deflate=NA, skipString=FALSE, shuffle=TRUE) {
+createSoundscopeNc <- function(data, attributes, file, deflate=NA, shuffle=TRUE) {
     if(is.list(data) &&
        all(c('data', 'attributes') %in% names(data))) {
         attributes <- data$attributes
@@ -214,10 +219,7 @@ createSoundscopeNc <- function(data, attributes, file, deflate=NA, skipString=FA
     att.put.nc(nc, 'date', 'units', 'NC_CHAR', dateVar$units)
     att.put.nc(nc, 'date', 'calendar', 'NC_CHAR', 'proleptic_gregorian')
     var.put.nc(nc, variable='date', data=dateVar$vals)
-    on.exit({
-        close.nc(nc)
-        print(file.size(file))
-        })
+    on.exit(close.nc(nc))
     data$date <- NULL
     for(col in colnames(data)) {
         # cat('Column ', col, '\n')
@@ -227,7 +229,6 @@ createSoundscopeNc <- function(data, attributes, file, deflate=NA, skipString=FA
         }
         switch(thisClass,
                'character' = {
-                   if(skipString) next
                    var.def.nc(nc, varname=col, vartype='NC_STRING', dimensions='date', deflate=NA, shuffle=shuffle)
                    var.put.nc(nc, variable=col, data=data[[col]])
                },
@@ -277,8 +278,13 @@ renameSoundscopeRecordings <- function(nc, rec) {
     con <- open.nc(nc, write=TRUE)
     on.exit(close.nc(con))
     oldDirs <- var.get.nc(con, variable='audio_file_dir')
+    if(all(dir.exists(unique(oldDirs)))) {
+        cat('No change needed, all folders exist')
+        return(invisible(oldDirs))
+    }
+    rec <- normalizePath(rec, winslash = '/')
     newDirs <- list.dirs(rec, full.names=TRUE, recursive=TRUE)
-
+    
     newValues <- PAMpal:::fileMatcher(old=oldDirs, new=newDirs)
     changed <- newValues != oldDirs
     cat(sum(changed), 'out of', length(changed), 'values were changed.')

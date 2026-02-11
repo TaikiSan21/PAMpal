@@ -58,11 +58,11 @@ runDepthReview <- function(x) {
         }
         return(invisible(SHINYDATA))
     })
-    #### UI ####
+    # UI ####
     ui <- fluidPage(
         # selectInput('evSelect', label='Event', choices=list('Loading...'=1)),
         # tags$head(tags$style(HTML(".selectize-input {width: 500px;}"))),
-        # keyboard input ####
+        ## keyboard input ####
         tags$script('$(document).on("keydown",
                  function (e) {
                  if(e.which == 37) {
@@ -78,7 +78,7 @@ runDepthReview <- function(x) {
             function(e_id) {
             document.getElementById(e_id).focus();
                                   });'),
-        # top bar ####
+        ## top bar ####
         fluidRow(column(9, selectInput('evSelect', label='Event', choices=list('Loading...'=1))),
                  column(2, 
                         actionButton('left', label='', icon=icon('chevron-left', lib='glyphicon')),

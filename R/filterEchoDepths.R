@@ -47,6 +47,8 @@ filterEchoDepths <- function(x, time=30, depth=NULL, speed=NULL,
     }
     if(is.AcousticStudy(x) || is.AcousticEvent(x)) {
         clicks <- getClickData(x, measures=FALSE)
+        detNameHolder <- select(clicks, any_of(c('UID', 'eventId', 'Channel', 'detectorName')))
+        clicks <- distinct(dropCols(clicks, c('detectorName', 'ici')))
     }
     if(is.character(x)) {
         if(!file.exists(x)) {
@@ -70,6 +72,12 @@ filterEchoDepths <- function(x, time=30, depth=NULL, speed=NULL,
     clicks$keepClick[clicks[['maxDepth']] > maxDepth] <- FALSE
     clicks$keepClick[clicks[['maxMag']] < minCorr] <- FALSE
     if(is.AcousticStudy(x)) {
+        clicks <- left_join(
+            detNameHolder,
+            clicks,
+            by=c('UID', 'eventId', 'Channel'),
+            relationship='many-to-one'
+        )
         x <- detDataToStudy(x, clicks)
         return(x)
     }

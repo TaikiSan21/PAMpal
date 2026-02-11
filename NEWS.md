@@ -1,3 +1,7 @@
+## PAMpal 1.5.1
+
+- Fixing bug in echo depth code to drop duplicated clicks
+
 ## PAMpal 1.5.0
 
 - Adding `fileFormat` and `dateFormat` options to `addRecordings` to allow
