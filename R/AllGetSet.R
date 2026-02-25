@@ -552,7 +552,7 @@ setMethod('$<-', 'AcousticStudy', function(x, name, value) {
 #' @export
 #' @rdname PAMpal.accessors
 #'
-setMethod('[[', signature(x='AcousticStudy', i='ANY', j='ANY'), function(x, i) {
+setMethod('[[', c('AcousticStudy', 'ANY', 'missing'), function(x, i) {
 # setMethod('[[', 'AcousticStudy', function(x, i, ...) {
     '[['(x@events, i)
 })
