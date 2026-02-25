@@ -10,7 +10,6 @@
 #' @param value value to assign with accessor
 #' @param i index of the object to access
 #' @param j not used
-#' @param drop not used
 #' @param name name of the object to access
 #' @param \dots other arguments to pass to methods
 #'

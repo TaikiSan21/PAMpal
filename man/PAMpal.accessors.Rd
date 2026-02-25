@@ -228,8 +228,6 @@ models(x) <- value
 \item{name}{name of the object to access}
 
 \item{j}{not used}
-
-\item{drop}{not used}
 }
 \value{
 \describe{
