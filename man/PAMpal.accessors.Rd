@@ -140,7 +140,7 @@ ancillary(x) <- value
 
 \S4method{$}{AcousticEvent}(x, name) <- value
 
-\S4method{[[}{AcousticEvent}(x, i)
+\S4method{[[}{AcousticEvent}(x, i, j, ...)
 
 \S4method{[[}{AcousticEvent,ANY,ANY,ANY}(x, i) <- value
 
@@ -226,6 +226,10 @@ models(x) <- value
 \item{i}{index of the object to access}
 
 \item{name}{name of the object to access}
+
+\item{j}{not used}
+
+\item{drop}{not used}
 }
 \value{
 \describe{

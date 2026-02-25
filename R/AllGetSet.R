@@ -9,6 +9,8 @@
 #' @param x a \linkS4class{AcousticEvent} or \linkS4class{AcousticStudy} object
 #' @param value value to assign with accessor
 #' @param i index of the object to access
+#' @param j not used
+#' @param drop not used
 #' @param name name of the object to access
 #' @param \dots other arguments to pass to methods
 #'
@@ -261,7 +263,7 @@ setMethod('$<-', 'AcousticEvent', function(x, name, value) {
 #' @export
 #' @rdname PAMpal.accessors
 #'
-setMethod('[[', signature(x='AcousticEvent', i='ANY', j='ANY'), function(x, i) {
+setMethod('[[', signature(x='AcousticEvent', i='ANY', j='ANY'), function(x, i, ...) {
     '[['(x@detectors, i)
 })
 
@@ -551,7 +553,7 @@ setMethod('$<-', 'AcousticStudy', function(x, name, value) {
 #' @export
 #' @rdname PAMpal.accessors
 #'
-setMethod('[[', signature(x='AcousticStudy', i='ANY'), function(x, i) {
+setMethod('[[', signature(x='AcousticStudy', i='ANY', j='ANY'), function(x, i) {
 # setMethod('[[', 'AcousticStudy', function(x, i, ...) {
     '[['(x@events, i)
 })
