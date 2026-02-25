@@ -229,7 +229,7 @@ setMethod('ancillary<-', 'AcousticEvent', function(x, value) {
 #' @export
 #' @rdname PAMpal.accessors
 #'
-setMethod('[', 'AcousticEvent', function(x, i) {
+setMethod('[', signature(x='AcousticEvent', i='ANY', j='ANY'), function(x, i) {
     x@detectors[i]
 })
 
@@ -261,7 +261,7 @@ setMethod('$<-', 'AcousticEvent', function(x, name, value) {
 #' @export
 #' @rdname PAMpal.accessors
 #'
-setMethod('[[', 'AcousticEvent', function(x, i) {
+setMethod('[[', signature(x='AcousticEvent', i='ANY', j='ANY'), function(x, i) {
     '[['(x@detectors, i)
 })
 
@@ -515,7 +515,7 @@ setMethod('models<-', 'AcousticStudy', function(x, value) {
 #' @export
 #' @rdname PAMpal.accessors
 #'
-setMethod('[', 'AcousticStudy', function(x, i) {
+setMethod('[', signature(x='AcousticStudy', i='ANY', j='ANY'), function(x, i) {
     x@events <- x@events[i]
     x@events <- x@events[sapply(x@events, function(e) {
         !is.null(e)
@@ -551,7 +551,7 @@ setMethod('$<-', 'AcousticStudy', function(x, name, value) {
 #' @export
 #' @rdname PAMpal.accessors
 #'
-setMethod('[[', 'AcousticStudy', function(x, i) {
+setMethod('[[', signature(x='AcousticStudy', i='ANY', j='ANY'), function(x, i) {
     '[['(x@events, i)
 })
 
