@@ -56,7 +56,7 @@ not supplied (recommended to supply your own informative id)}
 
   \code{grouping} can be supplied either as a data frame or as
   a filepath to a csv file.
-  
+
   For \code{mode = 'fixed'} this should be the time duration for the fixed
   length events. If this is a numeric value, it is the duration in seconds.
   If it is a character it should be of the format \code{"NumberUnit"}, e.g.
@@ -116,8 +116,10 @@ grp <- data.frame(start = as.POSIXct('2018-03-20 15:25:10', tz='UTC'),
                   id = 'GroupExample')
 exStudyTime <- processPgDetections(exPps, mode='time', grouping=grp, id='Time')
 # process events by recording event
+\donttest{
 exStudyRecording <- processPgDetections(exPps, mode='recording', id='Recording')
 exFixed <- processPgDetections(exPps, mode='fixed', grouping='1min', id='1Minute')
+}
 
 }
 \author{
