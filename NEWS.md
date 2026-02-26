@@ -1,3 +1,7 @@
+## PAMpal 1.5.2
+
+- Fixing check warnings for `[[` accessors
+
 ## PAMpal 1.5.1
 
 - Fixing bug in echo depth code to drop duplicated clicks
