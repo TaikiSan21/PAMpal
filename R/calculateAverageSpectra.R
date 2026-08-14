@@ -102,13 +102,20 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                                     q=.01,
                                     showBreaks=TRUE,
                                     ...) {
+    isEvent <- FALSE
     if(is.AcousticEvent(x)) {
         ev <- x
+        isEvent <- TRUE
     } else if(is.AcousticStudy(x)) {
         if(is.numeric(evNum)) {
             evNum <- evNum[evNum <= length(events(x))]
         }
-        ev <- x[evNum]
+        if(length(evNum) == 1) {
+            ev <- x[[evNum]]
+            isEvent <- TRUE
+        } else {
+            ev <- x[evNum]
+        }
         if(is.null(sr)) {
             sr <- getSr(x, type='click')
         }
@@ -127,11 +134,15 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     clickUID <- clickData$UID
     # reordering because they get put in UID order
     binData <- lapply(unname(split(clickData, clickData$eventId)), function(c) {
-        bin <- getBinaryData(ev[[c$eventId[1]]], c$UID, type='click', quiet=TRUE)
+        if(isTRUE(isEvent)) {
+            bin <- getBinaryData(ev, c$UID, type='click', quiet=TRUE)
+        } else {
+            bin <- getBinaryData(ev[[c$eventId[1]]], c$UID, type='click', quiet=TRUE)
+        }
         bin[c$UID]
     })
     binData <- unlist(binData, recursive = FALSE)
-
+    
     # binData <- getBinaryData(ev, clickUID, type='click', quiet = TRUE)[clickUID]
     if(length(binData) == 0) {
         stop('Not able to find any data for this event.')
@@ -148,7 +159,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     }
     freq <- myGram(binData[[1]], channel=1, wl=wl, sr=sr, mode=mode,
                    decimate=decimate)[, 1]
-
+    
     specData <- binToSpecMat(binData, channel=channel, wl=wl, sr=sr, freq=freq,
                              calFun=calFun, mode=mode, noise=FALSE, decimate=decimate,
                              filterfrom_khz=filterfrom_khz, filterto_khz = filterto_khz, ...)
@@ -159,18 +170,18 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
     }
     specData <- specData[!zeroClip]
     specMat <- matrix(NA,nrow=length(specData[[1]]), ncol=length(specData))
-
+    
     for(i in seq_along(specData)) {
         specMat[, i] <- specData[[i]]
     }
     snrMat <- rep(0, ncol(specMat))
-
+    
     noiseData <- binToSpecMat(binData, channel=channel, wl=wl, sr=sr, freq=freq,
                               calFun=calFun, mode=mode, noise=TRUE, decimate=decimate,
                               filterfrom_khz=filterfrom_khz, filterto_khz = filterto_khz, ...)
     noiseData <- noiseData[!zeroClip]
     noiseMat <- matrix(NA,nrow=length(noiseData[[1]]), ncol=length(noiseData))
-
+    
     for(i in seq_along(noiseData)) {
         noiseMat[, i] <- noiseData[[i]]
     }
@@ -261,7 +272,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
             plotFreq <- freq >= flim[1] & freq <= flim[2]
         }
         freqPretty <- pretty(seq(from=min(freq[plotFreq])*unitFactor, to=max(freq[plotFreq])*unitFactor, length.out=5), n=5)
-
+        
         # Concat Spec Plot
         if(plot[1]) {
             plotMat <- specMat[plotFreq, snrKeep, drop=FALSE]
@@ -322,7 +333,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
                 lines(x=freq, averageNoise, type='l', lty=3, lwd=2)
                 # legend('topright', inset=c(0, 0), xpd=TRUE, legend=c('Signal', 'Noise'), lty=1:2, bty='n')
             }
-
+            
             title(title2)
             axis(1, at = freqPretty/unitFactor, labels=freqPretty)
             yRange <- range(averageSpec)
@@ -336,7 +347,7 @@ calculateAverageSpectra <- function(x, evNum=1, calibration=NULL, wl=512,
             yPretty <- pretty(yRange, n=5)
             axis(2, at=yPretty, labels=yPretty)
         }
-
+        
     }
     invisible(list(freq=freq, UID = names(specData), avgSpec=averageSpec, allSpec=specMat,
                    avgNoise=averageNoise, allNoise=noiseMat, snrVals=snrVals))

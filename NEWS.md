@@ -1,3 +1,7 @@
+## PAMpal 1.5.3
+
+- Minor memory usage adjustment for `calculateAverageSpectra`
+
 ## PAMpal 1.5.2
 
 - Fixing check warnings for `[[` accessors
