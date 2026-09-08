@@ -80,6 +80,8 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
     nonConsec <- character(0)
     fileDNE <- character(0)
     noChan <- character(0)
+    allBefore <- character(0)
+    allAfter <- character(0)
     result <- character(0)
     on.exit({
         if(length(noMatch) > 0) {
@@ -106,6 +108,12 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
             warning('Wav files for ', mode, ' ', printN(noChan, 6),
                     ' did not have the desired channels.', call.=FALSE)
         }
+        if(length(allBefore) > 0) {
+            warning('All wav files ended before ', mode, ' ', printN(allBefore, 6), call.=FALSE)
+        }
+        if(length(allAfter) > 0) {
+            warning('All wav files started after ', mode, ' ', printN(allAfter, 6), call.=FALSE)
+        }
     })
     # one DB at a time
     for(d in seq_along(dbMap)) {
@@ -113,6 +121,8 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
         if(length(thisDbMatch) == 0) next
         thisDbData <- x[thisDbMatch]
         wavMap <- dbMap[[d]]
+        mapMin <- min(wavMap$start)
+        mapMax <- max(wavMap$end)
         allTimes <- getTimeRange(thisDbData, mode=mode, sample=useSample)
         allResult <- vector('list', length = length(allTimes))
         names(allResult) <- names(allTimes)
@@ -129,6 +139,20 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
             # these are for times where desired start/end is outside of wav
             if(fillZeroes) {
                 zeroBuff <- c(0,0)
+            }
+            if(timeRange[1] > mapMax) {
+                allBefore <- c(allBefore, names(allResult)[1])
+                if(progress) {
+                    setTxtProgressBar(pb, value=i)
+                }
+                next
+            }
+            if(timeRange[2] < mapMin) {
+                allAfter <- c(allAfter, names(allResult)[1])
+                if(progress) {
+                    setTxtProgressBar(pb, value=i)
+                }
+                next
             }
             # for start and end check if in range. if we buffered, try undoing that first.
             # so like if buffer put us before first file, start and beginning of first file instead.
