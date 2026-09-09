@@ -201,6 +201,13 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
                     next
                 }
                 startIx <- min(which(wavMap$start > timeRange[1]))
+                if(wavMap$start[startIx] > timeRange[2]) {
+                    noMatch <- c(noMatch, names(allResult)[i])
+                    if(progress) {
+                        setTxtProgressBar(pb, value=i)
+                    }
+                    next
+                }
                 # if fill zeroes, need to pre-pend by amount of zeroes here
                 if(fillZeroes) {
                     zeroBuff[1] <- as.numeric(difftime(wavMap$start[startIx], timeRange[1], units='secs'))
@@ -234,6 +241,13 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
                 }
                 # if fill zeroes, backfill by amount of zeroes here
                 endIx <- max(which(wavMap$end < timeRange[2]))
+                if(wavMap$end[endIx] < timeRange[1]) {
+                    noMatch <- c(noMatch, names(allResult)[i])
+                    if(progress) {
+                        setTxtProgressBar(pb, value=i)
+                    }
+                    next
+                }
                 if(fillZeroes) {
                     zeroBuff[2] <- as.numeric(difftime(timeRange[2], wavMap$end[endIx], units='secs'))
                 }
