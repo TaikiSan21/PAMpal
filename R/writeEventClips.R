@@ -75,9 +75,11 @@ writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', '
     }
     getClipData(x, buffer=buffer, mode=mode, channel=channel, useSample=useSample,
                 progress=progress, verbose=verbose, FUN=writeOneClip, outDir=outDir,
-                filter=filter, fixLength=fixLength)
+                filter=filter, fixLength=fixLength, toWaveMC=FALSE)
 }
 
+#' @importFrom audio save.wave
+#' 
 writeOneClip <- function(wav, name, time, channel, mode, outDir='.', filter) {
     fileName <- paste0(oneUpper(mode), '_', name, 'CH', paste0(channel, collapse=''))
     fileName <- paste0(fileName, '_',psxToChar(time[1]))
@@ -96,11 +98,19 @@ writeOneClip <- function(wav, name, time, channel, mode, outDir='.', filter) {
     }
     if(!is.null(filterFrom) ||
        !is.null(filterTo)) {
-        for(i in 1:ncol(wav@.Data)) {
-            wav@.Data[, i] <- round(seewave::bwfilter(wav@.Data[, i], f=wav@samp.rate, from=filterFrom, to=filterTo)[, 1], 0)
+        # for(i in 1:ncol(wav@.Data)) {
+        #     wav@.Data[, i] <- round(seewave::bwfilter(wav@.Data[, i], f=wav@samp.rate, from=filterFrom, to=filterTo)[, 1], 0)
+        # }
+        if(is.null(dim(wav))) {
+            wav <- seewave::bwfilter(wav, f=wav$rate, from=filterFrom, to=filterTo)[, 1]
+        } else {
+            for(i in 1:nrow(wav)) {
+                wav[i,] <- seewave::bwfilter(wav[i,], f=wav$rate, from=filterFrom, to=filterTo)[, 1]
+            }
         }
     }
-    writeWave(wav, fileName, extensible = FALSE)
+    # writeWave(wav, fileName, extensible = FALSE)
+    save.wave(wav, fileName)
     fileName
 }
 

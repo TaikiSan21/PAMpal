@@ -102,11 +102,25 @@ addRecordings <- function(x, folder=NULL, log=FALSE, fileFormat=NULL, dateFormat
             }
         }
     }
+    # if folders are named vector by db then reorder them to match
+    if(!is.null(names(folder))) {
+        hasMatch <- names(folder) %in% basename(names(dbMap))
+        if(!all(hasMatch)) {
+            warning(sum(!hasMatch), ' named folders do not match the name of ',
+                    ' a database (', printN(names(folder)[!hasMatch]), 
+                    '), names must match exactly including extension')
+            folder <- folder[hasMatch]
+        }
+        folder <- folder[basename(names(dbMap))]
+    }
     # these should only happen if manually provided, check proper input length
     if(length(folder) == 1) {
         folder <- rep(folder, length(dbMap))
     }
-
+    if(length(dbMap) == 1 &&
+       length(folder) > 1) {
+        dbMap <- rep(dbMap, length(folder))
+    }
     if(length(folder) != length(dbMap)) {
         stop('Number of folders must either be 1 or equal to the number of databases.')
     }
@@ -153,7 +167,7 @@ addRecordings <- function(x, folder=NULL, log=FALSE, fileFormat=NULL, dateFormat
     }
 
     # allFiles <- unique(sapply(dbMap, function(d) d$file))
-    allFiles <- bind_rows(dbMap, .id = 'db')
+    allFiles <- distinct(bind_rows(dbMap, .id = 'db'))
     # combine with old then re-check for consecutive files within each db
     sameFile <- files(x)$recordings$file[files(x)$recordings$file %in% allFiles$file]
     for(f in seq_along(sameFile)) {
