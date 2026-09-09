@@ -111,16 +111,16 @@ test_that('Test working with AcousticStudy object', {
                      normalizePath(list.files(recs, full.names = TRUE), winslash = '/'))
     expect_warning(warnRec <- addRecordings(exData, folder = 'DNE', log=FALSE, progress=FALSE))
     # test clip fun
-    clips <- getClipData(exData, mode='detection', buffer=c(0, .1))
-    expect_equal(nrow(clips[['Example.DGL1.8000003']]@.Data) / clips[['Example.DGL1.8000003']]@samp.rate,
+    clips <- getClipData(exData, mode='detection', buffer=c(0, .1), toWaveMC=FALSE)
+    expect_equal(length(clips[['Example.DGL1.8000003']]) / clips[['Example.DGL1.8000003']]$rate,
                  0.1)
     expect_equal(
-        round(nrow(clips[['Example.DGL1.386000022']]@.Data) / clips[['Example.DGL1.386000022']]@samp.rate, 2),
+        round(length(clips[['Example.DGL1.386000022']]) / clips[['Example.DGL1.386000022']]$rate, 2),
         .1 + round(exData$Example.DGL1$Whistle_and_Moan_Detector$duration, 2)
     )
-    fixClips <- getClipData(exData, mode='detection', buffer=c(0, .1), fixLength=TRUE)
+    fixClips <- getClipData(exData, mode='detection', buffer=c(0, .1), fixLength=TRUE, toWaveMC=FALSE)
     expect_equal(
-        round(nrow(fixClips[['Example.DGL1.386000022']]@.Data) / fixClips[['Example.DGL1.386000022']]@samp.rate, 2),
+        round(length(fixClips[['Example.DGL1.386000022']]) / fixClips[['Example.DGL1.386000022']]$rate, 2),
         .1
     )
     # test warning access from recorder warning

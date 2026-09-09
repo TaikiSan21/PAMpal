@@ -28,6 +28,23 @@ myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
         if(is.null(sr)) {
             sr <- x@samp.rate
         }
+    } else if(inherits(x, 'audioSample')) {
+        if(is.null(dim(x)) &&
+           channel > 1) {
+            return(NULL)
+        }
+        if(!is.null(dim(x)) &&
+           channel > nrow(x)) {
+            return(NULL)
+        }
+        if(is.null(dim(x))) {
+            wave <- x
+        } else {
+            wave <- x[channel, ]
+        }
+        if(is.null(sr)) {
+            sr <- x$rate
+        }
     }
     if(decimate > 1) {
         wave <- decimate(wave, q=decimate)
@@ -72,12 +89,12 @@ myGram <- function(x, channel=1, wl = 512, window = TRUE, sr=NULL,
                    result <- result - mean(result)
                    result <- fft(result, inverse=TRUE)
                    # abs(Re(result))
-
+                   
                    abs(Re(result))
                }
                y <- (1:wl) / sr
            })
-
+    
     ans <- matrix(NA, nrow=wl%/%2, ncol=2)
     ans[, 1] <- y[1:(wl%/%2)]
     dB <- FUN(wave)
@@ -103,6 +120,14 @@ myDownsample <- function(wav, srFrom=NULL, srTo) {
     } else if(inherits(wav, 'WaveMC')) {
         x <- wav@.Data[, 1]
         srFrom <- wav@samp.rate
+    } else if(inherits(wav, 'audioSample')) {
+        srFrom <- wav$rate
+        bits <- wav$bits
+        if(is.null(dim(wav))) {
+            x <- wav
+        } else {
+            x <- wav[1, ]
+        }
     } else {
         if(is.null(srFrom)) {
             warning('Must provide original sample rate')
@@ -122,6 +147,11 @@ myDownsample <- function(wav, srFrom=NULL, srTo) {
     } else if(inherits(wav, 'WaveMC')) {
         wav@.Data <- matrix(y, ncol=1)
         wav@samp.rate <- srTo
+    } else if(inherits(wav, 'audioSample')) {
+        wav <- matrix(y, nrow=1)
+        attr(wav, 'rate') <- srTo
+        attr(wav, 'bits') <- bits
+        class(wav) <- 'audioSample'
     } else {
         wav <- y
     }
@@ -189,6 +219,13 @@ wavToGram <- function(wav, sr=NULL, wl=1024, hop=.5, mode=c('spec', 'ceps'), axe
             sr <- wav@samp.rate
         }
         wav <- wav@.Data[, 1]
+    } else if(inherits(wav, 'audioSample')) {
+        if(is.null(sr)) {
+            sr <- wav$rate
+        }
+        if(!is.null(dim(wav))) {
+            wav <- wav[1, ]
+        }
     }
     mode <- match.arg(mode)
     if(hop <= 1) {

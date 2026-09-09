@@ -15,6 +15,7 @@ getClipData(
   progress = TRUE,
   verbose = TRUE,
   FUN = NULL,
+  toWaveMC = TRUE,
   ...
 )
 }
@@ -50,6 +51,9 @@ files and return no clip data}
 \item{FUN}{optional function to apply to wav clips. This function takes default inputs \code{wav},
 a Wave class object, \code{name} the name of the detection or event, \code{time} the start and end
 time of the clip, \code{channel} as above, \code{mode} as above, and additional args \dots}
+
+\item{toWaveMC}{logical flag to convert to a \code{tuneR::WaveMC} object
+instead of the default \code{audio::audioSample} object (slower)}
 
 \item{\dots}{optional arguments to pass to \code{FUN}}
 }

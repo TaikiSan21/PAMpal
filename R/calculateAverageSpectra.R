@@ -53,7 +53,7 @@
 #'   values decrease contrast of concatenated spectrogram image
 #' @param q lower and upper quantiles to remove for scaling concatenated spectrogram.
 #'   Or if a single value, then quantiles \code{q} and \code{1-q} will be used. Ex.
-#'   if \code{q=.01}, then the bottom 1% and top 1% of values are truncated before
+#'   if \code{q=.01}, then the bottom 1\% and top 1\% of values are truncated before
 #'   plotting the image. This is done purely for cosmetic reasons, no output data is
 #'   affected
 #' @param showBreaks logical flag to show lines separating events when plotting

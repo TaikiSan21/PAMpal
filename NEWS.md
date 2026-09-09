@@ -1,3 +1,8 @@
+## PAMpal 1.6.0
+
+- Updating `getClipData` and `writeEventClips` to use faster
+C-based wav reading and writing functions
+
 ## PAMpal 1.5.3
 
 - Minor memory usage adjustment for `calculateAverageSpectra`
