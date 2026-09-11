@@ -63,11 +63,11 @@ writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', '
         switch(match.arg(mode),
                'event' = {
                    wavEvents <- parseEventClipName(wavFiles, part='event')
-                   x <- filter(x, !eventId %in% wavEvents)
+                   x <- filter(x, !.data$eventId %in% wavEvents)
                },
                'detection' = {
                    wavIds <- parseEventClipName(wavFiles, part='UID')
-                   x <- filter(x, !UID %in% wavIds)
+                   x <- filter(x, !.data$UID %in% wavIds)
                }
         )
         if(nDetections(x) == 0) {
@@ -96,6 +96,8 @@ writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', '
                 progress=progress, verbose=verbose, FUN=writeOneClip, outDir=outDir,
                 filter=filter, fixLength=fixLength, toWaveMC=FALSE)
 }
+
+# globalVariables(c('UID', 'eventId'))
 
 #' @importFrom audio save.wave
 #' 
