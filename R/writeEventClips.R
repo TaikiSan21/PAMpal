@@ -24,6 +24,7 @@
 #'   \code{TRUE}, then output clip length is entirely determined by the buffer value, as
 #'   if the detection or event had zero length. E.g. \code{buffer=c(-2,1)} will produce clips
 #'   3 seconds long, starting 2 seconds before the detection/event start time.
+#' @param rerun logical flag to rerun for existing wav clips
 #' @param progress logical flag to show progress bar
 #' @param verbose logical flag to show summary messages
 #'
@@ -54,8 +55,26 @@
 #'
 writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', 'detection'),
                             channel = 1, filter=0, useSample=FALSE, progress=TRUE, verbose=TRUE,
+                            rerun=TRUE,
                             fixLength=FALSE) {
     if(!dir.exists(outDir)) dir.create(outDir)
+    if(isFALSE(rerun)) {
+        wavFiles <- list.files(outDir, pattern='wav$')
+        switch(match.arg(mode),
+               'event' = {
+                   wavEvents <- parseEventClipName(wavFiles, part='event')
+                   x <- filter(x, !eventId %in% wavEvents)
+               },
+               'detection' = {
+                   wavIds <- parseEventClipName(wavFiles, part='UID')
+                   x <- filter(x, !UID %in% wavIds)
+               }
+        )
+        if(nDetections(x) == 0) {
+            message('Appears that all wav files exist, and rerun=FALSE. No new files created')
+            return(character(0))
+        }
+    }
     if(length(channel) > 2) {  #### WAV CLIP SPECIFIC
         message('R can only write wav files with 2 or less channels, channels will be split',
                 ' across multiple files.')
@@ -110,7 +129,17 @@ writeOneClip <- function(wav, name, time, channel, mode, outDir='.', filter) {
         }
     }
     # writeWave(wav, fileName, extensible = FALSE)
-    save.wave(wav, fileName)
+    maxTries <- 3
+    for(i in seq_len(maxTries)) {
+        tryWrite <- try(save.wave(wav, fileName), silent=TRUE)
+        if(is.null(tryWrite) ||
+           !inherits(tryWrite, 'try-error')) {
+            break
+        }
+    }
+    if(inherits(tryWrite, 'try-error')) {
+        warning('Problem writing file ', basename(fileName))
+    }
     fileName
 }
 

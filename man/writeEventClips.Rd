@@ -15,6 +15,7 @@ writeEventClips(
   useSample = FALSE,
   progress = TRUE,
   verbose = TRUE,
+  rerun = TRUE,
   fixLength = FALSE
 )
 
@@ -46,6 +47,8 @@ longer}
 \item{progress}{logical flag to show progress bar}
 
 \item{verbose}{logical flag to show summary messages}
+
+\item{rerun}{logical flag to rerun for existing wav clips}
 
 \item{fixLength}{logical flag to fix the output clip length to a constant value. If
 \code{TRUE}, then output clip length is entirely determined by the buffer value, as

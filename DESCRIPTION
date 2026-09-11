@@ -1,7 +1,7 @@
 Package: PAMpal
 Type: Package
 Title: Load and Process Passive Acoustic Data
-Version: 1.6.0
+Version: 1.6.1
 Authors@R: c(
   TS = person("Taiki", "Sakai", email = "taiki.sakai@noaa.gov", role = c("aut", "cre")),
   JB = person("Jay", "Barlow", role = c("ctb")),
@@ -47,3 +47,4 @@ Imports:
 Suggests: 
     testthat
 Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.3

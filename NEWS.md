@@ -1,3 +1,8 @@
+## PAMpal 1.6.1
+
+- Updating `writeEventClips` to do multiple write attempts on file and also
+added `rerun` option to try and avoid rewriting old clips
+
 ## PAMpal 1.6.0
 
 - Updating `getClipData` and `writeEventClips` to use faster

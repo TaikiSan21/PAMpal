@@ -74,7 +74,10 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
             FUN <- function(wav, ...) {
                 bit <- wav$bits
                 sr <- wav$rate
-                wav <- t(unclass(wav))
+                wav <- unclass(wav)
+                if(!is.null(dim(wav))) {
+                    wav <- t(wav)
+                }
                 dim <- dim(wav)
                 wav <- as.integer(wav * 2^(bit-1))
                 dim(wav) <- dim
