@@ -44,7 +44,6 @@
 #'
 #' @importFrom dplyr bind_rows arrange group_by summarise ungroup
 #' @importFrom tuneR readWave writeWave MCnames bind nchannel WaveMC
-#' @importFrom audio `$.audioSample`
 #' @importFrom PAMmisc fastReadWave
 #'
 #' @export
@@ -59,16 +58,16 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
     # recs <- checkRecordings(x)
     recs <- files(x)$recordings
     mode <- match.arg(mode)
-    
+
     evDbs <- sapply(events(x), function(e) basename(files(e)$db))
     dbMap <- split(recs, recs$db)
     names(dbMap) <- basename(names(dbMap))
-    
+
     if(length(buffer) == 1) {
         buffer <- buffer * c(-1, 1)
     }
     # buffer <- abs(buffer) * c(-1, 1)
-    
+
     if(is.null(FUN)) {
         if(isTRUE(toWaveMC)) {
             FUN <- function(wav, ...) {
@@ -82,7 +81,7 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
                 wav <- as.integer(wav * 2^(bit-1))
                 dim(wav) <- dim
                 WaveMC(data=wav, samp.rate=sr, bit=bit)
-                
+
             }
         } else {
             FUN <- function(wav, ...) wav
@@ -94,7 +93,7 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
     }
     # each database can have a different set of assigned recordings,
     # so we break up by DB
-    
+
     # setup warning storage
     noMatch <- character(0)
     multMatch <- character(0)
@@ -327,7 +326,7 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
                 if(fillZeroes &&
                    w != endIx &&
                    wavMap$timeDiff[w+1] > 0) {
-                    
+
                     # thisZeroes <- WaveMC(data=matrix(0, ncol=nchannel(wavResult[[w]]), nrow=thisSr*wavMap$timeDiff[w+1]),
                     #                      samp.rate=thisSr, bit=wavResult[[w]]@bit)
                     thisZeroes <- matrix(0,
@@ -340,7 +339,7 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
                     wavResult[[w]] <- bindAudioSample(wavResult[[w]], thisZeroes)
                 }
             }
-            
+
             wavResult <- wavResult[!sapply(wavResult, is.null)]
             # wavResult <- do.call(bind, wavResult) # [, 1:min(2, ncol(wavResult))]
             wavResult <- do.call(bindAudioSample, wavResult) # [, 1:min(2, ncol(wavResult))]
@@ -363,7 +362,7 @@ getClipData <- function(x, buffer = c(0, 0.1), mode=c('event', 'detection'),
             }
             # colnames(wavResult) <- MCnames$name[1:ncol(wavResult)]
             allResult[[i]] <- FUN(wavResult, name=names(allResult)[i], time=timeRange, channel=channel[chanIn], mode=mode, ...)
-            
+
             if(progress) {
                 setTxtProgressBar(pb, value=i)
             }
@@ -383,7 +382,7 @@ bindAudioSample <- function(x, ...) {
         stop('Could not combine audioSample objects with different attributes')
     }
     sampAtts <- getSampAttrs(x)
-    
+
     if(sampAtts$channels == 1) {
         vals <- do.call(`c`, list(x, ...))
         vals <- matrix(vals, nrow=1)

@@ -144,177 +144,219 @@ exportMethods(settings)
 exportMethods(species)
 import(dplyr)
 importClassesFrom(data.table,data.table)
-importFrom(PAMmisc,addPgGps)
-importFrom(PAMmisc,fastReadWave)
-importFrom(PAMmisc,findEchoTimes)
-importFrom(PAMmisc,peakTrough)
-importFrom(PAMmisc,readSpecAnno)
-importFrom(PAMmisc,squishList)
-importFrom(PAMmisc,wignerTransform)
-importFrom(PamBinaries,contourToFreq)
-importFrom(PamBinaries,convertPgDate)
-importFrom(PamBinaries,loadPamguardBinaryFile)
-importFrom(RSQLite,SQLite)
-importFrom(RSQLite,dbConnect)
-importFrom(RSQLite,dbDisconnect)
-importFrom(RSQLite,dbListFields)
-importFrom(RSQLite,dbListTables)
-importFrom(RSQLite,dbReadTable)
-importFrom(audio,`$.audioSample`)
-importFrom(audio,`[.audioSample`)
+importFrom(PAMmisc,
+  addPgGps,
+  fastReadWave,
+  findEchoTimes,
+  peakTrough,
+  readSpecAnno,
+  squishList,
+  wignerTransform
+)
+importFrom(PamBinaries,
+  contourToFreq,
+  convertPgDate,
+  loadPamguardBinaryFile
+)
+importFrom(RSQLite,
+  SQLite,
+  dbConnect,
+  dbDisconnect,
+  dbListFields,
+  dbListTables,
+  dbReadTable
+)
 importFrom(audio,save.wave)
-importFrom(data.table,":=")
-importFrom(data.table,as.data.table)
-importFrom(data.table,data.table)
-importFrom(data.table,key)
-importFrom(data.table,rbindlist)
-importFrom(data.table,setDF)
-importFrom(data.table,setDT)
-importFrom(data.table,setkeyv)
-importFrom(dplyr,arrange)
-importFrom(dplyr,bind_rows)
-importFrom(dplyr,distinct)
-importFrom(dplyr,filter)
-importFrom(dplyr,group_by)
-importFrom(dplyr,join_by)
-importFrom(dplyr,left_join)
-importFrom(dplyr,mutate)
-importFrom(dplyr,n)
-importFrom(dplyr,n_distinct)
-importFrom(dplyr,rename)
-importFrom(dplyr,select)
-importFrom(dplyr,slice_sample)
-importFrom(dplyr,summarise)
-importFrom(dplyr,ungroup)
+importFrom(data.table,
+  ":=",
+  as.data.table,
+  data.table,
+  key,
+  rbindlist,
+  setDF,
+  setDT,
+  setkeyv
+)
+importFrom(dplyr,
+  arrange,
+  bind_rows,
+  distinct,
+  filter,
+  group_by,
+  join_by,
+  left_join,
+  mutate,
+  n,
+  n_distinct,
+  rename,
+  select,
+  slice_sample,
+  summarise,
+  ungroup
+)
 importFrom(future.apply,future_lapply)
-importFrom(gam,gam)
-importFrom(gam,predict.Gam)
-importFrom(gam,s)
+importFrom(gam,
+  gam,
+  predict.Gam,
+  s
+)
 importFrom(geosphere,distGeo)
-importFrom(ggplot2,aes)
-importFrom(ggplot2,element_blank)
-importFrom(ggplot2,element_line)
-importFrom(ggplot2,element_text)
-importFrom(ggplot2,facet_wrap)
-importFrom(ggplot2,geom_density)
-importFrom(ggplot2,geom_point)
-importFrom(ggplot2,ggplot)
-importFrom(ggplot2,ggtitle)
-importFrom(ggplot2,scale_color_manual)
-importFrom(ggplot2,theme)
-importFrom(ggplot2,xlab)
-importFrom(ggplot2,ylab)
-importFrom(ggplot2,ylim)
-importFrom(grDevices,dev.off)
-importFrom(grDevices,gray.colors)
-importFrom(grDevices,hcl.colors)
-importFrom(grDevices,png)
-importFrom(graphics,axis)
-importFrom(graphics,hist)
-importFrom(graphics,image)
-importFrom(graphics,layout)
-importFrom(graphics,legend)
-importFrom(graphics,lines)
-importFrom(graphics,par)
-importFrom(graphics,plot)
-importFrom(graphics,points)
-importFrom(graphics,text)
-importFrom(graphics,title)
+importFrom(ggplot2,
+  aes,
+  element_blank,
+  element_line,
+  element_text,
+  facet_wrap,
+  geom_density,
+  geom_point,
+  ggplot,
+  ggtitle,
+  scale_color_manual,
+  theme,
+  xlab,
+  ylab,
+  ylim
+)
+importFrom(grDevices,
+  dev.off,
+  gray.colors,
+  hcl.colors,
+  png
+)
+importFrom(graphics,
+  axis,
+  hist,
+  image,
+  layout,
+  legend,
+  lines,
+  par,
+  plot,
+  points,
+  text,
+  title
+)
 importFrom(knitr,kable)
-importFrom(lubridate,floor_date)
-importFrom(lubridate,int_overlaps)
-importFrom(lubridate,int_standardize)
-importFrom(lubridate,interval)
-importFrom(lubridate,parse_date_time)
-importFrom(lubridate,period)
-importFrom(methods,new)
-importFrom(methods,setGeneric)
-importFrom(methods,setMethod)
-importFrom(methods,validObject)
-importFrom(purrr,discard)
-importFrom(purrr,map)
-importFrom(purrr,reduce)
-importFrom(purrr,transpose)
-importFrom(reticulate,import)
-importFrom(reticulate,install_miniconda)
-importFrom(reticulate,np_array)
-importFrom(reticulate,py_available)
-importFrom(reticulate,py_install)
-importFrom(reticulate,py_module_available)
-importFrom(rlang,as_label)
-importFrom(rlang,is_expression)
-importFrom(rlang,is_quosure)
-importFrom(rlang,list2)
-importFrom(rlang,parse_expr)
-importFrom(rlang,quo_get_expr)
-importFrom(rlang,quos)
-importFrom(seewave,TKEO)
-importFrom(seewave,bwfilter)
-importFrom(seewave,spec)
-importFrom(shiny,HTML)
-importFrom(shiny,actionButton)
-importFrom(shiny,brushedPoints)
-importFrom(shiny,column)
-importFrom(shiny,div)
-importFrom(shiny,fluidPage)
-importFrom(shiny,fluidRow)
-importFrom(shiny,icon)
-importFrom(shiny,isolate)
-importFrom(shiny,observe)
-importFrom(shiny,observeEvent)
-importFrom(shiny,onSessionEnded)
-importFrom(shiny,plotOutput)
-importFrom(shiny,radioButtons)
-importFrom(shiny,reactiveVal)
-importFrom(shiny,reactiveValues)
-importFrom(shiny,renderPlot)
-importFrom(shiny,runApp)
-importFrom(shiny,selectInput)
-importFrom(shiny,shinyApp)
-importFrom(shiny,showNotification)
-importFrom(shiny,sliderInput)
-importFrom(shiny,stopApp)
-importFrom(shiny,tags)
-importFrom(shiny,textInput)
-importFrom(shiny,updateSelectInput)
-importFrom(shiny,updateSliderInput)
-importFrom(signal,butter)
-importFrom(signal,cheby1)
-importFrom(signal,decimate)
-importFrom(signal,filtfilt)
-importFrom(signal,hanning)
-importFrom(signal,specgram)
-importFrom(stats,approx)
-importFrom(stats,approxfun)
-importFrom(stats,density)
-importFrom(stats,fft)
-importFrom(stats,lm)
-importFrom(stats,median)
-importFrom(stats,quantile)
-importFrom(stats,sd)
-importFrom(tcltk,tk_choose.dir)
-importFrom(tcltk,tk_choose.files)
+importFrom(lubridate,
+  floor_date,
+  int_overlaps,
+  int_standardize,
+  interval,
+  parse_date_time,
+  period
+)
+importFrom(methods,
+  new,
+  setGeneric,
+  setMethod,
+  validObject
+)
+importFrom(purrr,
+  discard,
+  map,
+  reduce,
+  transpose
+)
+importFrom(reticulate,
+  import,
+  install_miniconda,
+  np_array,
+  py_available,
+  py_install,
+  py_module_available
+)
+importFrom(rlang,
+  as_label,
+  is_expression,
+  is_quosure,
+  list2,
+  parse_expr,
+  quo_get_expr,
+  quos
+)
+importFrom(seewave,
+  TKEO,
+  bwfilter,
+  spec
+)
+importFrom(shiny,
+  HTML,
+  actionButton,
+  brushedPoints,
+  column,
+  div,
+  fluidPage,
+  fluidRow,
+  icon,
+  isolate,
+  observe,
+  observeEvent,
+  onSessionEnded,
+  plotOutput,
+  radioButtons,
+  reactiveVal,
+  reactiveValues,
+  renderPlot,
+  runApp,
+  selectInput,
+  shinyApp,
+  showNotification,
+  sliderInput,
+  stopApp,
+  tags,
+  textInput,
+  updateSelectInput,
+  updateSliderInput
+)
+importFrom(signal,
+  butter,
+  cheby1,
+  decimate,
+  filtfilt,
+  hanning,
+  specgram
+)
+importFrom(stats,
+  approx,
+  approxfun,
+  density,
+  fft,
+  lm,
+  median,
+  quantile,
+  sd
+)
+importFrom(tcltk,
+  tk_choose.dir,
+  tk_choose.files
+)
 importFrom(tidyr,pivot_wider)
-importFrom(tuneR,MCnames)
-importFrom(tuneR,WaveMC)
-importFrom(tuneR,bind)
-importFrom(tuneR,nchannel)
-importFrom(tuneR,readWave)
-importFrom(tuneR,writeWave)
-importFrom(utils,.DollarNames)
-importFrom(utils,capture.output)
-importFrom(utils,globalVariables)
-importFrom(utils,menu)
-importFrom(utils,packageVersion)
-importFrom(utils,read.csv)
-importFrom(utils,setTxtProgressBar)
-importFrom(utils,str)
-importFrom(utils,txtProgressBar)
-importFrom(utils,write.csv)
-importFrom(xml2,read_xml)
-importFrom(xml2,xml_attr)
-importFrom(xml2,xml_attrs)
-importFrom(xml2,xml_children)
-importFrom(xml2,xml_find_all)
-importFrom(xml2,xml_name)
+importFrom(tuneR,
+  MCnames,
+  WaveMC,
+  bind,
+  nchannel,
+  readWave,
+  writeWave
+)
+importFrom(utils,
+  .DollarNames,
+  capture.output,
+  globalVariables,
+  menu,
+  packageVersion,
+  read.csv,
+  setTxtProgressBar,
+  str,
+  txtProgressBar,
+  write.csv
+)
+importFrom(xml2,
+  read_xml,
+  xml_attr,
+  xml_attrs,
+  xml_children,
+  xml_find_all,
+  xml_name
+)
 importMethodsFrom(PAMmisc,matchEnvData)

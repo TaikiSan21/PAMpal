@@ -67,7 +67,6 @@
 #' @importFrom tuneR readWave
 #' @importFrom grDevices gray.colors
 #' @importFrom graphics points
-#' @importFrom audio `[.audioSample`
 #'
 #' @export
 #'
@@ -145,7 +144,7 @@ plotGram <- function(x, evNum=1,  start=NULL, end=NULL, channel=1,
     if(abs(as.numeric(difftime(timeEnd, end, units='secs'))) > 1) {
         warning('Clip size did not match requested length')
     }
-    
+
     # don't actually need this - getClipData subsets to channel
     # if(channel > ncol(wav@.Data)) {
     #     stop('Specified channel is not present in wav file.', call.=FALSE)
