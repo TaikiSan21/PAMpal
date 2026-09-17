@@ -102,7 +102,7 @@ writeEventClips <- function(x, buffer = c(0, 0.1), outDir='.', mode=c('event', '
 #' @importFrom audio save.wave
 #' 
 writeOneClip <- function(wav, name, time, channel, mode, outDir='.', filter) {
-    fileName <- paste0(oneUpper(mode), '_', name, 'CH', paste0(channel, collapse=''))
+    fileName <- paste0(oneUpper(mode), '_', name, 'CH', paste0(channel, collapse='-'))
     fileName <- paste0(fileName, '_',psxToChar(time[1]))
     fileName <- paste0(gsub('\\.wav$', '', fileName), '.wav')
     # timeRange[1] is actual start time in posix
@@ -177,7 +177,7 @@ parseEventClipName <- function(file, part=c('event', 'time', 'UID', 'channel', '
         }, USE.NAMES=FALSE))
     }
     file <- basename(file)
-    pattern <- '(Event|Detection)_(.*)(CH[0-9]{1,2})_([0-9]{14}_[0-9]{3}|[0-9]{8}_[0-9]{6}_[0-9]{3})\\.wav$'
+    pattern <- '(Event|Detection)_(.*)(CH[0-9\\-]*)_([0-9]{14}_[0-9]{3}|[0-9]{8}_[0-9]{6}_[0-9]{3})\\.wav$'
     switch(match.arg(part),
            'event' = {
                result <- gsub(pattern, '\\2', file)
@@ -196,6 +196,7 @@ parseEventClipName <- function(file, part=c('event', 'time', 'UID', 'channel', '
            'channel' = {
                result <- gsub(pattern, '\\3', file)
                result <- gsub('CH', '', result)
+               result <- gsub('-', ',', result)
                result
            },
            'time' = {

@@ -330,7 +330,10 @@ importFrom(tcltk,
   tk_choose.dir,
   tk_choose.files
 )
-importFrom(tidyr,pivot_wider)
+importFrom(tidyr,
+  pivot_wider,
+  unnest
+)
 importFrom(tuneR,
   MCnames,
   WaveMC,

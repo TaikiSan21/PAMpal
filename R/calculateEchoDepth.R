@@ -81,6 +81,7 @@
 #' @importFrom PAMmisc findEchoTimes
 #' @importFrom graphics layout hist
 #' @importFrom grDevices dev.off png
+#' @importFrom tidyr unnest
 #'
 #' @export
 #'
@@ -159,9 +160,20 @@ calculateEchoDepth <- function(x,
     wavMatchDf <- data.frame(wavFile=wav,
                              UID=parseEventClipName(wav, 'UID'),
                              Channel=parseEventClipName(wav, 'channel'),
-                             eventId=parseEventClipName(wav, 'event'))
+                             eventId=parseEventClipName(wav, 'event')) %>% 
+        mutate(Channel = strsplit(.data$Channel, ',')) %>% 
+        unnest(.data$Channel)
     # drop this col in case already exists before join
     clickData$wavFile <- NULL
+    clipChannel <- unique(wavMatchDf$Channel)
+    dataChannel <- unique(clickData$Channel)
+    if(!any(clickData$Channel %in% wavMatchDf$Channel)) {
+        stop('Appears that clips were created for different channels (',
+                printN(clipChannel),
+                ') than data (',
+                printN(dataChannel),
+                ')')
+    }
     clickData <- left_join(clickData, wavMatchDf, by=c('eventId', 'UID', 'Channel'))
     
     wavNoMatch <- !wav %in% clickData$wavFile[!is.na(clickData$wavFile)]
