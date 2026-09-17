@@ -153,7 +153,10 @@ oneUpper <- function(x) {
 }
 
 psxToChar <- function(x) {
-    psFloor <- as.character(as.POSIXct(floor(as.numeric(x)), origin='1970-01-01 00:00:00', tz='UTC'))
+    psFloor <- format(as.POSIXct(
+        floor(as.numeric(x)), origin='1970-01-01 00:00:00', tz='UTC'),
+        format='%Y-%m-%d %H:%M:%S'
+    )
     psMilli <- round(as.numeric(x)-floor(as.numeric(x)), 3)
     psMilli <- sprintf('%.3f',psMilli)
     psMilli <- substr(psMilli, 3, 5)
