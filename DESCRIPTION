@@ -28,7 +28,7 @@ Imports:
     tuneR,
     seewave,
     gam,
-    data.table,
+    data.table (>= 1.18.0),
     RSQLite,
     purrr,
     methods,
