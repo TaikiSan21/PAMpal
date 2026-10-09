@@ -174,6 +174,9 @@ psxToChar <- function(x) {
 #' @export
 #'
 parseEventClipName <- function(file, part=c('event', 'time', 'UID', 'channel', 'UTC')) {
+    if(length(file) == 0) {
+        return(character(0))
+    }
     if(length(file) > 1) {
         return(sapply(file, function(x) {
             parseEventClipName(x, part=part)

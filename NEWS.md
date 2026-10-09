@@ -1,3 +1,7 @@
+## PAMpal 1.6.2
+
+- `writeEventClips` `rerun` option no longer crashes if no wav files are present
+
 ## PAMpal 1.6.1
 
 - Updating `writeEventClips` to do multiple write attempts on file and also
